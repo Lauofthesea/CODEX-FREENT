@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Hubs Admin Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .animate-fadeIn { animation: fadeIn 0.2s ease-in-out; }
+  @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+</style>
+</head>
+<body class="bg-gray-100">
+
+<!-- NAVBAR -->
+<nav class="w-full bg-white shadow px-6 py-5 flex items-center justify-between">
+  <div class="flex items-center space-x-3">
+    <img src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full" alt="Logo">
+    <span class="text-2xl font-bold text-[#0B0A7A]">Line Hubs</span>
+  </div>
+
+  <div class="flex space-x-6">
+    <button onclick="showSection('dashboardSection')" id="dashboardBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-xl">Dashboard</button>
+    <button onclick="showSection('ordersSection')" id="ordersBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl">Orders</button>
+    <button onclick="showSection('historySection')" id="historyBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl">Transaction History</button>
+    <button onclick="showSection('messagesSection')" id="messagesBtn" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl">Messages</button>
+  </div>
+
+  <button class="px-4 py-2 bg-red-600 text-white rounded-xl">Logout</button>
+</nav>
+
+<!-- PAGE TITLE -->
+<header class="px-6 pt-4">
+  <h1 id="pageTitle" class="text-3xl font-semibold text-gray-800">Dashboard</h1>
+</header>
+
+<main class="p-6">
+
+<!-- ========== DASHBOARD SECTION ========== -->
+<div id="dashboardSection" class="space-y-8">
+
+  <!-- KPI CARDS -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <div class="bg-gradient-to-r from-[#716FF3] to-[#9E9ACF] text-white rounded-2xl shadow p-6">
+      <p class="text-sm font-medium">Total Orders Today</p>
+      <p id="totalOrdersToday" class="mt-2 text-3xl font-bold">0</p>
+    </div>
+
+    <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-2xl shadow p-6">
+      <p class="text-sm font-medium">Pending Orders</p>
+      <p id="pendingOrders" class="mt-2 text-3xl font-bold">0</p>
+    </div>
+
+    <div class="bg-gradient-to-r from-green-400 to-green-600 text-white rounded-2xl shadow p-6">
+      <p class="text-sm font-medium">Revenue Today</p>
+      <p id="revenueToday" class="mt-2 text-3xl font-bold">₱0</p>
+    </div>
+
+  </div>
+
+  <!-- RECENT ORDERS TABLE -->
+  <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+    <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Orders</h2>
+
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Order ID</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Customer</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Product</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Qty</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Type</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Status</th>
+        </tr>
+      </thead>
+      <tbody id="dashboardOrdersBody" class="divide-y divide-gray-200 text-left"></tbody>
+    </table>
+  </div>
+
+</div>
+
+
+<!-- ========== ORDERS SECTION ========== -->
+<div id="ordersSection" class="hidden space-y-6">
+
+  <!-- Tabs -->
+  <div class="flex space-x-4 mb-4">
+    <button onclick="filterOrdersByType('all')" id="tabAll" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">All</button>
+    <button onclick="filterOrdersByType('recent')" id="tabRecent" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Recent</button>
+    <button onclick="filterOrdersByType('pending')" id="tabPending" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Pending</button>
+  </div>
+
+  <!-- Search & Sort -->
+  <div class="flex flex-col md:flex-row gap-4 mb-4">
+    <input id="orderSearch" type="text" placeholder="Search orders..." class="px-4 py-2 border rounded-lg w-full md:w-1/3" onkeyup="filterOrders()">
+
+    <select id="orderSort" class="px-4 py-2 border rounded-lg" onchange="sortOrders()">
+      <option value="">Sort By</option>
+      <option value="dateAsc">Date ↑ (Oldest)</option>
+      <option value="dateDesc">Date ↓ (Newest)</option>
+      <option value="qtyAsc">Quantity ↑</option>
+      <option value="qtyDesc">Quantity ↓</option>
+      <option value="status">Status</option>
+    </select>
+  </div>
+
+  <!-- Orders Table -->
+  <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+    <table id="ordersTable" class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Order ID</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Customer</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Product</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Qty</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Type</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Status</th>
+          <th class="px-4 py-3 text-sm font-medium text-gray-700">Date</th>
+        </tr>
+      </thead>
+      <tbody id="ordersBody" class="text-left"></tbody>
+    </table>
+  </div>
+
+</div>
+
+
+<!-- ========== TRANSACTION HISTORY ========== -->
+<div id="historySection" class="hidden">
+  <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-100 text-left">
+        <tr>
+          <th class="px-4 py-3">Order ID</th>
+          <th class="px-4 py-3">Customer</th>
+          <th class="px-4 py-3">Product</th>
+          <th class="px-4 py-3">Qty</th>
+          <th class="px-4 py-3">Type</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Date</th>
+        </tr>
+      </thead>
+      <tbody id="historyBody" class="text-left"></tbody>
+    </table>
+
+  </div>
+</div>
+
+
+<!-- ========== MESSAGES SECTION ========== -->
+<div id="messagesSection" class="hidden">
+  <div class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold text-gray-700">Messages</h2>
+    <p class="text-gray-600">Messaging system coming soon...</p>
+  </div>
+</div>
+
+
+<!-- ========== ORDER DETAILS MODAL ========== -->
+<div id="orderModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-fadeIn">
+
+    <button onclick="closeOrderModal()" 
+      class="absolute top-3 right-4 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
+
+    <h2 class="text-2xl font-semibold mb-6 pb-3 border-b text-gray-800">Order Details</h2>
+
+    <div id="orderDetailsContent" class="space-y-4 text-gray-700"></div>
+
+  </div>
+</div>
+
+
+
+<!-- ========== JAVASCRIPT ========== -->
+<script type="module">
+
+/* Import Firebase init */
+import { db } from "./firebase-init.js";
+import { collection, onSnapshot, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+const ordersCol = collection(db, "orders");
+
+/* Make all needed functions global */
+window.showSection = showSection;
+window.closeOrderModal = closeOrderModal;
+window.showOrderDetails = showOrderDetails;
+window.updateStatus = updateStatus;
+window.filterOrdersByType = filterOrdersByType;
+window.filterOrders = filterOrders;
+window.sortOrders = sortOrders;
+
+
+/* ========== SECTION SWITCHING ========== */
+function showSection(id) {
+  const sections = ["dashboardSection","ordersSection","historySection","messagesSection"];
+  const nav = {
+    dashboardSection:"dashboardBtn",
+    ordersSection:"ordersBtn",
+    historySection:"historyBtn",
+    messagesSection:"messagesBtn"
+  };
+
+  sections.forEach(s => document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+
+  const titles = {
+    dashboardSection:"Dashboard",
+    ordersSection:"Orders",
+    historySection:"Transaction History",
+    messagesSection:"Messages"
+  };
+  document.getElementById("pageTitle").innerText = titles[id];
+
+  Object.keys(nav).forEach(sec => {
+    const btn = document.getElementById(nav[sec]);
+    if(sec === id){
+      btn.classList.add("bg-indigo-600","text-white");
+      btn.classList.remove("bg-gray-100","text-gray-700");
+    } else {
+      btn.classList.remove("bg-indigo-600","text-white");
+      btn.classList.add("bg-gray-100","text-gray-700");
+    }
+  });
+}
+
+
+/* ========== CLOSE MODAL ========== */
+function closeOrderModal() {
+  document.getElementById("orderModal").classList.add("hidden");
+}
+
+
+/* ========== LOAD ORDERS LIVE FROM FIRESTORE ========== */
+const dashboardOrdersBody = document.getElementById("dashboardOrdersBody");
+const ordersBody = document.getElementById("ordersBody");
+const historyBody = document.getElementById("historyBody");
+
+onSnapshot(ordersCol, (snapshot) => {
+
+  dashboardOrdersBody.innerHTML = "";
+  ordersBody.innerHTML = "";
+  historyBody.innerHTML = "";
+
+  let totalOrders = 0;
+  let pendingOrders = 0;
+  let revenue = 0;
+
+  snapshot.forEach(docSnap => {
+    const order = docSnap.data();
+    order.docId = docSnap.id;
+
+    totalOrders++;
+
+    if(order.status.toLowerCase() === "pending") pendingOrders++;
+    if(["delivered","complete"].includes(order.status.toLowerCase()))
+      revenue += order.total || 0;
+
+    const row = `
+      <tr class="hover:bg-gray-50 cursor-pointer" onclick="showOrderDetails('${order.docId}')">
+        <td class="px-4 py-3">${order.orderId}</td>
+        <td class="px-4 py-3">${order.customer}</td>
+        <td class="px-4 py-3">${order.product}</td>
+        <td class="px-4 py-3">${order.quantity}</td>
+        <td class="px-4 py-3">${order.type || "-"}</td>
+        <td class="px-4 py-3">${order.status}</td>
+      </tr>
+    `;
+
+    dashboardOrdersBody.innerHTML += row;
+    ordersBody.innerHTML += `
+      ${row.replace("</tr>", `<td class="px-4 py-3">${order.date || "-"}</td></tr>`)}
+    `;
+
+    if(["delivered","complete"].includes(order.status.toLowerCase())){
+      historyBody.innerHTML += `
+        <tr>
+          <td class="px-4 py-3">${order.orderId}</td>
+          <td class="px-4 py-3">${order.customer}</td>
+          <td class="px-4 py-3">${order.product}</td>
+          <td class="px-4 py-3">${order.quantity}</td>
+          <td class="px-4 py-3">${order.type || "-"}</td>
+          <td class="px-4 py-3">${order.status}</td>
+          <td class="px-4 py-3">${order.date || "-"}</td>
+        </tr>
+      `;
+    }
+
+  });
+
+  document.getElementById("totalOrdersToday").innerText = totalOrders;
+  document.getElementById("pendingOrders").innerText = pendingOrders;
+  document.getElementById("revenueToday").innerText = "₱" + revenue;
+
+});
+
+
+/* ========== ORDER DETAILS MODAL ========== */
+async function showOrderDetails(id) {
+  const snap = await getDoc(doc(db, "orders", id));
+  const order = snap.data();
+
+  document.getElementById("orderDetailsContent").innerHTML = `
+    <p><strong>Order ID:</strong> ${order.orderId}</p>
+    <p><strong>Customer:</strong> ${order.customer}</p>
+    <p><strong>Contact:</strong> ${order.contact || "-"}</p>
+    <p><strong>Email:</strong> ${order.email || "-"}</p>
+
+    <hr class="my-2">
+
+    <p><strong>Product:</strong> ${order.product}</p>
+    <p><strong>Type:</strong> ${order.type || "-"}</p>
+    <p><strong>Size:</strong> ${order.size || "-"}</p>
+    <p><strong>Height:</strong> ${order.height || "-"} cm</p>
+    <p><strong>Width:</strong> ${order.width || "-"} cm</p>
+
+    <hr class="my-2">
+
+    <p><strong>Quantity:</strong> ${order.quantity}</p>
+    <p><strong>Price per item:</strong> ₱${order.price || 0}</p>
+    <p><strong>Total Price:</strong> <span class="font-semibold text-green-600">₱${order.total || 0}</span></p>
+
+    <hr class="my-2">
+
+    <p><strong>Notes:</strong> ${order.notes || "-"}</p>
+
+    <hr class="my-2">
+
+    <p><strong>Status:</strong>
+      <select id="statusSelect" class="border px-2 py-1 rounded">
+        <option ${order.status==="Pending"?"selected":""}>Pending</option>
+        <option ${order.status==="On Production"?"selected":""}>On Production</option>
+        <option ${order.status==="On Delivery"?"selected":""}>On Delivery</option>
+        <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
+        <option ${order.status==="Complete"?"selected":""}>Complete</option>
+      </select>
+
+      <button onclick="updateStatus('${id}')" 
+        class="ml-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+        Update
+      </button>
+    </p>
+
+    <p><strong>Date:</strong> ${order.date || "-"}</p>
+  `;
+
+  document.getElementById("orderModal").classList.remove("hidden");
+}
+
+
+
+/* ========== UPDATE ORDER STATUS ========== */
+async function updateStatus(id) {
+  const status = document.getElementById("statusSelect").value;
+  await updateDoc(doc(db, "orders", id), { status });
+  closeOrderModal();
+}
+
+
+/* ========== FILTER BY TYPE ========== */
+function filterOrdersByType(type) {
+  const rows = [...document.querySelectorAll("#ordersTable tbody tr")];
+
+  rows.forEach(r => r.style.display = "none");
+
+  let filtered = rows;
+
+  if(type === "pending")
+    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase() === "pending");
+
+  if(type === "recent") {
+    const today = new Date();
+    filtered = rows.filter(row => {
+      const d = new Date(row.cells[6].innerText);
+      return (today - d) / (1000 * 60 * 60 * 24) <= 7;
+    });
+  }
+
+  if(type === "all")
+    filtered = rows;
+
+  filtered.forEach(r => r.style.display = "");
+
+
+  // Update tab styling
+  ["tabAll","tabRecent","tabPending"].forEach(id => {
+    document.getElementById(id).classList.remove("bg-indigo-600","text-white");
+    document.getElementById(id).classList.add("bg-gray-200","text-gray-700");
+  });
+
+  const tab = { all:"tabAll", recent:"tabRecent", pending:"tabPending" }[type];
+  const btn = document.getElementById(tab);
+
+  btn.classList.remove("bg-gray-200","text-gray-700");
+  btn.classList.add("bg-indigo-600","text-white");
+}
+
+
+/* ========== SEARCH ========== */
+function filterOrders() {
+  const q = document.getElementById("orderSearch").value.toLowerCase();
+  const rows = document.querySelectorAll("#ordersTable tbody tr");
+
+  rows.forEach(r => {
+    r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+
+/* ========== SORTING (INCLUDES DATE) ========== */
+function sortOrders() {
+  const sort = document.getElementById("orderSort").value;
+  const table = document.getElementById("ordersTable").tBodies[0];
+  const rows = [...table.rows];
+
+  rows.sort((a, b) => {
+
+    // Sort by date ASC
+    if(sort === "dateAsc") {
+      return new Date(a.cells[6].innerText) - new Date(b.cells[6].innerText);
+    }
+
+    // Sort by date DESC
+    if(sort === "dateDesc") {
+      return new Date(b.cells[6].innerText) - new Date(a.cells[6].innerText);
+    }
+
+    // Sort by quantity
+    if(sort === "qtyAsc") return a.cells[3].innerText - b.cells[3].innerText;
+    if(sort === "qtyDesc") return b.cells[3].innerText - a.cells[3].innerText;
+
+    // Sort by status
+    if(sort === "status") return a.cells[5].innerText.localeCompare(b.cells[5].innerText);
+
+    return 0;
+  });
+
+  rows.forEach(r => table.appendChild(r));
+}
+
+</script>
+</body>
+</html>

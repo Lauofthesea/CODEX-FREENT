@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Services - FREENT</title>
+  <link rel="stylesheet" href="../css-files/services.css" /> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+  <div id="main-content">
+    <header class="site-header">
+      <div class="header-top">
+        <div class="logo">
+          <img src="../assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        </div>
+      </div>
+
+      <nav class="nav-wrapper">
+        <ul class="main-nav">
+          <li><a href="../index.html">HOME</a></li> 
+          <li class="services-dropdown">
+            <a href="#">SERVICES ▸</a>
+            <ul class="dropdown-menu">
+              <li><a href="document-printing.html">Document Printing</a></li>
+              <li><a href="photo-printing.html">Photo Printing</a></li>
+              <li><a href="shirt-printing.html">Shirt Printing</a></li>
+              <li><a href="tarpaulin-printing.html">Tarpaulin Printing</a></li>
+              <li><a href="signages.html">Signages</a></li>
+              <li><a href="stickers.html">Stickers</a></li>
+              <li><a href="gift-boxes.html">Gift Boxes</a></li>
+              <li><a href="lanyards.html">Lanyards</a></li>
+              <li><a href="invitations.html">Invitations</a></li>
+              <li><a href="customized.html">Customized</a></li>
+              <li><a href="more-services.html">More...</a></li>
+            </ul>
+          </li>
+          <li class="search-wrapper">
+            <form class="search-form" onsubmit="handleSearch(event)">
+              <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search FREENT..." />
+              </div>
+              <button type="submit" class="search-btn">Search</button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+
+      <button class="cta login-btn" onclick="login()">Account</button>
+
+    </header>
+  </div>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Our Services</h1>
+      <p class="hero-subtext">Explore our wide range of printing and customization services.</p>
+      <button class="get-started" onclick="scrollToServices()">View Services</button>
+    </div>
+  </section>
+
+  <div class="advantages">
+    <div class="advantage-item">
+      <img src="../assets/cartIcon.png" alt="Convenient" />
+      <p>Convenient</p>
+    </div>
+    <div class="advantage-item">
+      <img src="../assets/starIcon.png" alt="Quality" />
+      <p>Quality</p>
+    </div>
+    <div class="advantage-item">
+      <img src="../assets/clockIcon.png" alt="Fast Service" />
+      <p>Fast Service</p>
+    </div>
+  </div>
+
+  <section id="services-cards" class="services-section">
+    <h2>Printing Options</h2>
+    <div class="services-grid">
+      
+      <div class="service-card available" onclick="openModal('document')">
+        <i class="fas fa-file-alt"></i>
+        <h3>Document Printing</h3>
+        <p>Print your documents in various sizes</p>
+        <span class="available-badge">Available Now</span>
+      </div>
+
+      <div class="service-card coming-soon">
+        <i class="fas fa-image"></i>
+        <h3>Photo Printing</h3>
+        <p>High-quality photo prints</p>
+        <span class="coming-soon-badge">Not Available</span>
+      </div>
+
+      <div class="service-card coming-soon">
+        <i class="fas fa-tshirt"></i>
+        <h3>Shirt Printing</h3>
+        <p>DTF, Sublimation, and Vinyl</p>
+        <span class="coming-soon-badge">Not Available</span>
+      </div>
+
+      <div class="service-card coming-soon">
+        <i class="fas fa-rectangle-ad"></i>
+        <h3>Tarpaulin Printing</h3>
+        <p>Large format prints</p>
+        <span class="coming-soon-badge">Not Available</span>
+      </div>
+
+      <div class="service-card coming-soon">
+        <i class="fas fa-sticky-note"></i>
+        <h3>Stickers</h3>
+        <p>Waterproof custom stickers</p>
+        <span class="coming-soon-badge">Not Available</span>
+      </div>
+
+      <div class="service-card coming-soon">
+        <i class="fas fa-gift"></i>
+        <h3>Customized Items</h3>
+        <p>Mugs, tumblers, and more</p>
+        <span class="coming-soon-badge">Not Available</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="samples-section" class="samples">
+    <h2>Placeholder Functions</h2>
+    <div class="sample-gallery">
+      <div class="sample-item"><img src="#" alt="Sample 1" /></div>
+      <div class="sample-item"><img src="#" alt="Sample 2" /></div>
+      <div class="sample-item"><img src="#" alt="Sample 3" /></div>
+      <div class="sample-item"><img src="#" alt="Sample 4" /></div>
+      <div class="sample-item"><img src="#" alt="Sample 5" /></div>
+      <div class="sample-item"><img src="#" alt="Sample 6" /></div>
+    </div>
+
+    <div class="view-services-wrapper">
+      <button class="view-services">Contact Us &raquo;</button>
+    </div>
+
+    <div class="more-samples">
+      <h3>More Samples</h3>
+      <div class="sample-gallery">
+        <div class="sample-item"><img src="#" alt="xSample 1" /></div>
+        <div class="sample-item"><img src="#" alt="xSample 2" /></div>
+        <div class="sample-item"><img src="#" alt="xSample 3" /></div>
+        <div class="sample-item"><img src="#" alt="xSample 4" /></div>
+        <div class="sample-item"><img src="#" alt="xSample 5" /></div>
+        <div class="sample-item"><img src="#" alt="xSample 6" /></div>
+      </div>
+    </div>
+  </section>
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h2><i class="fas fa-file-alt"></i> Document Printing Order</h2>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="orderForm" onsubmit="handleSubmit(event)">
+    
+        <div class="form-group">
+          <label>Upload Document</label>
+          <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Click to upload or drag and drop</p>
+            <small>PDF, DOCX, DOC, TXT (Max 10MB)</small>
+          </div>
+          <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event)" />
+          <div id="fileInfo" class="file-info" style="display: none;"></div>
+        </div>
+        <div class="form-group">
+          <label for="paperSize">Paper Size</label>
+          <select id="paperSize" onchange="calculatePrice()">
+            <option value="a4">A4 (210 × 297 mm)</option>
+            <option value="a3">A3 (297 × 420 mm)</option>
+            <option value="a5">A5 (148 × 210 mm)</option>
+            <option value="letter">Letter (8.5 × 11 in)</option>
+            <option value="legal">Legal (8.5 × 14 in)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="copies">Number of Copies</label>
+          <input type="number" id="copies" min="1" max="1000" value="1" onchange="calculatePrice()" />
+        </div>
+
+        <div class="form-group">
+          <label>Payment Method</label>
+          <div class="payment-options">
+            <div class="payment-option">
+              <i class="fas fa-money-bill-wave"></i>
+              <p>Cash</p>
+            </div>
+            <div class="payment-option" onclick="selectPayment('gcash')">
+              <i class="fas fa-mobile-alt"></i>
+              <p>GCash</p>
+            </div>
+            <div class="payment-option" onclick="selectPayment('card')">
+              <i class="fas fa-credit-card"></i>
+              <p>Card</p>
+            </div>
+            <div class="payment-option" onclick="selectPayment('bank')">
+              <i class="fas fa-university"></i>
+              <p>Bank Transfer</p>
+            </div>
+          </div>
+          <input type="hidden" id="paymentMethod" required />
+        </div>
+        <div class="price-display">
+          <div class="label">Total Amount</div>
+          <div class="amount" id="totalPrice">₱0.00</div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn" disabled>Place Order</button>
+      </form>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="../assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        <p>Lines Printing Services<br />Your Freedom to Print</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="../index.html">Home</a>
+        <a href="../pages/services.html">Services</a>
+        <a href="#">Placeholder</a>
+        <a href="#">Placeholder</a>
+      </div>
+
+      <div class="footer-contact">
+        <p>📍 E. Locson Drive, Talon-talon, Zamboanga City</p>
+        <p>📞 - - - - - </p>
+        <p>📧 linesprintingservices@gmail.com</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 Lines Printing Services. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="../js-files/services.js"></script>
+</body>
+</html>

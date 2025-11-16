@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up - FREENT</title>
+  <link rel="stylesheet" href="services.css" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: var(--light-blue);
+    }
+
+    .auth-container {
+      background-color: goldenrod;
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 320px;
+    }
+
+    .auth-container h2 {
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+
+    .auth-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid var(--soft-blue);
+      border-radius: 8px;
+    }
+
+    .auth-container button {
+      width: 100%;
+      padding: 10px;
+      background: var(--soft-blue);
+      color: var(--dark);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .auth-container p {
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+
+    .auth-container a {
+      color: var(--lavender);
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Create an Account</h2>
+    <input type="text" id="name" placeholder="Full Name" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <input type="password" id="confirm" placeholder="Confirm Password" required />
+    <button onclick="signup()">Sign Up</button>
+    <p>Already have an account? <a href="login.html">Login</a></p>
+  </div>
+
+  <script>
+    function signup() {
+      const name = document.getElementById("name").value;
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const confirm = document.getElementById("confirm").value;
+
+      if (password !== confirm) {
+        alert("Passwords do not match!");
+        return;
+      }
+
+      const user = { name, email, password };
+      localStorage.setItem("freentUser", JSON.stringify(user));
+      alert("Account created successfully! Please log in.");
+      window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - FREENT</title>
+  <link rel="stylesheet" href="services.css" />
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: var(--light-blue);
+    }
+
+    .auth-container {
+      background-color: goldenrod;
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 320px;
+    }
+
+    .auth-container h2 {
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+
+    .auth-container input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid var(--soft-blue);
+      border-radius: 8px;
+    }
+
+    .auth-container button {
+      width: 100%;
+      padding: 10px;
+      background: var(--soft-blue);
+      color: var(--dark);
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .auth-container p {
+      margin-top: 1rem;
+      font-size: 14px;
+    }
+
+    .auth-container a {
+      color: var(--lavender);
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Login to FREENT</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
+    <p>Don’t have an account? <a href="signup.html">Sign Up</a></p>
+  </div>
+
+  <script>
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const storedUser = JSON.parse(localStorage.getItem("freentUser"));
+
+      if (storedUser && storedUser.email === email && storedUser.password === password) {
+        localStorage.setItem("freentLoggedIn", "true");
+        alert("Login successful!");
+        window.location.href = "services2.html";
+      } else {
+        alert("Invalid email or password.");
+      }
+    }
+  </script>
+</body>
+</html>
