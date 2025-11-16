@@ -3,43 +3,227 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Line Hubs - Place Order</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Track Your Order - Line Hubs</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css-files/user-order.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    .tracking-container {
+      max-width: 700px;
+    }
+    
+    .order-status-timeline {
+      margin: 2rem 0;
+      padding: 2rem;
+      background: rgba(255, 215, 0, 0.05);
+      border-radius: 1rem;
+      border: 1px solid #FFD700;
+    }
+    
+    .status-step {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      position: relative;
+      padding-left: 3rem;
+    }
+    
+    .status-step:last-child {
+      margin-bottom: 0;
+    }
+    
+    .status-icon {
+      position: absolute;
+      left: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #555;
+      font-size: 1.2rem;
+    }
+    
+    .status-step.active .status-icon {
+      background: #FFD700;
+      border-color: #FFD700;
+      color: #000;
+    }
+    
+    .status-step.completed .status-icon {
+      background: #10b981;
+      border-color: #10b981;
+      color: #fff;
+    }
+    
+    .status-content {
+      flex: 1;
+    }
+    
+    .status-title {
+      font-weight: 600;
+      color: #FFD700;
+      margin-bottom: 0.25rem;
+    }
+    
+    .status-step.active .status-title {
+      color: #fff;
+      font-size: 1.1rem;
+    }
+    
+    .status-time {
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+    
+    .order-details-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #FFD700;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+    }
+    
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+    
+    .detail-label {
+      color: #aaa;
+      font-weight: 500;
+    }
+    
+    .detail-value {
+      color: #fff;
+      font-weight: 600;
+    }
+    
+    .search-order {
+      margin-bottom: 2rem;
+    }
+    
+    .order-not-found {
+      text-align: center;
+      padding: 2rem;
+      color: #aaa;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 font-inter">
+<body>
 
-  <div class="max-w-xl mx-auto mt-12 p-6 bg-white rounded-2xl shadow">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800 text-center">Place Your Order</h1>
+  <div class="order-container tracking-container">
+    <a href="./pages/services.html" class="back-link">Back to Services</a>
+    
+    <h1 class="order-title">Track Your Order</h1>
 
-    <form id="orderForm" class="space-y-4">
-      <input type="text" id="customer" placeholder="Customer Name" required
-             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
-      <input type="text" id="product" placeholder="Product Name" required
-             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
-      <input type="number" id="quantity" placeholder="Quantity" required min="1"
-             class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
-      <select id="type" required
-              class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400">
-        <option value="">Select Type</option>
-        <option value="Pickup">Pickup</option>
-        <option value="Delivery">Delivery</option>
-      </select>
-      <textarea id="notes" placeholder="Notes (optional)" rows="3"
-                class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"></textarea>
-      <button type="submit" 
-              class="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 font-medium transition">
-        Submit Order
-      </button>
-    </form>
+    <!-- Search for Order -->
+    <div class="search-order">
+      <div class="form-group">
+        <label class="form-label" for="orderIdInput">Enter Order ID</label>
+        <div style="display: flex; gap: 1rem;">
+          <input type="text" id="orderIdInput" class="form-input" placeholder="e.g., ORD-1234" style="flex: 1;">
+          <button onclick="trackOrder()" class="submit-btn" style="width: auto; padding: 0 2rem;">Track</button>
+        </div>
+      </div>
+    </div>
 
-    <p id="successMsg" class="text-green-600 font-medium mt-4 hidden">Order submitted successfully!</p>
+    <!-- Order Details (Hidden until searched) -->
+    <div id="orderDetailsSection" style="display: none;">
+      
+      <!-- Order Info Card -->
+      <div class="order-details-card">
+        <h3 style="color: #FFD700; margin-bottom: 1rem;">Order Information</h3>
+        <div class="detail-row">
+          <span class="detail-label">Order ID:</span>
+          <span class="detail-value" id="displayOrderId">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Product:</span>
+          <span class="detail-value" id="displayProduct">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Quantity:</span>
+          <span class="detail-value" id="displayQuantity">-</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Total Amount:</span>
+          <span class="detail-value" style="color: #10b981;" id="displayTotal">₱0</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Order Date:</span>
+          <span class="detail-value" id="displayDate">-</span>
+        </div>
+      </div>
+
+      <!-- Status Timeline -->
+      <div class="order-status-timeline">
+        <h3 style="color: #FFD700; margin-bottom: 1.5rem;">Order Status</h3>
+        
+        <div class="status-step" id="step-pending">
+          <div class="status-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="status-content">
+            <div class="status-title">Order Received</div>
+            <div class="status-time">Your order has been received and is pending processing</div>
+          </div>
+        </div>
+
+        <div class="status-step" id="step-production">
+          <div class="status-icon">
+            <i class="fas fa-cogs"></i>
+          </div>
+          <div class="status-content">
+            <div class="status-title">In Production</div>
+            <div class="status-time">Your order is currently being prepared</div>
+          </div>
+        </div>
+
+        <div class="status-step" id="step-delivery">
+          <div class="status-icon">
+            <i class="fas fa-truck"></i>
+          </div>
+          <div class="status-content">
+            <div class="status-title">Out for Delivery</div>
+            <div class="status-time">Your order is on the way</div>
+          </div>
+        </div>
+
+        <div class="status-step" id="step-delivered">
+          <div class="status-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <div class="status-content">
+            <div class="status-title">Delivered</div>
+            <div class="status-time">Order has been completed</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Order Not Found Message -->
+    <div id="orderNotFound" class="order-not-found" style="display: none;">
+      <i class="fas fa-search" style="font-size: 3rem; color: #FFD700; margin-bottom: 1rem;"></i>
+      <p style="font-size: 1.1rem;">Order not found</p>
+      <p style="font-size: 0.9rem;">Please check your Order ID and try again</p>
+    </div>
+
   </div>
 
   <script type="module">
-    // Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
     // Firebase config
     const firebaseConfig = {
@@ -53,33 +237,82 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const ordersCol = collection(db, "orders"); // make sure the collection is "orders"
 
-    const form = document.getElementById("orderForm");
-    const successMsg = document.getElementById("successMsg");
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const orderData = {
-        orderId: "ORD-" + Math.floor(Math.random() * 9000 + 1000),
-        customer: document.getElementById("customer").value,
-        product: document.getElementById("product").value,
-        quantity: parseInt(document.getElementById("quantity").value),
-        type: document.getElementById("type").value,
-        notes: document.getElementById("notes").value,
-        status: "Pending",
-        date: new Date().toLocaleString()
-      };
+    window.trackOrder = async function() {
+      const orderId = document.getElementById('orderIdInput').value.trim();
+      
+      if (!orderId) {
+        alert('Please enter an Order ID');
+        return;
+      }
 
       try {
-        await addDoc(ordersCol, orderData);
-        form.reset();
-        successMsg.classList.remove("hidden");
-        setTimeout(() => successMsg.classList.add("hidden"), 3000);
+        const ordersRef = collection(db, "orders");
+        const q = query(ordersRef, where("orderId", "==", orderId));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          // Order not found
+          document.getElementById('orderDetailsSection').style.display = 'none';
+          document.getElementById('orderNotFound').style.display = 'block';
+          return;
+        }
+
+        // Order found
+        const orderData = querySnapshot.docs[0].data();
+        
+        document.getElementById('orderNotFound').style.display = 'none';
+        document.getElementById('orderDetailsSection').style.display = 'block';
+
+        // Populate order details
+        document.getElementById('displayOrderId').textContent = orderData.orderId;
+        document.getElementById('displayProduct').textContent = orderData.product;
+        document.getElementById('displayQuantity').textContent = orderData.quantity;
+        document.getElementById('displayTotal').textContent = '₱' + (orderData.total || 0);
+        document.getElementById('displayDate').textContent = orderData.date || '-';
+
+        // Update status timeline
+        updateStatusTimeline(orderData.status);
+
       } catch (error) {
-        console.error("Error adding order:", error);
-        alert("Failed to submit order. Check console.");
+        console.error("Error tracking order:", error);
+        alert("Error tracking order. Please try again.");
+      }
+    };
+
+    function updateStatusTimeline(status) {
+      // Reset all steps
+      const steps = ['step-pending', 'step-production', 'step-delivery', 'step-delivered'];
+      steps.forEach(step => {
+        const element = document.getElementById(step);
+        element.classList.remove('active', 'completed');
+      });
+
+      // Map status to steps
+      const statusMap = {
+        'Pending': ['step-pending'],
+        'On Production': ['step-pending', 'step-production'],
+        'On Delivery': ['step-pending', 'step-production', 'step-delivery'],
+        'Delivered': ['step-pending', 'step-production', 'step-delivery', 'step-delivered'],
+        'Complete': ['step-pending', 'step-production', 'step-delivery', 'step-delivered']
+      };
+
+      const activeSteps = statusMap[status] || ['step-pending'];
+      
+      // Mark completed steps
+      for (let i = 0; i < activeSteps.length - 1; i++) {
+        document.getElementById(activeSteps[i]).classList.add('completed');
+      }
+      
+      // Mark current active step
+      const currentStep = activeSteps[activeSteps.length - 1];
+      document.getElementById(currentStep).classList.add('active');
+    }
+
+    // Allow Enter key to track
+    document.getElementById('orderIdInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        trackOrder();
       }
     });
   </script>
