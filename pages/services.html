@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FREENT</title>
+  <title>Services - FREENT</title>
   <link rel="icon" type="image/jpg" href="../assets/lineslogo.jpg" />
   <link rel="stylesheet" href="../css-files/services.css" /> 
+  <link rel="stylesheet" href="../css-files/shirt-designer.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
 </head>
 <body>
   <div id="main-content">
@@ -92,11 +94,11 @@
         <span class="coming-soon-badge">Not Available</span>
       </div>
 
-      <div class="service-card coming-soon">
+      <div class="service-card available" onclick="openModal('shirt')">
         <i class="fas fa-tshirt"></i>
         <h3>Shirt Printing</h3>
         <p>DTF, Sublimation, and Vinyl</p>
-        <span class="coming-soon-badge">Not Available</span>
+        <span class="coming-soon-badge">Available Now</span>
       </div>
 
       <div class="service-card coming-soon">
@@ -215,6 +217,116 @@
     </div>
   </div>
 
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2><i class="fas fa-file-alt"></i> Service Order</h2>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+
+    <form id="orderForm" onsubmit="handleSubmit(event)">
+      <div class="form-group">
+      <label>Upload Design</label>
+      <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Click to upload your design</p>
+        <small>PNG, JPG, AI, PSD (Max 20MB)</small>
+      </div>
+      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.ai,.psd" onchange="handleFileSelect(event)" />
+      <div id="fileInfo" class="file-info" style="display: none;"></div>
+    </div>
+
+    <div class="form-group">
+      <label for="printMethod">Printing Method</label>
+      <select id="printMethod" onchange="calculatePrice()">
+        <option value="">Select Method</option>
+        <option value="dtf">DTF (Direct to Film) - ₱250/shirt</option>
+        <option value="sublimation">Sublimation - ₱200/shirt</option>
+        <option value="vinyl">Vinyl Heat Transfer - ₱150/shirt</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="shirtSize">Shirt Size</label>
+      <select id="shirtSize">
+        <option value="">Select Size</option>
+        <option value="xs">Extra Small (XS)</option>
+        <option value="s">Small (S)</option>
+        <option value="m">Medium (M)</option>
+        <option value="l">Large (L)</option>
+        <option value="xl">Extra Large (XL)</option>
+        <option value="2xl">2XL</option>
+        <option value="3xl">3XL</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="shirtColor">Shirt Color</label>
+      <select id="shirtColor">
+        <option value="">Select Color</option>
+        <option value="white">White</option>
+        <option value="black">Black</option>
+        <option value="navy">Navy Blue</option>
+        <option value="red">Red</option>
+        <option value="gray">Gray</option>
+        <option value="yellow">Yellow</option>
+        <option value="green">Green</option>
+        <option value="custom">Custom Color (specify in notes)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="quantity">Quantity</label>
+      <input type="number" id="quantity" min="1" max="500" value="1" onchange="calculatePrice()" />
+    </div>
+
+    <div class="form-group">
+      <label for="designPlacement">Design Placement</label>
+      <select id="designPlacement">
+        <option value="front">Front Only</option>
+        <option value="back">Back Only</option>
+        <option value="both">Front & Back (+50%)</option>
+        <option value="sleeve">Sleeve</option>
+        <option value="custom">Custom Placement</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="designSize">Design Size (optional)</label>
+      <input type="text" id="designSize" placeholder="e.g., 12x15 inches" />
+    </div>
+
+    <div class="form-group">
+      <label for="shirtNotes">Additional Notes (optional)</label>
+      <textarea id="shirtNotes" rows="3" placeholder="Any special instructions..."></textarea>
+    </div>
+      <div id="dynamicFormContainer"></div>
+
+      <!-- Payment Method (common to all services) -->
+      <div class="form-group">
+        <label>Payment Method</label>
+        <div class="payment-options">
+          <div class="payment-option" onclick="selectPayment('cash')">
+            <i class="fas fa-money-bill-wave"></i>
+            <p>Cash</p>
+          </div>
+          <div class="payment-option" onclick="selectPayment('gcash')">
+            <i class="fas fa-mobile-alt"></i>
+            <p>GCash</p>
+          </div>
+          <div class="payment-option" onclick="selectPayment('card')">
+            <i class="fas fa-credit-card"></i>
+            <p>Card</p>
+          </div>
+          <div class="payment-option" onclick="selectPayment('bank')">
+            <i class="fas fa-university"></i>
+            <p>Bank Transfer</p>
+          </div>
+        </div>
+        <input type="hidden" id="paymentMethod" required />
+      </div>
+
+
   <footer class="site-footer">
     <div class="footer-content">
       <div class="footer-brand">
@@ -242,5 +354,7 @@
   </footer>
 
   <script src="../js-files/services.js"></script>
+
+
 </body>
 </html>
