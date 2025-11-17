@@ -23,7 +23,7 @@
     <button onclick="showSection('messagesSection')" id="messagesBtn" class="nav-btn nav-btn-inactive">Messages</button>
   </div>
 
-  <button class="logout-btn">Logout</button>
+  <button class="logout-btn" onclick="handleLogout()">Logout</button>
 </nav>
 
 <!-- PAGE TITLE -->
@@ -173,6 +173,11 @@
 <!-- ========== JAVASCRIPT ========== -->
 <script type="module">
 
+// ========== CHECK LOGIN STATUS ==========
+if (sessionStorage.getItem('adminLoggedIn') !== 'true') {
+  window.location.href = './login.html';
+}
+
 /* Import Firebase init */
 import { db } from "./firebase-init.js";
 import { collection, onSnapshot, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
@@ -187,6 +192,17 @@ window.updateStatus = updateStatus;
 window.filterOrdersByType = filterOrdersByType;
 window.filterOrders = filterOrders;
 window.sortOrders = sortOrders;
+window.handleLogout = handleLogout;
+
+
+/* ========== LOGOUT FUNCTION ========== */
+function handleLogout() {
+  if (confirm('Are you sure you want to logout?')) {
+    sessionStorage.removeItem('adminLoggedIn');
+    sessionStorage.removeItem('adminUsername');
+    window.location.href = './login.html';
+  }
+}
 
 
 /* ========== SECTION SWITCHING ========== */

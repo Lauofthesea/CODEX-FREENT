@@ -1,5 +1,21 @@
 // T-Shirt Designer using Fabric.js
-// Lines Hub - FREENT System
+// Lines Hub - FREENT System with Firebase Integration
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+  authDomain: "lineshub-98e0f.firebaseapp.com",
+  projectId: "lineshub-98e0f",
+  storageBucket: "lineshub-98e0f.appspot.com",
+  messagingSenderId: "427905073524",
+  appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 let canvas = null;
 let selectedFile = null;
@@ -45,12 +61,12 @@ function scrollToServices() {
 function openModal(service) {
   currentService = service;
   const modalOverlay = document.getElementById('modalOverlay');
-  const modalTitle = document.querySelector('.modal-header h2');
-  const modalIcon = modalTitle.querySelector('i');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalIcon = document.querySelector('.modal-header h2 i');
   
   if (serviceConfig[service]) {
     modalIcon.className = serviceConfig[service].icon;
-    modalTitle.childNodes[1].textContent = ' ' + serviceConfig[service].title;
+    modalTitle.textContent = serviceConfig[service].title;
   }
   
   if (service === 'document') {
@@ -407,55 +423,127 @@ function updateSubmitButton() {
   }
 }
 
-function handleSubmit(event) {
+async function handleSubmit(event) {
   event.preventDefault();
   
   if (currentService === 'document') {
-    submitDocumentOrder();
+    await submitDocumentOrder();
   } else if (currentService === 'shirt') {
-    submitShirtOrder();
+    await submitShirtOrder();
   }
 }
 
-function submitDocumentOrder() {
-  const paperSize = document.getElementById('paperSize').value;
-  const copies = document.getElementById('copies').value;
-  const totalPrice = document.getElementById('totalPrice').textContent;
-  
-  alert(`Document Order Placed Successfully!\n\nFile: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ${totalPrice}\n\nThank you for your order!`);
-  
-  closeModal();
+// Generate unique order ID
+function generateOrderId() {
+  return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
 }
 
-function submitShirtOrder() {
-  const printMethod = document.getElementById('printMethod').value;
-  const shirtSize = document.getElementById('shirtSize').value;
-  const quantity = document.getElementById('quantity').value;
-  const totalPrice = document.getElementById('totalPrice').textContent;
-  
-  if (!printMethod) {
-    alert('Please select a printing method');
-    return;
-  }
-  if (!shirtSize) {
-    alert('Please select a shirt size');
-    return;
-  }
-  
-  // Export design as image
-  if (canvas) {
-    const designDataURL = canvas.toDataURL({
-      format: 'png',
-      quality: 1
-    });
+// Get current date string
+function getCurrentDate() {
+  const now = new Date();
+  return now.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+async function submitDocumentOrder() {
+  try {
+    const paperSize = document.getElementById('paperSize').value;
+    const copies = document.getElementById('copies').value;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
     
-    // Here you would normally send this to your server
-    console.log('Design Data URL:', designDataURL);
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: 'Guest User', // You can add a form field for customer name
+      contact: '-',
+      email: '-',
+      product: 'Document Printing',
+      type: paperSize.toUpperCase(),
+      size: paperSize.toUpperCase(),
+      quantity: parseInt(copies),
+      price: prices.document[paperSize],
+      total: parseFloat(totalPrice),
+      notes: selectedFile.name,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      height: '-',
+      width: '-'
+    };
+    
+    // Save to Firebase
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nFile: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYou can track your order using the Order ID.`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
   }
-  
-  alert(`T-Shirt Order Placed Successfully!\n\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColor}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ${totalPrice}\n\nYour custom design has been saved!\n\nThank you for your order!`);
-  
-  closeModal();
+}
+
+async function submitShirtOrder() {
+  try {
+    const printMethod = document.getElementById('printMethod').value;
+    const shirtSize = document.getElementById('shirtSize').value;
+    const quantity = document.getElementById('quantity').value;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
+    const notes = document.getElementById('shirtNotes')?.value || '-';
+    
+    if (!printMethod) {
+      alert('Please select a printing method');
+      return;
+    }
+    if (!shirtSize) {
+      alert('Please select a shirt size');
+      return;
+    }
+    
+    // Export design as image
+    let designDataURL = '';
+    if (canvas) {
+      designDataURL = canvas.toDataURL({
+        format: 'png',
+        quality: 1
+      });
+    }
+    
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: 'Guest User', // You can add a form field for customer name
+      contact: '-',
+      email: '-',
+      product: 'T-Shirt Printing',
+      type: printMethod.toUpperCase(),
+      size: shirtSize.toUpperCase(),
+      quantity: parseInt(quantity),
+      price: prices.shirt[printMethod],
+      total: parseFloat(totalPrice),
+      notes: notes,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      shirtColor: shirtColor,
+      designImage: designDataURL.substring(0, 1000), // Store first 1000 chars (Firebase has size limits)
+      height: '-',
+      width: '-'
+    };
+    
+    // Save to Firebase
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`T-Shirt Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColor}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYour custom design has been saved!\nYou can track your order using the Order ID.`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+  }
 }
 
 function resetForm() {
@@ -489,10 +577,6 @@ document.addEventListener('keydown', (e) => {
       closeModal();
     }
   }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('T-Shirt Designer loaded');
 });
 
 // Make functions globally accessible
