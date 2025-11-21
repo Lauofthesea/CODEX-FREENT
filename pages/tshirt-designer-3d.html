@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D T-Shirt Designer - FREENT</title>
+  <link rel="icon" type="image/jpg" href="../assets/lineslogo.jpg" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/6.5.4/fabric.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+      }
+    }
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .designer-container {
+      display: grid;
+      grid-template-columns: 200px 1fr 300px;
+      gap: 1rem;
+      padding: 1rem;
+      height: 100vh;
+    }
+
+    .sidebar {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      overflow-y: auto;
+    }
+
+    .canvas-area {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      background: #191919;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      border: 2px solid #FFD700;
+    }
+
+    .header h1 {
+      color: #FFD700;
+      font-size: 1.5rem;
+      margin: 0;
+    }
+
+    .header p {
+      color: #fff;
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .tool-btn {
+      width: 100%;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tool-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .tool-btn i {
+      font-size: 1.2rem;
+    }
+
+    #viewer-3d {
+      width: 100%;
+      height: 500px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    #canvas-2d {
+      width: 100%;
+      max-width: 500px;
+      height: 500px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      margin: 0 auto;
+    }
+
+    .view-toggle {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .view-btn {
+      flex: 1;
+      padding: 0.75rem;
+      background: #e5e7eb;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .view-btn.active {
+      background: #4f46e5;
+      color: white;
+      border-color: #4338ca;
+    }
+
+    .properties-panel {
+      display: none;
+      padding-top: 1rem;
+      border-top: 2px solid #e5e7eb;
+      margin-top: 1rem;
+    }
+
+    .properties-panel.active {
+      display: block;
+    }
+
+    .property-group {
+      margin-bottom: 1rem;
+    }
+
+    .property-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #374151;
+    }
+
+    .property-group input,
+    .property-group select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .color-presets {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .color-preset {
+      width: 100%;
+      height: 40px;
+      border: 2px solid #d1d5db;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .color-preset:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .save-section {
+      margin-top: auto;
+      padding-top: 1rem;
+      border-top: 2px solid #e5e7eb;
+    }
+
+    .save-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .save-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .export-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 0.5rem;
+    }
+
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+
+    .close-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #dc2626;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .close-btn:hover {
+      background: #b91c1c;
+    }
+
+    .loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    @media (max-width: 1024px) {
+      .designer-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+
+      .sidebar {
+        order: 2;
+      }
+
+      .canvas-area {
+        order: 1;
+      }
+
+      .save-section {
+        order: 3;
+      }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #191919;
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      border: 2px solid #FFD700;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="designer-container">
+    <!-- Left Sidebar - Tools -->
+    <div class="sidebar">
+      <div class="header">
+        <h1><i class="fas fa-tshirt"></i> Designer</h1>
+        <p>Create your design</p>
+      </div>
+
+      <button class="tool-btn" onclick="addText()">
+        <i class="fas fa-font"></i>
+        <span>Add Text</span>
+      </button>
+
+      <button class="tool-btn" onclick="document.getElementById('imageUpload').click()">
+        <i class="fas fa-image"></i>
+        <span>Add Image</span>
+      </button>
+      <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)" />
+
+      <button class="tool-btn" onclick="addShape('circle')">
+        <i class="fas fa-circle"></i>
+        <span>Add Circle</span>
+      </button>
+
+      <button class="tool-btn" onclick="addShape('rectangle')">
+        <i class="fas fa-square"></i>
+        <span>Add Rectangle</span>
+      </button>
+
+      <button class="tool-btn" onclick="deleteSelected()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
+        <i class="fas fa-trash"></i>
+        <span>Delete</span>
+      </button>
+
+      <button class="tool-btn" onclick="clearCanvas()" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+        <i class="fas fa-eraser"></i>
+        <span>Clear All</span>
+      </button>
+    </div>
+
+    <!-- Center - Canvas Area -->
+    <div class="canvas-area">
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="switchView('front')">
+          <i class="fas fa-user"></i> Front View
+        </button>
+        <button class="view-btn" onclick="switchView('back')">
+          <i class="fas fa-user"></i> Back View
+        </button>
+      </div>
+
+      <!-- 3D Viewer -->
+      <div id="viewer-3d">
+        <div class="loading">
+          <i class="fas fa-spinner fa-spin"></i> Loading 3D Model...
+        </div>
+      </div>
+
+      <!-- 2D Canvas (hidden by default) -->
+      <div style="display: none;">
+        <canvas id="canvas-2d"></canvas>
+      </div>
+    </div>
+
+    <!-- Right Sidebar - Properties & Actions -->
+    <div class="sidebar">
+      <div class="header">
+        <h1><i class="fas fa-palette"></i> Properties</h1>
+      </div>
+
+      <!-- T-Shirt Color -->
+      <div class="property-group">
+        <label>T-Shirt Color</label>
+        <input type="color" id="shirtColor" value="#ffffff" onchange="changeShirtColor(this.value)">
+        <div class="color-presets">
+          <button class="color-preset" style="background: #ffffff;" onclick="changeShirtColor('#ffffff')"></button>
+          <button class="color-preset" style="background: #000000;" onclick="changeShirtColor('#000000')"></button>
+          <button class="color-preset" style="background: #1e3a8a;" onclick="changeShirtColor('#1e3a8a')"></button>
+          <button class="color-preset" style="background: #dc2626;" onclick="changeShirtColor('#dc2626')"></button>
+          <button class="color-preset" style="background: #16a34a;" onclick="changeShirtColor('#16a34a')"></button>
+          <button class="color-preset" style="background: #f59e0b;" onclick="changeShirtColor('#f59e0b')"></button>
+          <button class="color-preset" style="background: #8b5cf6;" onclick="changeShirtColor('#8b5cf6')"></button>
+          <button class="color-preset" style="background: #ec4899;" onclick="changeShirtColor('#ec4899')"></button>
+        </div>
+      </div>
+
+      <!-- Text Properties (shown when text is selected) -->
+      <div id="textProperties" class="properties-panel">
+        <div class="property-group">
+          <label>Text Content</label>
+          <input type="text" id="textContent" placeholder="Your text..." onchange="updateTextContent(this.value)">
+        </div>
+        <div class="property-group">
+          <label>Font Size</label>
+          <input type="number" id="fontSize" min="10" max="200" value="30" onchange="updateFontSize(this.value)">
+        </div>
+        <div class="property-group">
+          <label>Font Family</label>
+          <select id="fontFamily" onchange="updateFontFamily(this.value)">
+            <option value="Arial">Arial</option>
+            <option value="Helvetica">Helvetica</option>
+            <option value="Times New Roman">Times New Roman</option>
+            <option value="Courier New">Courier New</option>
+            <option value="Georgia">Georgia</option>
+            <option value="Verdana">Verdana</option>
+            <option value="Impact">Impact</option>
+          </select>
+        </div>
+        <div class="property-group">
+          <label>Text Color</label>
+          <input type="color" id="textColor" value="#000000" onchange="updateTextColor(this.value)">
+        </div>
+      </div>
+
+      <!-- Save & Export Section -->
+      <div class="save-section">
+        <button class="save-btn" onclick="saveDesign()">
+          <i class="fas fa-save"></i> Save to Firebase
+        </button>
+        <button class="export-btn" onclick="exportDesign()">
+          <i class="fas fa-download"></i> Export Design
+        </button>
+        <button class="close-btn" onclick="closeDesigner()">
+          <i class="fas fa-times"></i> Close Designer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+    // Firebase Integration
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+      authDomain: "lineshub-98e0f.firebaseapp.com",
+      projectId: "lineshub-98e0f",
+      storageBucket: "lineshub-98e0f.appspot.com",
+      messagingSenderId: "427905073524",
+      appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Global Variables
+    let scene, camera, renderer, controls;
+    let tshirtMesh, designMaterial;
+    let frontCanvas, backCanvas, activeCanvas;
+    let selectedObject = null;
+    let currentView = 'front';
+    let shirtColor = '#ffffff';
+
+    // Initialize
+    init3DViewer();
+    initCanvases();
+
+    function init3DViewer() {
+      const container = document.getElementById('viewer-3d');
+      
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = null;
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+      camera.position.set(0, 0, 3);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      container.appendChild(renderer.domElement);
+
+      // Controls
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.maxPolarAngle = Math.PI / 2;
+      controls.minPolarAngle = Math.PI / 3;
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 5, 5);
+      scene.add(directionalLight);
+
+      // Load T-Shirt Model (simplified)
+      createSimpleTshirt();
+
+      // Animation Loop
+      animate();
+
+      // Resize Handler
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function createSimpleTshirt() {
+      const geometry = new THREE.BoxGeometry(1.5, 2, 0.1);
+      const material = new THREE.MeshStandardMaterial({ 
+        color: shirtColor,
+        roughness: 0.7,
+        metalness: 0.1
+      });
+      
+      tshirtMesh = new THREE.Mesh(geometry, material);
+      scene.add(tshirtMesh);
+
+      // Add design plane
+      const designGeometry = new THREE.PlaneGeometry(1, 1.3);
+      const canvasTexture = new THREE.CanvasTexture(frontCanvas);
+      canvasTexture.needsUpdate = true;
+      
+      designMaterial = new THREE.MeshBasicMaterial({ 
+        map: canvasTexture,
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+      
+      const designMesh = new THREE.Mesh(designGeometry, designMaterial);
+      designMesh.position.z = 0.051;
+      tshirtMesh.add(designMesh);
+
+      document.querySelector('.loading').style.display = 'none';
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('viewer-3d');
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function initCanvases() {
+      const canvasElement = document.getElementById('canvas-2d');
+      
+      frontCanvas = new fabric.Canvas(canvasElement, {
+        width: 450,
+        height: 500,
+        backgroundColor: 'transparent'
+      });
+
+      backCanvas = new fabric.Canvas(null, {
+        width: 450,
+        height: 500,
+        backgroundColor: 'transparent'
+      });
+
+      activeCanvas = frontCanvas;
+
+      // Selection Events
+      activeCanvas.on('selection:created', (e) => {
+        selectedObject = e.selected[0];
+        updatePropertiesPanel();
+      });
+
+      activeCanvas.on('selection:updated', (e) => {
+        selectedObject = e.selected[0];
+        updatePropertiesPanel();
+      });
+
+      activeCanvas.on('selection:cleared', () => {
+        selectedObject = null;
+        updatePropertiesPanel();
+      });
+
+      // Update 3D texture on canvas change
+      activeCanvas.on('object:modified', updateTexture);
+      activeCanvas.on('object:added', updateTexture);
+      activeCanvas.on('object:removed', updateTexture);
+    }
+
+    function updateTexture() {
+      if (designMaterial && designMaterial.map) {
+        designMaterial.map.needsUpdate = true;
+      }
+    }
+
+    function updatePropertiesPanel() {
+      const textPanel = document.getElementById('textProperties');
+      
+      if (selectedObject && selectedObject.type === 'textbox') {
+        textPanel.classList.add('active');
+        document.getElementById('textContent').value = selectedObject.text || '';
+        document.getElementById('fontSize').value = selectedObject.fontSize || 30;
+        document.getElementById('fontFamily').value = selectedObject.fontFamily || 'Arial';
+        document.getElementById('textColor').value = selectedObject.fill || '#000000';
+      } else {
+        textPanel.classList.remove('active');
+      }
+    }
+
+    // Tool Functions
+    window.addText = function() {
+      const text = new fabric.Textbox('Your Text', {
+        left: activeCanvas.width / 2,
+        top: activeCanvas.height / 2,
+        fontSize: 30,
+        fill: '#000000',
+        fontFamily: 'Arial',
+        width: 200,
+        originX: 'center',
+        originY: 'center'
+      });
+      activeCanvas.add(text);
+      activeCanvas.setActiveObject(text);
+      activeCanvas.renderAll();
+    };
+
+    window.handleImageUpload = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        fabric.Image.fromURL(e.target.result, function(img) {
+          img.scale(0.3);
+          img.set({
+            left: activeCanvas.width / 2,
+            top: activeCanvas.height / 2,
+            originX: 'center',
+            originY: 'center'
+          });
+          activeCanvas.add(img);
+          activeCanvas.setActiveObject(img);
+          activeCanvas.renderAll();
+        });
+      };
+      reader.readAsDataURL(file);
+    };
+
+    window.addShape = function(shape) {
+      let obj;
+      if (shape === 'circle') {
+        obj = new fabric.Circle({
+          radius: 50,
+          fill: '#FFD700',
+          left: activeCanvas.width / 2,
+          top: activeCanvas.height / 2,
+          originX: 'center',
+          originY: 'center'
+        });
+      } else if (shape === 'rectangle') {
+        obj = new fabric.Rect({
+          width: 100,
+          height: 100,
+          fill: '#FFD700',
+          left: activeCanvas.width / 2,
+          top: activeCanvas.height / 2,
+          originX: 'center',
+          originY: 'center'
+        });
+      }
+      activeCanvas.add(obj);
+      activeCanvas.setActiveObject(obj);
+      activeCanvas.renderAll();
+    };
+
+    window.deleteSelected = function() {
+      if (selectedObject) {
+        activeCanvas.remove(selectedObject);
+        activeCanvas.renderAll();
+        selectedObject = null;
+      }
+    };
+
+    window.clearCanvas = function() {
+      if (confirm('Clear all designs? This cannot be undone.')) {
+        activeCanvas.clear();
+        activeCanvas.backgroundColor = 'transparent';
+        activeCanvas.renderAll();
+      }
+    };
+
+    window.switchView = function(view) {
+      currentView = view;
+      
+      // Update button states
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Switch canvas
+      activeCanvas = view === 'front' ? frontCanvas : backCanvas;
+      
+      // Update texture source
+      if (designMaterial && designMaterial.map) {
+        designMaterial.map.image = activeCanvas.getElement();
+        designMaterial.map.needsUpdate = true;
+      }
+
+      // Rotate 3D model
+      if (view === 'back') {
+        tshirtMesh.rotation.y = Math.PI;
+      } else {
+        tshirtMesh.rotation.y = 0;
+      }
+    };
+
+    window.changeShirtColor = function(color) {
+      shirtColor = color;
+      document.getElementById('shirtColor').value = color;
+      
+      if (tshirtMesh && tshirtMesh.material) {
+        tshirtMesh.material.color.set(color);
+      }
+    };
+
+    // Text Property Updates
+    window.updateTextContent = function(value) {
+      if (selectedObject && selectedObject.type === 'textbox') {
+        selectedObject.set('text', value);
+        activeCanvas.renderAll();
+      }
+    };
+
+    window.updateFontSize = function(value) {
+      if (selectedObject && selectedObject.type === 'textbox') {
+        selectedObject.set('fontSize', parseInt(value));
+        activeCanvas.renderAll();
+      }
+    };
+
+    window.updateFontFamily = function(value) {
+      if (selectedObject && selectedObject.type === 'textbox') {
+        selectedObject.set('fontFamily', value);
+        activeCanvas.renderAll();
+      }
+    };
+
+    window.updateTextColor = function(value) {
+      if (selectedObject && selectedObject.type === 'textbox') {
+        selectedObject.set('fill', value);
+        activeCanvas.renderAll();
+      }
+    };
+
+    // Save & Export Functions
+    window.saveDesign = async function() {
+      try {
+        const frontDataURL = frontCanvas.toDataURL({ format: 'png', quality: 1 });
+        const backDataURL = backCanvas.toDataURL({ format: 'png', quality: 1 });
+
+        const designData = {
+          orderId: 'DESIGN-' + Date.now(),
+          customer: 'Guest User',
+          product: 'T-Shirt Design',
+          shirtColor: shirtColor,
+          frontDesign: frontDataURL.substring(0, 1000), // Truncate for storage
+          backDesign: backDataURL.substring(0, 1000),
+          status: 'Draft',
+          date: new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          type: '3D Designer',
+          notes: 'Created with 3D Designer'
+        };
+
+        await addDoc(collection(db, "designs"), designData);
+
+        showToast('✅ Design saved to Firebase successfully!', 'success');
+
+        // Send data to parent window if in iframe
+        if (window.parent !== window) {
+          window.parent.postMessage({
+            type: 'DESIGN_SAVED',
+            data: designData
+          }, '*');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+        showToast('❌ Error saving design: ' + error.message, 'error');
+      }
+    };
+
+    window.exportDesign = function() {
+      // Export Front
+      const frontDataURL = frontCanvas.toDataURL({ format: 'png', quality: 1 });
+      downloadImage(frontDataURL, 'tshirt-design-front.png');
+
+      // Export Back
+      const backDataURL = backCanvas.toDataURL({ format: 'png', quality: 1 });
+      downloadImage(backDataURL, 'tshirt-design-back.png');
+
+      showToast('✅ Designs exported successfully!', 'success');
+
+      // Send export event to parent
+      if (window.parent !== window) {
+        window.parent.postMessage({
+          type: 'DESIGN_EXPORTED',
+          data: {
+            front: frontDataURL,
+            back: backDataURL,
+            shirtColor: shirtColor
+          }
+        }, '*');
+      }
+    };
+
+    function downloadImage(dataURL, filename) {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = dataURL;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.closeDesigner = function() {
+      if (confirm('Close designer? Unsaved changes will be lost.')) {
+        // Send close event to parent
+        if (window.parent !== window) {
+          window.parent.postMessage({
+            type: 'DESIGNER_CLOSED'
+          }, '*');
+        } else {
+          window.location.href = 'services.html';
+        }
+      }
+    };
+
+    function showToast(message, type = 'info') {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 300);
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

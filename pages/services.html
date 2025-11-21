@@ -9,6 +9,111 @@
   <link rel="stylesheet" href="../css-files/shirt-designer.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <style>
+    /* 3D Designer Modal Styles */
+    .designer-modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.95);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .designer-modal-overlay.active {
+      display: flex;
+    }
+
+    .designer-modal-content {
+      width: 95%;
+      height: 95%;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .designer-modal-header {
+      background: #191919;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #FFD700;
+    }
+
+    .designer-modal-header h2 {
+      color: #FFD700;
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .designer-close-btn {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .designer-close-btn:hover {
+      background: #b91c1c;
+    }
+
+    .designer-iframe {
+      width: 100%;
+      height: calc(100% - 70px);
+      border: none;
+    }
+
+    /* Choice Modal Styles */
+    .designer-choice-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .designer-choice-btn {
+      flex: 1;
+      padding: 1.5rem;
+      border: 2px solid #FFD700;
+      background: rgba(255, 215, 0, 0.1);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .designer-choice-btn:hover {
+      background: rgba(255, 215, 0, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .designer-choice-btn i {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+      color: #FFD700;
+    }
+
+    .designer-choice-btn small {
+      display: block;
+      margin-top: 0.5rem;
+      opacity: 0.8;
+      font-size: 0.9rem;
+    }
+  </style>
 </head>
 <body>
   <div id="main-content">
@@ -25,16 +130,16 @@
           <li class="services-dropdown">
             <a href="#">SERVICES ▸</a>
             <ul class="dropdown-menu">
-              <li><a href="#">Document Printing</a></li>
-              <li><a href="#">Photo Printing</a></li>
-              <li><a href="#">Shirt Printing</a></li>
-              <li><a href="#">Tarpaulin Printing</a></li>
+              <li><a href="#" onclick="openModal('document')">Document Printing</a></li>
+              <li><a href="#" onclick="openModal('photo')">Photo Printing</a></li>
+              <li><a href="#" onclick="openShirtDesignerChoice()">Shirt Printing</a></li>
+              <li><a href="#" onclick="openModal('tarpaulin')">Tarpaulin Printing</a></li>
               <li><a href="#">Signages</a></li>
-              <li><a href="#">Stickers</a></li>
+              <li><a href="#" onclick="openModal('stickers')">Stickers</a></li>
               <li><a href="#">Gift Boxes</a></li>
               <li><a href="#">Lanyards</a></li>
               <li><a href="#">Invitations</a></li>
-              <li><a href="#">Customized</a></li>
+              <li><a href="#" onclick="openModal('customized')">Customized</a></li>
               <li><a href="#">More...</a></li>
             </ul>
           </li>
@@ -94,10 +199,10 @@
         <span class="available-badge">Available Now</span>
       </div>
 
-      <div class="service-card available" onclick="openModal('shirt')">
+      <div class="service-card available" onclick="openShirtDesignerChoice()">
         <i class="fas fa-tshirt"></i>
         <h3>Shirt Printing</h3>
-        <p>DTF, Sublimation, and Vinyl</p>
+        <p>2D & 3D Designers Available</p>
         <span class="available-badge">Available Now</span>
       </div>
 
@@ -152,7 +257,55 @@
     </div>
   </section>
 
-  <!-- MODAL OVERLAY -->
+  <!-- SHIRT DESIGNER CHOICE MODAL -->
+  <div class="modal-overlay" id="shirtChoiceModal" onclick="closeChoiceModalOnOverlay(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2><i class="fas fa-tshirt"></i> Choose Your Design Method</h2>
+        <button class="close-btn" onclick="closeChoiceModal()">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label style="text-align: center; display: block; margin-bottom: 1.5rem; font-size: 1.1rem;">
+          Select how you'd like to design your t-shirt
+        </label>
+        
+        <div class="designer-choice-buttons">
+          <button class="designer-choice-btn" onclick="open3DDesigner()">
+            <i class="fas fa-cube"></i>
+            <strong>3D Designer</strong>
+            <small>Interactive 3D design tool with live preview</small>
+          </button>
+          
+          <button class="designer-choice-btn" onclick="openQuickDesigner()">
+            <i class="fas fa-pencil-alt"></i>
+            <strong>Quick Designer</strong>
+            <small>Simple 2D canvas editor</small>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D DESIGNER MODAL -->
+  <div class="designer-modal-overlay" id="designer3DModal">
+    <div class="designer-modal-content">
+      <div class="designer-modal-header">
+        <h2><i class="fas fa-cube"></i> 3D T-Shirt Designer</h2>
+        <button class="designer-close-btn" onclick="close3DDesigner()">
+          <i class="fas fa-times"></i> Close Designer
+        </button>
+      </div>
+      <iframe 
+        id="designerIframe"
+        class="designer-iframe"
+        src="about:blank"
+        title="3D T-Shirt Designer"
+      ></iframe>
+    </div>
+  </div>
+
+  <!-- REGULAR SERVICES MODAL -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
     <div class="modal" onclick="event.stopPropagation()">
       <div class="modal-header">
@@ -227,5 +380,158 @@
   </footer>
 
   <script type="module" src="../js-files/services.js"></script>
+  <script>
+    // 3D Designer Integration Functions
+    function openShirtDesignerChoice() {
+      const modal = document.getElementById('shirtChoiceModal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeChoiceModal() {
+      const modal = document.getElementById('shirtChoiceModal');
+      modal.classList.remove('active');
+      document.body.style.overflow = 'auto';
+    }
+
+    function closeChoiceModalOnOverlay(event) {
+      if (event.target.id === 'shirtChoiceModal') {
+        closeChoiceModal();
+      }
+    }
+
+    function open3DDesigner() {
+      closeChoiceModal();
+      
+      const modal = document.getElementById('designer3DModal');
+      const iframe = document.getElementById('designerIframe');
+      
+      // Load the 3D designer page
+      // Update this path to where you save the tshirt-designer-3d.html file
+      iframe.src = './tshirt-designer-3d.html';
+      
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close3DDesigner() {
+      const modal = document.getElementById('designer3DModal');
+      const iframe = document.getElementById('designerIframe');
+      
+      modal.classList.remove('active');
+      iframe.src = 'about:blank'; // Clear iframe
+      document.body.style.overflow = 'auto';
+    }
+
+    function openQuickDesigner() {
+      closeChoiceModal();
+      // Open the regular 2D shirt designer modal
+      if (typeof openModal === 'function') {
+        openModal('shirt');
+      }
+    }
+
+    // Listen for messages from 3D designer
+    window.addEventListener('message', (event) => {
+      const { type, data } = event.data;
+      
+      switch (type) {
+        case 'DESIGN_SAVED':
+          console.log('Design saved from 3D designer:', data);
+          showNotification('✅ Design saved successfully!', 'success');
+          
+          // Ask if user wants to proceed to order
+          if (confirm('Design saved! Would you like to proceed with your order?')) {
+            close3DDesigner();
+            setTimeout(() => {
+              openModal('shirt');
+              // Pre-fill notes with design info
+              setTimeout(() => {
+                const notesField = document.getElementById('shirtNotes');
+                if (notesField) {
+                  notesField.value = `3D Design Created - Order ID: ${data.orderId}\nShirt Color: ${data.shirtColor}`;
+                }
+              }, 300);
+            }, 500);
+          }
+          break;
+          
+        case 'DESIGN_EXPORTED':
+          console.log('Design exported from 3D designer:', data);
+          showNotification('✅ Design exported successfully!', 'success');
+          break;
+          
+        case 'DESIGNER_CLOSED':
+          close3DDesigner();
+          break;
+      }
+    });
+
+    function showNotification(message, type = 'info') {
+      const notification = document.createElement('div');
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10001;
+        font-weight: 600;
+        animation: slideIn 0.3s ease;
+      `;
+      notification.textContent = message;
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        notification.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            document.body.removeChild(notification);
+          }
+        }, 300);
+      }, 3000);
+    }
+
+    // Make functions globally accessible
+    window.openShirtDesignerChoice = openShirtDesignerChoice;
+    window.closeChoiceModal = closeChoiceModal;
+    window.closeChoiceModalOnOverlay = closeChoiceModalOnOverlay;
+    window.open3DDesigner = open3DDesigner;
+    window.close3DDesigner = close3DDesigner;
+    window.openQuickDesigner = openQuickDesigner;
+
+    // Close 3D designer on ESC key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const designer3DModal = document.getElementById('designer3DModal');
+        const choiceModal = document.getElementById('shirtChoiceModal');
+        
+        if (designer3DModal && designer3DModal.classList.contains('active')) {
+          close3DDesigner();
+        } else if (choiceModal && choiceModal.classList.contains('active')) {
+          closeChoiceModal();
+        }
+      }
+    });
+  </script>
 </body>
 </html>
