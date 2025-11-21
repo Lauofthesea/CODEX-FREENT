@@ -36,6 +36,22 @@ const prices = {
     dtf: 250,
     sublimation: 200,
     vinyl: 150
+  },
+  photo: {
+    small: 25,
+    medium: 50,
+    large: 100
+  },
+  tarpaulin: {
+    small: 500,
+    medium: 1000,
+    large: 2000
+  },
+  stickers: {
+    perPiece: 15
+  },
+  customized: {
+    base: 150
   }
 };
 
@@ -48,7 +64,11 @@ const serviceConfig = {
   shirt: {
     title: 'T-Shirt Designer',
     icon: 'fas fa-tshirt'
-  }
+  },
+  photo: { title: 'Photo Printing', icon: 'fas fa-image' },
+  tarpaulin: { title: 'Tarpaulin Printing', icon: 'fas fa-rectangle-ad' },
+  stickers: { title: 'Sticker Printing', icon: 'fas fa-sticky-note' },
+  customized: { title: 'Customized Item Order', icon: 'fas fa-gift' }
 };
 
 function scrollToServices() {
@@ -73,6 +93,8 @@ function openModal(service) {
     showDocumentForm();
   } else if (service === 'shirt') {
     showShirtDesigner();
+  } else if (service === 'photo' || service === 'tarpaulin' || service === 'stickers' || service === 'customized') {
+    showGenericForm(service);
   }
   
   modalOverlay.classList.add('active');
@@ -222,6 +244,119 @@ function showShirtDesigner() {
   
   selectedFile = 'custom-design'; // Mark as having a design
   calculatePrice();
+}
+
+// Show generic forms for photo, tarpaulin, stickers, customized
+function showGenericForm(service) {
+  const formContainer = document.getElementById('dynamicFormContainer');
+  let html = '';
+
+  if (service === 'photo') {
+    html = `
+      <div class="form-group">
+        <label>Upload Photo</label>
+        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload or drag and drop</p>
+          <small>JPG, PNG (Max 10MB)</small>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" />
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="photoSize">Photo Size</label>
+        <select id="photoSize" onchange="calculatePrice()">
+          <option value="small">Small - ₱25</option>
+          <option value="medium">Medium - ₱50</option>
+          <option value="large">Large - ₱100</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="photoCopies">Copies</label>
+        <input type="number" id="photoCopies" min="1" value="1" onchange="calculatePrice()" />
+      </div>
+    `;
+  } else if (service === 'tarpaulin') {
+    html = `
+      <div class="form-group">
+        <label>Upload Artwork (optional)</label>
+        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload</p>
+          <small>PDF, JPG, PNG (Max 20MB)</small>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" onchange="handleFileSelect(event)" />
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="tarpaulinSize">Tarpaulin Size</label>
+        <select id="tarpaulinSize" onchange="calculatePrice()">
+          <option value="small">Small - ₱500</option>
+          <option value="medium">Medium - ₱1000</option>
+          <option value="large">Large - ₱2000</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="tarpaulinQty">Quantity</label>
+        <input type="number" id="tarpaulinQty" min="1" value="1" onchange="calculatePrice()" />
+      </div>
+
+      <div class="form-group">
+        <label for="tarpaulinNotes">Notes (optional)</label>
+        <textarea id="tarpaulinNotes" rows="2" placeholder="Any special instructions..."></textarea>
+      </div>
+    `;
+  } else if (service === 'stickers') {
+    html = `
+      <div class="form-group">
+        <label for="stickerQty">Quantity</label>
+        <input type="number" id="stickerQty" min="1" value="10" onchange="calculatePrice()" />
+      </div>
+
+      <div class="form-group">
+        <label for="stickerNotes">Notes (size/material)</label>
+        <textarea id="stickerNotes" rows="2" placeholder="Sticker size, finish, or other notes"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Upload Artwork (optional)</label>
+        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="handleFileSelect(event)" />
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+      </div>
+    `;
+  } else if (service === 'customized') {
+    html = `
+      <div class="form-group">
+        <label>Upload Design</label>
+        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload</p>
+          <small>PDF, JPG, PNG (Max 15MB)</small>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" onchange="handleFileSelect(event)" />
+        <div id="fileInfo" class="file-info" style="display: none;"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="customQty">Quantity</label>
+        <input type="number" id="customQty" min="1" value="1" onchange="calculatePrice()" />
+      </div>
+    `;
+  }
+
+  formContainer.innerHTML = html;
+  // reset selection state
+  selectedFile = null;
+  calculatePrice();
+  updateSubmitButton();
 }
 
 // Initialize Fabric.js Canvas
@@ -374,53 +509,84 @@ function handleFileSelect(event) {
   }
 }
 
-function selectPayment(method) {
+function selectPayment(method, el) {
   selectedPayment = method;
-  document.getElementById('paymentMethod').value = method;
-  
+  const pm = document.getElementById('paymentMethod');
+  if (pm) pm.value = method;
+
   document.querySelectorAll('.payment-option').forEach(option => {
     option.classList.remove('selected');
   });
-  event.currentTarget.classList.add('selected');
-  
+  if (el && el.classList) el.classList.add('selected');
+
   updateSubmitButton();
 }
 
 function calculatePrice() {
   let total = 0;
-  
+
   if (currentService === 'document') {
     if (!selectedFile) {
       document.getElementById('totalPrice').textContent = '₱0.00';
       return;
     }
-    
+
     const paperSize = document.getElementById('paperSize').value;
     const copies = parseInt(document.getElementById('copies').value) || 1;
-    const pricePerPage = prices.document[paperSize];
+    const pricePerPage = prices.document[paperSize] || 0;
     total = pricePerPage * copies;
-  } 
-  else if (currentService === 'shirt') {
+  } else if (currentService === 'shirt') {
     const printMethod = document.getElementById('printMethod')?.value;
     const quantity = parseInt(document.getElementById('quantity')?.value) || 1;
-    
+
     if (printMethod) {
-      const pricePerShirt = prices.shirt[printMethod];
+      const pricePerShirt = prices.shirt[printMethod] || 0;
       total = pricePerShirt * quantity;
     }
+  } else if (currentService === 'photo') {
+    if (!selectedFile) {
+      document.getElementById('totalPrice').textContent = '₱0.00';
+      return;
+    }
+    const size = document.getElementById('photoSize')?.value || 'small';
+    const qty = parseInt(document.getElementById('photoCopies')?.value) || 1;
+    const pricePer = prices.photo[size] || 0;
+    total = pricePer * qty;
+  } else if (currentService === 'tarpaulin') {
+    const size = document.getElementById('tarpaulinSize')?.value || 'small';
+    const qty = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
+    const pricePer = prices.tarpaulin[size] || 0;
+    total = pricePer * qty;
+  } else if (currentService === 'stickers') {
+    const qty = parseInt(document.getElementById('stickerQty')?.value) || 1;
+    total = prices.stickers.perPiece * qty;
+  } else if (currentService === 'customized') {
+    const qty = parseInt(document.getElementById('customQty')?.value) || 1;
+    total = prices.customized.base * qty;
   }
-  
+
   document.getElementById('totalPrice').textContent = `₱${total.toFixed(2)}`;
 }
 
 function updateSubmitButton() {
   const submitBtn = document.getElementById('submitBtn');
   
-  if (currentService === 'document') {
-    submitBtn.disabled = !(selectedFile && selectedPayment);
-  } else if (currentService === 'shirt') {
-    submitBtn.disabled = !selectedPayment;
+  if (!submitBtn) return;
+
+  // require payment for all
+  if (!selectedPayment) {
+    submitBtn.disabled = true;
+    return;
   }
+
+  // services that require a file upload
+  if (currentService === 'document' || currentService === 'photo' || currentService === 'customized') {
+    submitBtn.disabled = !selectedFile;
+    return;
+  }
+
+  // for others (shirt, tarpaulin, stickers) allow when payment selected
+  submitBtn.disabled = false;
 }
 
 async function handleSubmit(event) {
@@ -430,6 +596,71 @@ async function handleSubmit(event) {
     await submitDocumentOrder();
   } else if (currentService === 'shirt') {
     await submitShirtOrder();
+  } else if (currentService === 'photo' || currentService === 'tarpaulin' || currentService === 'stickers' || currentService === 'customized') {
+    await submitGenericOrder(currentService);
+  }
+}
+
+// Generic submit handler for other services
+async function submitGenericOrder(service) {
+  try {
+    let productName = '';
+    let type = '-';
+    let quantity = 1;
+    let notes = '-';
+    let price = 0;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '') || '0';
+
+    if (service === 'photo') {
+      productName = 'Photo Printing';
+      type = document.getElementById('photoSize')?.value || 'small';
+      quantity = parseInt(document.getElementById('photoCopies')?.value) || 1;
+      price = prices.photo[type] || 0;
+      notes = selectedFile?.name || '-';
+    } else if (service === 'tarpaulin') {
+      productName = 'Tarpaulin Printing';
+      type = document.getElementById('tarpaulinSize')?.value || 'small';
+      quantity = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
+      price = prices.tarpaulin[type] || 0;
+      notes = document.getElementById('tarpaulinNotes')?.value || '-';
+    } else if (service === 'stickers') {
+      productName = 'Stickers';
+      quantity = parseInt(document.getElementById('stickerQty')?.value) || 1;
+      price = prices.stickers.perPiece;
+      notes = document.getElementById('stickerNotes')?.value || '-';
+    } else if (service === 'customized') {
+      productName = 'Customized Item';
+      quantity = parseInt(document.getElementById('customQty')?.value) || 1;
+      price = prices.customized.base;
+      notes = selectedFile?.name || '-';
+    }
+
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: 'Guest User',
+      contact: '-',
+      email: '-',
+      product: productName,
+      type: type.toString().toUpperCase(),
+      size: type.toString().toUpperCase(),
+      quantity: parseInt(quantity),
+      price: price,
+      total: parseFloat(totalPrice),
+      notes: notes,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      height: '-',
+      width: '-'
+    };
+
+    await addDoc(collection(db, "orders"), orderData);
+
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${productName}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}`);
+    closeModal();
+  } catch (error) {
+    console.error('Error submitting generic order:', error);
+    alert('Error placing order. Please try again.');
   }
 }
 

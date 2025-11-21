@@ -87,11 +87,11 @@
         <span class="available-badge">Available Now</span>
       </div>
 
-      <div class="service-card coming-soon">
+      <div class="service-card available" onclick="openModal('photo')">
         <i class="fas fa-image"></i>
         <h3>Photo Printing</h3>
         <p>High-quality photo prints</p>
-        <span class="coming-soon-badge">Not Available</span>
+        <span class="available-badge">Available Now</span>
       </div>
 
       <div class="service-card available" onclick="openModal('shirt')">
@@ -101,25 +101,25 @@
         <span class="available-badge">Available Now</span>
       </div>
 
-      <div class="service-card coming-soon">
+      <div class="service-card available" onclick="openModal('tarpaulin')">
         <i class="fas fa-rectangle-ad"></i>
         <h3>Tarpaulin Printing</h3>
         <p>Large format prints</p>
-        <span class="coming-soon-badge">Not Available</span>
+        <span class="available-badge">Available Now</span>
       </div>
 
-      <div class="service-card coming-soon">
+      <div class="service-card available" onclick="openModal('stickers')">
         <i class="fas fa-sticky-note"></i>
         <h3>Stickers</h3>
         <p>Waterproof custom stickers</p>
-        <span class="coming-soon-badge">Not Available</span>
+        <span class="available-badge">Available Now</span>
       </div>
 
-      <div class="service-card coming-soon">
+      <div class="service-card available" onclick="openModal('customized')">
         <i class="fas fa-gift"></i>
         <h3>Customized Items</h3>
         <p>Design Your Own</p>
-        <span class="coming-soon-badge">Not Available</span>
+        <span class="available-badge">Available Now</span>
       </div>
     </div>
   </section>
@@ -168,19 +168,19 @@
         <div class="form-group">
           <label>Payment Method</label>
           <div class="payment-options">
-            <div class="payment-option" onclick="selectPayment('cash')">
+            <div class="payment-option" onclick="selectPayment('cash', this)">
               <i class="fas fa-money-bill-wave"></i>
               <p>Cash</p>
             </div>
-            <div class="payment-option" onclick="selectPayment('gcash')">
+            <div class="payment-option" onclick="selectPayment('gcash', this)">
               <i class="fas fa-mobile-alt"></i>
               <p>GCash</p>
             </div>
-            <div class="payment-option" onclick="selectPayment('card')">
+            <div class="payment-option" onclick="selectPayment('card', this)">
               <i class="fas fa-credit-card"></i>
               <p>Card</p>
             </div>
-            <div class="payment-option" onclick="selectPayment('bank')">
+            <div class="payment-option" onclick="selectPayment('bank', this)">
               <i class="fas fa-university"></i>
               <p>Bank Transfer</p>
             </div>
