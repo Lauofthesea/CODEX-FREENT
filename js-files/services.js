@@ -458,7 +458,7 @@ async function submitDocumentOrder() {
     
     const orderData = {
       orderId: generateOrderId(),
-      customer: 'Guest User', // You can add a form field for customer name
+      customer: 'Guest User',
       contact: '-',
       email: '-',
       product: 'Document Printing',
@@ -515,7 +515,7 @@ async function submitShirtOrder() {
     
     const orderData = {
       orderId: generateOrderId(),
-      customer: 'Guest User', // You can add a form field for customer name
+      customer: 'Guest User',
       contact: '-',
       email: '-',
       product: 'T-Shirt Printing',
@@ -529,7 +529,7 @@ async function submitShirtOrder() {
       date: getCurrentDate(),
       paymentMethod: selectedPayment,
       shirtColor: shirtColor,
-      designImage: designDataURL.substring(0, 1000), // Store first 1000 chars (Firebase has size limits)
+      designImage: designDataURL.substring(0, 1000),
       height: '-',
       width: '-'
     };
