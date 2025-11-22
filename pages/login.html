@@ -4,84 +4,336 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login - FREENT</title>
-  <link rel="stylesheet" href="services.css" />
+  <link rel="icon" type="image/jpg" href="../assets/lineslogo.jpg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #191919 0%, #2d2d2d 100%);
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      height: 100vh;
-      background: var(--light-blue);
+      justify-content: center;
+      padding: 1rem;
     }
 
-    .auth-container {
-      background-color: goldenrod;
-      padding: 2rem 3rem;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    .login-container {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border: 2px solid #FFD700;
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .login-header {
       text-align: center;
-      width: 320px;
+      margin-bottom: 2rem;
     }
 
-    .auth-container h2 {
-      color: var(--dark);
-      margin-bottom: 1rem;
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
     }
 
-    .auth-container input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: 1px solid var(--soft-blue);
-      border-radius: 8px;
+    .login-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #FFD700;
+      margin-bottom: 0.5rem;
     }
 
-    .auth-container button {
-      width: 100%;
-      padding: 10px;
-      background: var(--soft-blue);
-      color: var(--dark);
+    .login-subtitle {
+      font-size: 0.95rem;
+      color: #aaa;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-label {
+      color: #FFD700;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .form-input {
+      padding: 0.875rem 1rem;
+      border: 1px solid #FFD700;
+      border-radius: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .login-btn {
+      padding: 1rem;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #000;
       border: none;
-      border-radius: 8px;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
       cursor: pointer;
-      font-weight: bold;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 0.5rem;
     }
 
-    .auth-container p {
-      margin-top: 1rem;
-      font-size: 14px;
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
     }
 
-    .auth-container a {
-      color: var(--lavender);
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .error-message {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid #dc2626;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      color: #ff6b6b;
+      font-size: 0.9rem;
+      text-align: center;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: shake 0.5s;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .back-link a {
+      color: #FFD700;
       text-decoration: none;
-      font-weight: bold;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .back-link a:hover {
+      color: #fff;
+    }
+
+    .demo-credentials {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #FFD700;
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+
+    .demo-credentials h4 {
+      color: #FFD700;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .demo-credentials p {
+      color: #aaa;
+      font-size: 0.85rem;
+      margin: 0.25rem 0;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem 1.5rem;
+      }
+      
+      .login-title {
+        font-size: 1.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="auth-container">
-    <h2>Login to FREENT</h2>
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button onclick="login()">Login</button>
-    <p>Don’t have an account? <a href="signup.html">Sign Up</a></p>
+
+  <div class="login-container">
+    <div class="login-header">
+      <img src="https://via.placeholder.com/80" alt="Lines Hub Logo" class="logo">
+      <h1 class="login-title">Welcome Back</h1>
+      <p class="login-subtitle">Lines Hub - FREENT System</p>
+    </div>
+
+    <div id="errorMessage" class="error-message"></div>
+
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label class="form-label" for="username">
+          <i class="fas fa-user"></i> Username
+        </label>
+        <input 
+          type="text" 
+          id="username" 
+          class="form-input" 
+          placeholder="Enter your username"
+          required
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">
+          <i class="fas fa-lock"></i> Password
+        </label>
+        <input 
+          type="password" 
+          id="password" 
+          class="form-input" 
+          placeholder="Enter your password"
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button type="submit" class="login-btn" id="loginBtn">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+    </form>
+
+    <div class="demo-credentials">
+      <h4><i class="fas fa-info-circle"></i> Demo Credentials</h4>
+      <p><strong>Username:</strong> user / admin</p>
+      <p><strong>Password:</strong> user123 / admin123</p>
+    </div>
+
+    <div class="back-link">
+      <a href="../index.html">
+        <i class="fas fa-arrow-left"></i> Back to Home
+      </a>
+    </div>
   </div>
 
   <script>
-    function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const storedUser = JSON.parse(localStorage.getItem("freentUser"));
+    // STEP 2: Update login credentials with user accounts
+    const USER_CREDENTIALS = {
+      // Regular user account
+      user: {
+        password: 'user123',
+        role: 'user',
+        name: 'User',
+        email: 'user@lineshub.com'
+      },
+      // Admin account (redirects to admin dashboard)
+      admin: {
+        password: 'admin123',
+        role: 'admin',
+        name: 'Admin',
+        email: 'admin@lineshub.com'
+      }
+    };
 
-      if (storedUser && storedUser.email === email && storedUser.password === password) {
-        localStorage.setItem("freentLoggedIn", "true");
-        alert("Login successful!");
-        window.location.href = "services2.html";
+    function handleLogin(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const errorMessage = document.getElementById('errorMessage');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      // Disable button during login
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
+      
+      // Check credentials
+      setTimeout(() => {
+        const userAccount = USER_CREDENTIALS[username.toLowerCase()];
+        
+        if (userAccount && userAccount.password === password) {
+          // Set session data including email for order filtering
+          sessionStorage.setItem('userLoggedIn', 'true');
+          sessionStorage.setItem('username', userAccount.name);
+          sessionStorage.setItem('userRole', userAccount.role);
+          sessionStorage.setItem('userEmail', userAccount.email);
+          
+          // STEP 2: Redirect based on role
+          if (userAccount.role === 'admin') {
+            // Redirect to admin dashboard
+            window.location.href = '../admin_side/index.html';
+          } else {
+            // Redirect to user dashboard
+            window.location.href = '../dashboard.html';
+          }
+        } else {
+          // Show error message
+          errorMessage.textContent = 'Invalid username or password';
+          errorMessage.classList.add('show');
+          
+          // Re-enable button
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+          
+          // Remove error after 3 seconds
+          setTimeout(() => {
+            errorMessage.classList.remove('show');
+          }, 3000);
+        }
+      }, 800);
+    }
+
+    // Check if already logged in
+    if (sessionStorage.getItem('userLoggedIn') === 'true') {
+      const role = sessionStorage.getItem('userRole');
+      if (role === 'admin') {
+        window.location.href = '../admin_side/index.html';
       } else {
-        alert("Invalid email or password.");
+        window.location.href = '../dashboard.html';
       }
     }
   </script>
+
 </body>
 </html>

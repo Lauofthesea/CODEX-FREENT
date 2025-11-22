@@ -824,3 +824,192 @@ window.handleImageUpload = handleImageUpload;
 window.deleteSelected = deleteSelected;
 window.clearCanvas = clearCanvas;
 window.changeShirtColor = changeShirtColor;
+
+
+// Add this function at the beginning of your services.js file
+// This ensures all orders are saved with the logged-in user's email
+
+function getUserEmail() {
+  return sessionStorage.getItem('userEmail') || 'guest@example.com';
+}
+
+function getCustomerName() {
+  return sessionStorage.getItem('username') || 'Guest User';
+}
+
+// UPDATE the submitDocumentOrder function to include email:
+async function submitDocumentOrder() {
+  try {
+    const paperSize = document.getElementById('paperSize').value;
+    const copies = document.getElementById('copies').value;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
+    
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),  // Use logged-in user's name
+      contact: '-',
+      email: getUserEmail(),  // ADDED: Save user's email for filtering
+      product: 'Document Printing',
+      type: paperSize.toUpperCase(),
+      size: paperSize.toUpperCase(),
+      quantity: parseInt(copies),
+      price: prices.document[paperSize],
+      total: parseFloat(totalPrice),
+      notes: selectedFile.name,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      height: '-',
+      width: '-'
+    };
+    
+    // Save to Firebase
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nFile: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYou can track your order using the Order ID.`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+  }
+}
+
+// UPDATE the submitShirtOrder function to include email:
+async function submitShirtOrder() {
+  try {
+    const printMethod = document.getElementById('printMethod').value;
+    const shirtSize = document.getElementById('shirtSize').value;
+    const quantity = document.getElementById('quantity').value;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
+    const notes = document.getElementById('shirtNotes')?.value || '-';
+    
+    if (!printMethod) {
+      alert('Please select a printing method');
+      return;
+    }
+    if (!shirtSize) {
+      alert('Please select a shirt size');
+      return;
+    }
+    
+    // Export design as image
+    let designDataURL = '';
+    if (canvas) {
+      designDataURL = canvas.toDataURL({
+        format: 'png',
+        quality: 1
+      });
+    }
+    
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),  // Use logged-in user's name
+      contact: '-',
+      email: getUserEmail(),  // ADDED: Save user's email for filtering
+      product: 'T-Shirt Printing',
+      type: printMethod.toUpperCase(),
+      size: shirtSize.toUpperCase(),
+      quantity: parseInt(quantity),
+      price: prices.shirt[printMethod],
+      total: parseFloat(totalPrice),
+      notes: notes,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      shirtColor: shirtColor,
+      designImage: designDataURL.substring(0, 1000),
+      height: '-',
+      width: '-'
+    };
+    
+    // Save to Firebase
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`T-Shirt Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColor}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYour custom design has been saved!\nYou can track your order using the Order ID.`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+  }
+}
+
+// UPDATE the submitGenericOrder function to include email:
+async function submitGenericOrder(service) {
+  try {
+    let productName = '';
+    let type = '-';
+    let quantity = 1;
+    let notes = '-';
+    let price = 0;
+    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '') || '0';
+
+    if (service === 'photo') {
+      productName = 'Photo Printing';
+      type = document.getElementById('photoSize')?.value || 'small';
+      quantity = parseInt(document.getElementById('photoCopies')?.value) || 1;
+      price = prices.photo[type] || 0;
+      notes = selectedFile?.name || '-';
+    } else if (service === 'tarpaulin') {
+      productName = 'Tarpaulin Printing';
+      type = document.getElementById('tarpaulinSize')?.value || 'small';
+      quantity = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
+      price = prices.tarpaulin[type] || 0;
+      notes = document.getElementById('tarpaulinNotes')?.value || '-';
+    } else if (service === 'stickers') {
+      productName = 'Stickers';
+      quantity = parseInt(document.getElementById('stickerQty')?.value) || 1;
+      price = prices.stickers.perPiece;
+      notes = document.getElementById('stickerNotes')?.value || '-';
+    } else if (service === 'customized') {
+      productName = 'Customized Item';
+      quantity = parseInt(document.getElementById('customQty')?.value) || 1;
+      price = prices.customized.base;
+      notes = selectedFile?.name || '-';
+    }
+
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),  // Use logged-in user's name
+      contact: '-',
+      email: getUserEmail(),  // ADDED: Save user's email for filtering
+      product: productName,
+      type: type.toString().toUpperCase(),
+      size: type.toString().toUpperCase(),
+      quantity: parseInt(quantity),
+      price: price,
+      total: parseFloat(totalPrice),
+      notes: notes,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment,
+      height: '-',
+      width: '-'
+    };
+
+    await addDoc(collection(db, "orders"), orderData);
+
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${productName}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}`);
+    closeModal();
+  } catch (error) {
+    console.error('Error submitting generic order:', error);
+    alert('Error placing order. Please try again.');
+  }
+}
+
+// Make sure these functions are in your services.js file
+function generateOrderId() {
+  return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+}
+
+function getCurrentDate() {
+  const now = new Date();
+  return now.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}

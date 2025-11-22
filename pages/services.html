@@ -10,6 +10,48 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
   <style>
+    /* User indicator styles */
+    .user-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #FFD700;
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+
+    .user-indicator i {
+      font-size: 1.2rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .account-btn {
+      background-color: #4f46e5;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .account-btn:hover {
+      background-color: #4338ca;
+      transform: translateY(-2px);
+    }
+
+    .account-btn i {
+      font-size: 1rem;
+    }
+
     /* 3D Designer Modal Styles */
     .designer-modal-overlay {
       display: none;
@@ -143,6 +185,10 @@
               <li><a href="#">More...</a></li>
             </ul>
           </li>
+          <!-- ORDERS link - only shown when logged in -->
+          <li id="ordersNavItem" style="display: none;">
+            <a href="../user.html">ORDERS</a>
+          </li>
           <li class="search-wrapper">
             <form class="search-form" onsubmit="handleSearch(event)">
               <div class="search-input-wrapper">
@@ -154,7 +200,22 @@
           </li>
         </ul>
       </nav>
-      <button class="cta login-btn" onclick="window.location.href='./login.html'">Login</button>
+      <div class="header-actions">
+        <!-- User indicator - shown when logged in -->
+        <div id="userIndicator" class="user-indicator" style="display: none;">
+          <i class="fas fa-user-circle"></i>
+          <span id="usernameDisplay">User</span>
+        </div>
+        <!-- Login button - shown when not logged in -->
+        <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./login.html'" style="display: block;">
+          Login
+        </button>
+        <!-- Account button - shown when logged in -->
+        <button id="accountBtn" class="account-btn" onclick="window.location.href='../dashboard.html'" style="display: none;">
+          <i class="fas fa-user-circle"></i>
+          Account
+        </button>
+      </div>
     </header>
   </div>
 
@@ -363,7 +424,7 @@
       <div class="footer-links">
         <a href="../index.html">Home</a>
         <a href="../pages/services.html">Services</a>
-        <a href="#">Placeholder</a>
+        <a href="#" id="footerAccountLink">Placeholder</a>
         <a href="#">Placeholder</a>
       </div>
 
@@ -381,6 +442,40 @@
 
   <script type="module" src="../js-files/services.js"></script>
   <script>
+    // Check login status and update navigation
+    function updateNavigation() {
+      const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+      const username = sessionStorage.getItem('username') || 'User';
+      
+      if (userLoggedIn === 'true') {
+        // User is logged in - show account elements
+        document.getElementById('userIndicator').style.display = 'flex';
+        document.getElementById('usernameDisplay').textContent = username;
+        document.getElementById('accountBtn').style.display = 'inline-flex';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('ordersNavItem').style.display = 'block';
+        
+        // Update footer link
+        const footerLink = document.getElementById('footerAccountLink');
+        footerLink.textContent = 'My Account';
+        footerLink.href = '../dashboard.html';
+      } else {
+        // User is not logged in - show login button
+        document.getElementById('userIndicator').style.display = 'none';
+        document.getElementById('accountBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+        document.getElementById('ordersNavItem').style.display = 'none';
+        
+        // Update footer link
+        const footerLink = document.getElementById('footerAccountLink');
+        footerLink.textContent = 'Login';
+        footerLink.href = './login.html';
+      }
+    }
+
+    // Initialize navigation on page load
+    updateNavigation();
+
     // 3D Designer Integration Functions
     function openShirtDesignerChoice() {
       const modal = document.getElementById('shirtChoiceModal');
@@ -406,8 +501,6 @@
       const modal = document.getElementById('designer3DModal');
       const iframe = document.getElementById('designerIframe');
       
-      // Load the 3D designer page
-      // Update this path to where you save the tshirt-designer-3d.html file
       iframe.src = './tshirt-designer-3d.html';
       
       modal.classList.add('active');
@@ -419,13 +512,12 @@
       const iframe = document.getElementById('designerIframe');
       
       modal.classList.remove('active');
-      iframe.src = 'about:blank'; // Clear iframe
+      iframe.src = 'about:blank';
       document.body.style.overflow = 'auto';
     }
 
     function openQuickDesigner() {
       closeChoiceModal();
-      // Open the regular 2D shirt designer modal
       if (typeof openModal === 'function') {
         openModal('shirt');
       }
@@ -440,12 +532,10 @@
           console.log('Design saved from 3D designer:', data);
           showNotification('✅ Design saved successfully!', 'success');
           
-          // Ask if user wants to proceed to order
           if (confirm('Design saved! Would you like to proceed with your order?')) {
             close3DDesigner();
             setTimeout(() => {
               openModal('shirt');
-              // Pre-fill notes with design info
               setTimeout(() => {
                 const notesField = document.getElementById('shirtNotes');
                 if (notesField) {

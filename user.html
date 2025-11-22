@@ -3,40 +3,218 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Track Your Order - Line Hubs</title>
+  <title>Track Your Order - Lines Hub</title>
+  <link rel="icon" type="image/jpg" href="./assets/lineslogo.jpg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css-files/user-order.css">
+  <link rel="stylesheet" href="./css-files/index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    .tracking-container {
-      max-width: 700px;
+    /* Additional styles for tracking page */
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
     }
-    
-    .order-status-timeline {
-      margin: 2rem 0;
-      padding: 2rem;
-      background: rgba(255, 215, 0, 0.05);
-      border-radius: 1rem;
-      border: 1px solid #FFD700;
-    }
-    
-    .status-step {
+
+    .user-indicator {
       display: flex;
       align-items: center;
-      margin-bottom: 1.5rem;
-      position: relative;
-      padding-left: 3rem;
+      gap: 0.5rem;
+      color: #FFD700;
+      font-weight: 600;
+      margin-right: 1rem;
     }
-    
+
+    .user-indicator i {
+      font-size: 1.2rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
+
+    .tracking-container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .tracking-card {
+      background: rgba(26, 26, 26, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      border: 2px solid #FFD700;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #FFD700;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      color: #aaa;
+      margin-bottom: 2rem;
+    }
+
+    .search-section {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .search-label {
+      display: block;
+      color: #FFD700;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .search-input-group {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 1rem;
+      border: 1px solid #FFD700;
+      border-radius: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: #fff;
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+    }
+
+    .search-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .track-button {
+      padding: 1rem 2rem;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #000;
+      border: none;
+      border-radius: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .track-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    .order-details-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid #FFD700;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .order-details-card h3 {
+      color: #FFD700;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .detail-label {
+      color: #aaa;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .detail-value.highlight {
+      color: #10b981;
+      font-size: 1.5rem;
+    }
+
+    .status-timeline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 1rem;
+      padding: 2rem;
+    }
+
+    .timeline-title {
+      color: #FFD700;
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .status-step {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 2rem;
+      position: relative;
+      padding-left: 4rem;
+    }
+
     .status-step:last-child {
       margin-bottom: 0;
     }
-    
+
+    .status-step::before {
+      content: '';
+      position: absolute;
+      left: 1.25rem;
+      top: 3rem;
+      width: 2px;
+      height: calc(100% + 2rem);
+      background: rgba(255, 215, 0, 0.2);
+    }
+
+    .status-step:last-child::before {
+      display: none;
+    }
+
     .status-icon {
       position: absolute;
       left: 0;
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.1);
       border: 2px solid #555;
@@ -44,182 +222,303 @@
       align-items: center;
       justify-content: center;
       color: #555;
-      font-size: 1.2rem;
+      font-size: 1.3rem;
     }
-    
+
     .status-step.active .status-icon {
-      background: #FFD700;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
       border-color: #FFD700;
       color: #000;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      animation: pulse 2s infinite;
     }
-    
+
     .status-step.completed .status-icon {
       background: #10b981;
       border-color: #10b981;
       color: #fff;
     }
-    
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+      }
+    }
+
     .status-content {
       flex: 1;
     }
-    
+
     .status-title {
       font-weight: 600;
-      color: #FFD700;
-      margin-bottom: 0.25rem;
-    }
-    
-    .status-step.active .status-title {
       color: #fff;
+      margin-bottom: 0.5rem;
       font-size: 1.1rem;
     }
-    
-    .status-time {
-      font-size: 0.85rem;
+
+    .status-step.active .status-title {
+      color: #FFD700;
+      font-size: 1.2rem;
+    }
+
+    .status-description {
+      font-size: 0.9rem;
       color: #aaa;
+      line-height: 1.5;
     }
-    
-    .order-details-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid #FFD700;
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-    }
-    
-    .detail-row:last-child {
-      border-bottom: none;
-    }
-    
-    .detail-label {
-      color: #aaa;
-      font-weight: 500;
-    }
-    
-    .detail-value {
-      color: #fff;
-      font-weight: 600;
-    }
-    
-    .search-order {
-      margin-bottom: 2rem;
-    }
-    
+
     .order-not-found {
       text-align: center;
-      padding: 2rem;
+      padding: 3rem;
       color: #aaa;
+    }
+
+    .not-found-icon {
+      font-size: 4rem;
+      color: #FFD700;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #FFD700;
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
+
+    @media (max-width: 768px) {
+      .tracking-card {
+        padding: 1.5rem;
+      }
+
+      .search-input-group {
+        flex-direction: column;
+      }
+
+      .track-button {
+        width: 100%;
+      }
+
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .status-step {
+        padding-left: 3rem;
+      }
+
+      .status-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="order-container tracking-container">
-    <a href="./pages/services.html" class="back-link">Back to Services</a>
-    
-    <h1 class="order-title">Track Your Order</h1>
-
-    <!-- Search for Order -->
-    <div class="search-order">
-      <div class="form-group">
-        <label class="form-label" for="orderIdInput">Enter Order ID</label>
-        <div style="display: flex; gap: 1rem;">
-          <input type="text" id="orderIdInput" class="form-input" placeholder="e.g., ORD-1234" style="flex: 1;">
-          <button onclick="trackOrder()" class="submit-btn" style="width: auto; padding: 0 2rem;">Track</button>
+  <div id="main-content">
+    <header class="site-header">
+      <div class="header-top">
+        <div class="logo">
+          <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
         </div>
       </div>
-    </div>
-
-    <!-- Order Details (Hidden until searched) -->
-    <div id="orderDetailsSection" style="display: none;">
-      
-      <!-- Order Info Card -->
-      <div class="order-details-card">
-        <h3 style="color: #FFD700; margin-bottom: 1rem;">Order Information</h3>
-        <div class="detail-row">
-          <span class="detail-label">Order ID:</span>
-          <span class="detail-value" id="displayOrderId">-</span>
+      <nav class="nav-wrapper">
+        <ul class="main-nav">
+          <li><a href="index.html">HOME</a></li>
+          <li><a href="./pages/services.html">SERVICES</a></li>
+          <li><a href="user.html">ORDERS</a></li>
+          <li class="search-wrapper">
+            <form class="search-form" onsubmit="handleSearch(event)">
+              <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search FREENT..." />
+              </div>
+              <button type="submit" class="search-btn">Search</button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <div id="userIndicator" class="user-indicator" style="display: none;">
+          <i class="fas fa-user-circle"></i>
+          <span id="usernameDisplay">User</span>
         </div>
-        <div class="detail-row">
-          <span class="detail-label">Product:</span>
-          <span class="detail-value" id="displayProduct">-</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Quantity:</span>
-          <span class="detail-value" id="displayQuantity">-</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Total Amount:</span>
-          <span class="detail-value" style="color: #10b981;" id="displayTotal">₱0</span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">Order Date:</span>
-          <span class="detail-value" id="displayDate">-</span>
-        </div>
+        <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./pages/login.html'" style="display: block;">
+          Login
+        </button>
+        <button id="accountBtn" class="cta login-btn" onclick="window.location.href='dashboard.html'" style="display: none;">
+          Account
+        </button>
       </div>
-
-      <!-- Status Timeline -->
-      <div class="order-status-timeline">
-        <h3 style="color: #FFD700; margin-bottom: 1.5rem;">Order Status</h3>
-        
-        <div class="status-step" id="step-pending">
-          <div class="status-icon">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="status-content">
-            <div class="status-title">Order Received</div>
-            <div class="status-time">Your order has been received and is pending processing</div>
-          </div>
-        </div>
-
-        <div class="status-step" id="step-production">
-          <div class="status-icon">
-            <i class="fas fa-cogs"></i>
-          </div>
-          <div class="status-content">
-            <div class="status-title">In Production</div>
-            <div class="status-time">Your order is currently being prepared</div>
-          </div>
-        </div>
-
-        <div class="status-step" id="step-delivery">
-          <div class="status-icon">
-            <i class="fas fa-truck"></i>
-          </div>
-          <div class="status-content">
-            <div class="status-title">Out for Delivery</div>
-            <div class="status-time">Your order is on the way</div>
-          </div>
-        </div>
-
-        <div class="status-step" id="step-delivered">
-          <div class="status-icon">
-            <i class="fas fa-check"></i>
-          </div>
-          <div class="status-content">
-            <div class="status-title">Delivered</div>
-            <div class="status-time">Order has been completed</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Order Not Found Message -->
-    <div id="orderNotFound" class="order-not-found" style="display: none;">
-      <i class="fas fa-search" style="font-size: 3rem; color: #FFD700; margin-bottom: 1rem;"></i>
-      <p style="font-size: 1.1rem;">Order not found</p>
-      <p style="font-size: 0.9rem;">Please check your Order ID and try again</p>
-    </div>
-
+    </header>
   </div>
+
+  <div class="tracking-container">
+    <a href="dashboard.html" class="back-button">
+      <i class="fas fa-arrow-left"></i>
+      Back to Dashboard
+    </a>
+
+    <div class="tracking-card">
+      <h1 class="page-title">
+        <i class="fas fa-search"></i> Track Your Order
+      </h1>
+      <p class="page-subtitle">Enter your order ID to check the status of your order</p>
+
+      <!-- Search Section -->
+      <div class="search-section">
+        <label class="search-label" for="orderIdInput">
+          <i class="fas fa-barcode"></i> Order ID
+        </label>
+        <div class="search-input-group">
+          <input 
+            type="text" 
+            id="orderIdInput" 
+            class="search-input" 
+            placeholder="e.g., ORD-1234567890-ABCDE"
+          >
+          <button onclick="trackOrder()" class="track-button">
+            <i class="fas fa-search"></i> Track Order
+          </button>
+        </div>
+      </div>
+
+      <!-- Order Details Section (Hidden until searched) -->
+      <div id="orderDetailsSection" style="display: none;">
+        
+        <!-- Order Info Card -->
+        <div class="order-details-card">
+          <h3>
+            <i class="fas fa-info-circle"></i> Order Information
+          </h3>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="detail-label">Order ID</span>
+              <span class="detail-value" id="displayOrderId">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Product</span>
+              <span class="detail-value" id="displayProduct">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Quantity</span>
+              <span class="detail-value" id="displayQuantity">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Total Amount</span>
+              <span class="detail-value highlight" id="displayTotal">₱0</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Order Date</span>
+              <span class="detail-value" id="displayDate">-</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Payment Method</span>
+              <span class="detail-value" id="displayPayment">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Status Timeline -->
+        <div class="status-timeline">
+          <h3 class="timeline-title">
+            <i class="fas fa-clock"></i> Order Status Timeline
+          </h3>
+          
+          <div class="status-step" id="step-pending">
+            <div class="status-icon">
+              <i class="fas fa-clock"></i>
+            </div>
+            <div class="status-content">
+              <div class="status-title">Order Received</div>
+              <div class="status-description">Your order has been received and is pending processing. We'll start working on it soon!</div>
+            </div>
+          </div>
+
+          <div class="status-step" id="step-production">
+            <div class="status-icon">
+              <i class="fas fa-cogs"></i>
+            </div>
+            <div class="status-content">
+              <div class="status-title">In Production</div>
+              <div class="status-description">Your order is currently being prepared with care by our team.</div>
+            </div>
+          </div>
+
+          <div class="status-step" id="step-delivery">
+            <div class="status-icon">
+              <i class="fas fa-truck"></i>
+            </div>
+            <div class="status-content">
+              <div class="status-title">Out for Delivery</div>
+              <div class="status-description">Your order is on the way to your location. You'll receive it soon!</div>
+            </div>
+          </div>
+
+          <div class="status-step" id="step-delivered">
+            <div class="status-icon">
+              <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="status-content">
+              <div class="status-title">Delivered / Complete</div>
+              <div class="status-description">Your order has been successfully delivered. Thank you for choosing Lines Hub!</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Order Not Found Message -->
+      <div id="orderNotFound" class="order-not-found" style="display: none;">
+        <i class="fas fa-search not-found-icon"></i>
+        <h3 style="color: #fff; margin-bottom: 0.5rem; font-size: 1.5rem;">Order Not Found</h3>
+        <p style="font-size: 1rem; margin-bottom: 1rem;">We couldn't find an order with that ID</p>
+        <p style="font-size: 0.9rem;">Please check your Order ID and try again, or contact support if you need assistance.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        <p>Lines Printing Services<br />Your Freedom to Print</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="index.html">Home</a>
+        <a href="./pages/services.html">Services</a>
+        <a href="dashboard.html">My Account</a>
+        <a href="#">Contact</a>
+      </div>
+
+      <div class="footer-contact">
+        <p>📍 E. Locson Drive, Talon-talon, Zamboanga City</p>
+        <p>📞 - - - - - </p>
+        <p>📧 linesprintingservices@gmail.com</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 Lines Printing Services. All rights reserved.</p>
+    </div>
+  </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -237,6 +536,33 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // Check login status and update navigation
+    function updateNavigation() {
+      const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+      const username = sessionStorage.getItem('username') || 'User';
+      
+      if (userLoggedIn === 'true') {
+        document.getElementById('userIndicator').style.display = 'flex';
+        document.getElementById('usernameDisplay').textContent = username;
+        document.getElementById('accountBtn').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+      } else {
+        document.getElementById('userIndicator').style.display = 'none';
+        document.getElementById('accountBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+      }
+    }
+
+    updateNavigation();
+
+    // Check for orderId in URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderIdFromUrl = urlParams.get('orderId');
+    if (orderIdFromUrl) {
+      document.getElementById('orderIdInput').value = orderIdFromUrl;
+      trackOrder();
+    }
 
     window.trackOrder = async function() {
       const orderId = document.getElementById('orderIdInput').value.trim();
@@ -268,11 +594,15 @@
         document.getElementById('displayOrderId').textContent = orderData.orderId;
         document.getElementById('displayProduct').textContent = orderData.product;
         document.getElementById('displayQuantity').textContent = orderData.quantity;
-        document.getElementById('displayTotal').textContent = '₱' + (orderData.total || 0);
+        document.getElementById('displayTotal').textContent = '₱' + (orderData.total || 0).toFixed(2);
         document.getElementById('displayDate').textContent = orderData.date || '-';
+        document.getElementById('displayPayment').textContent = orderData.paymentMethod?.toUpperCase() || '-';
 
         // Update status timeline
         updateStatusTimeline(orderData.status);
+
+        // Scroll to results
+        document.getElementById('orderDetailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       } catch (error) {
         console.error("Error tracking order:", error);
@@ -315,6 +645,15 @@
         trackOrder();
       }
     });
+
+    // Handle search
+    window.handleSearch = function(event) {
+      event.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (query) {
+        alert('Search functionality coming soon!\nSearching for: ' + query);
+      }
+    };
   </script>
 
 </body>

@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard - FREENT</title>
+  <link rel="icon" type="image/jpg" href="./assets/lineslogo.jpg" />
+  <link rel="stylesheet" href="./css-files/index.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* Dashboard Specific Styles */
+    .dashboard-welcome {
+      background: linear-gradient(135deg, rgba(25, 25, 25, 0.95) 0%, rgba(45, 45, 45, 0.95) 100%);
+      backdrop-filter: blur(10px);
+      padding: 3rem 2rem;
+      margin: 2rem auto;
+      max-width: 1200px;
+      border-radius: 1.5rem;
+      border: 2px solid #FFD700;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .welcome-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .welcome-text h1 {
+      color: #FFD700;
+      font-size: 2rem;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .welcome-text p {
+      color: #aaa;
+      margin: 0;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .action-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid #FFD700;
+    }
+
+    .dashboard-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      border-color: #FFD700;
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
+    }
+
+    .stat-icon {
+      font-size: 2.5rem;
+      color: #FFD700;
+      margin-bottom: 1rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .quick-actions {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .quick-actions h2 {
+      color: #FFD700;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+    }
+
+    .actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .quick-action-card {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      display: block;
+    }
+
+    .quick-action-card:hover {
+      background: rgba(255, 215, 0, 0.1);
+      border-color: #FFD700;
+      transform: translateY(-4px);
+    }
+
+    .quick-action-card i {
+      font-size: 2rem;
+      color: #FFD700;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .quick-action-card h3 {
+      color: #fff;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.1rem;
+    }
+
+    .quick-action-card p {
+      color: #aaa;
+      margin: 0;
+      font-size: 0.85rem;
+    }
+
+    /* User indicator in nav */
+    .user-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #FFD700;
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+
+    .user-indicator i {
+      font-size: 1.2rem;
+    }
+
+    .order-row {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .order-row:hover {
+      background: rgba(255, 215, 0, 0.05);
+    }
+
+    .order-row td {
+      padding: 1rem;
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .status-badge {
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: inline-block;
+    }
+
+    .status-pending {
+      background: rgba(251, 191, 36, 0.2);
+      color: #fbbf24;
+      border: 1px solid #fbbf24;
+    }
+
+    .status-production {
+      background: rgba(59, 130, 246, 0.2);
+      color: #3b82f6;
+      border: 1px solid #3b82f6;
+    }
+
+    .status-delivery {
+      background: rgba(139, 92, 246, 0.2);
+      color: #8b5cf6;
+      border: 1px solid #8b5cf6;
+    }
+
+    .status-delivered {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid #10b981;
+    }
+
+    .copy-btn {
+      background: rgba(255, 215, 0, 0.1);
+      border: 1px solid #FFD700;
+      color: #FFD700;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .track-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+      border: none;
+      color: #fff;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: 0.5rem;
+    }
+
+    .track-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-welcome {
+        padding: 2rem 1rem;
+      }
+
+      .welcome-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .user-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .dashboard-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="main-content">
+    <header class="site-header">
+      <div class="header-top">
+        <div class="logo">
+          <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        </div>
+      </div>
+      <nav class="nav-wrapper">
+        <ul class="main-nav">
+          <li><a href="index.html">HOME</a></li>
+          <li><a href="./pages/services.html">SERVICES</a></li>
+          <li><a href="user.html">ORDERS</a></li>
+          <li class="search-wrapper">
+            <form class="search-form" onsubmit="handleSearch(event)">
+              <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search FREENT..." />
+              </div>
+              <button type="submit" class="search-btn">Search</button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+      <div style="display: flex; align-items: center;">
+        <div class="user-indicator">
+          <i class="fas fa-user-circle"></i>
+          <span id="username">User</span>
+        </div>
+        <button class="cta login-btn" onclick="handleLogout()">Logout</button>
+      </div>
+    </header>
+  </div>
+
+  <!-- Dashboard Content -->
+  <section style="padding: 2rem;">
+    <div class="dashboard-welcome">
+      <div class="welcome-header">
+        <div class="welcome-text">
+          <h1>Welcome back, <span id="dashboardUsername">User</span>! 👋</h1>
+          <p>Here's what's happening with your orders today.</p>
+        </div>
+        <div class="user-actions">
+          <a href="./pages/services.html" class="action-btn">
+            <i class="fas fa-plus"></i>
+            New Order
+          </a>
+          <a href="user.html" class="action-btn secondary">
+            <i class="fas fa-box"></i>
+            Track Orders
+          </a>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-shopping-bag"></i>
+          </div>
+          <div class="stat-value" id="totalOrders">0</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-value" id="pendingOrders">0</div>
+          <div class="stat-label">Pending Orders</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-value" id="completedOrders">0</div>
+          <div class="stat-label">Completed Orders</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <i class="fas fa-peso-sign"></i>
+          </div>
+          <div class="stat-value" id="totalSpent">₱0</div>
+          <div class="stat-label">Total Spent</div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h2>Quick Actions</h2>
+        <div class="actions-grid">
+          <a href="./pages/services.html" class="quick-action-card">
+            <i class="fas fa-file-alt"></i>
+            <h3>Document Printing</h3>
+            <p>Print documents in various sizes</p>
+          </a>
+
+          <a href="./pages/services.html" class="quick-action-card">
+            <i class="fas fa-tshirt"></i>
+            <h3>T-Shirt Design</h3>
+            <p>Create custom t-shirt designs</p>
+          </a>
+
+          <a href="./pages/services.html" class="quick-action-card">
+            <i class="fas fa-image"></i>
+            <h3>Photo Printing</h3>
+            <p>High-quality photo prints</p>
+          </a>
+
+          <a href="user.html" class="quick-action-card">
+            <i class="fas fa-search"></i>
+            <h3>Track Order</h3>
+            <p>Check your order status</p>
+          </a>
+
+          <a href="./pages/services.html" class="quick-action-card">
+            <i class="fas fa-rectangle-ad"></i>
+            <h3>Tarpaulin</h3>
+            <p>Large format prints</p>
+          </a>
+
+          <a href="./pages/services.html" class="quick-action-card">
+            <i class="fas fa-gift"></i>
+            <h3>Custom Items</h3>
+            <p>Design your own products</p>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Order History Section -->
+  <section style="padding: 2rem;">
+    <div class="dashboard-welcome">
+      <h2 style="color: #FFD700; margin-bottom: 1.5rem; font-size: 1.75rem;">
+        <i class="fas fa-history"></i> Order History
+      </h2>
+
+      <div style="background: rgba(255, 255, 255, 0.05); border-radius: 1rem; border: 1px solid rgba(255, 215, 0, 0.3); overflow: hidden;">
+        <!-- Orders Table -->
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: rgba(255, 215, 0, 0.1);">
+              <tr>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Order ID</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Product</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Quantity</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Total</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Status</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Date</th>
+                <th style="padding: 1rem; text-align: left; color: #FFD700; font-weight: 600; border-bottom: 1px solid rgba(255, 215, 0, 0.3);">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="orderHistoryBody">
+              <tr>
+                <td colspan="7" style="padding: 2rem; text-align: center; color: #aaa;">
+                  <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #FFD700; margin-bottom: 1rem; display: block;"></i>
+                  Loading orders...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyOrdersState" style="display: none; padding: 3rem; text-align: center;">
+          <i class="fas fa-box-open" style="font-size: 4rem; color: #FFD700; margin-bottom: 1rem; opacity: 0.5;"></i>
+          <h3 style="color: #fff; margin-bottom: 0.5rem;">No Orders Yet</h3>
+          <p style="color: #aaa; margin-bottom: 1.5rem;">Start by placing your first order!</p>
+          <button class="action-btn" onclick="window.location.href='./pages/services.html'">
+            <i class="fas fa-plus"></i>
+            Browse Services
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        <p>Lines Printing Services<br />Your Freedom to Print</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#">About</a>
+        <a href="./pages/services.html">Services</a>
+        <a href="user.html">Track Orders</a>
+        <a href="#">Contact</a>
+      </div>
+
+      <div class="footer-contact">
+        <p>📍 E. Locson Drive, Talon-talon, Zamboanga City</p>
+        <p>📞 - - - - - </p>
+        <p>📧 linesprintingservices@gmail.com</p>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 Lines Printing Services. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+      authDomain: "lineshub-98e0f.firebaseapp.com",
+      projectId: "lineshub-98e0f",
+      storageBucket: "lineshub-98e0f.appspot.com",
+      messagingSenderId: "427905073524",
+      appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // STEP 3: Check login status - redirect if not logged in
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+    const username = sessionStorage.getItem('username') || 'Guest';
+
+    if (!userLoggedIn) {
+      // Redirect to login if not logged in
+      window.location.href = './pages/login.html';
+    }
+
+    // Display username
+    document.getElementById('username').textContent = username;
+    document.getElementById('dashboardUsername').textContent = username;
+
+    // Load user statistics from Firebase
+    async function loadUserStats() {
+      try {
+        const userEmail = sessionStorage.getItem('userEmail') || 'guest@example.com';
+        
+        // Query orders for this specific user
+        const ordersRef = collection(db, "orders");
+        const q = query(ordersRef, where("email", "==", userEmail));
+        const querySnapshot = await getDocs(q);
+
+        let total = 0;
+        let pending = 0;
+        let completed = 0;
+        let totalSpent = 0;
+        const orders = [];
+
+        querySnapshot.forEach((doc) => {
+          const order = doc.data();
+          order.id = doc.id;
+          orders.push(order);
+          
+          total++;
+
+          if (order.status === 'Pending') {
+            pending++;
+          } else if (order.status === 'Delivered' || order.status === 'Complete') {
+            completed++;
+            totalSpent += order.total || 0;
+          }
+        });
+
+        // Update stats
+        document.getElementById('totalOrders').textContent = total;
+        document.getElementById('pendingOrders').textContent = pending;
+        document.getElementById('completedOrders').textContent = completed;
+        document.getElementById('totalSpent').textContent = '₱' + totalSpent.toFixed(2);
+
+        // Display order history
+        displayOrderHistory(orders);
+
+      } catch (error) {
+        console.error("Error loading stats:", error);
+        showEmptyState();
+      }
+    }
+
+    function displayOrderHistory(orders) {
+      const tbody = document.getElementById('orderHistoryBody');
+      const emptyState = document.getElementById('emptyOrdersState');
+      
+      if (orders.length === 0) {
+        tbody.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      
+      // Sort by date (newest first)
+      orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+      
+      tbody.innerHTML = orders.map(order => {
+        const statusClass = getStatusClass(order.status);
+        return `
+          <tr class="order-row">
+            <td>
+              <strong style="color: #FFD700;">${order.orderId}</strong>
+            </td>
+            <td>${order.product}</td>
+            <td>${order.quantity}</td>
+            <td style="color: #10b981; font-weight: 600;">₱${(order.total || 0).toFixed(2)}</td>
+            <td>
+              <span class="status-badge ${statusClass}">${order.status}</span>
+            </td>
+            <td style="color: #aaa; font-size: 0.9rem;">${order.date || '-'}</td>
+            <td>
+              <button class="copy-btn" onclick="copyOrderId('${order.orderId}')" title="Copy Order ID">
+                <i class="fas fa-copy"></i>
+                Copy
+              </button>
+              <button class="track-btn" onclick="trackOrder('${order.orderId}')" title="Track Order">
+                <i class="fas fa-search"></i>
+                Track
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function getStatusClass(status) {
+      const statusMap = {
+        'Pending': 'status-pending',
+        'On Production': 'status-production',
+        'On Delivery': 'status-delivery',
+        'Delivered': 'status-delivered',
+        'Complete': 'status-delivered'
+      };
+      return statusMap[status] || 'status-pending';
+    }
+
+    function showEmptyState() {
+      const tbody = document.getElementById('orderHistoryBody');
+      const emptyState = document.getElementById('emptyOrdersState');
+      
+      tbody.innerHTML = '';
+      emptyState.style.display = 'block';
+    }
+
+    window.copyOrderId = function(orderId) {
+      navigator.clipboard.writeText(orderId).then(() => {
+        showToast('✅ Order ID copied to clipboard!');
+      }).catch(() => {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = orderId;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('✅ Order ID copied to clipboard!');
+      });
+    };
+
+    window.trackOrder = function(orderId) {
+      window.location.href = `user.html?orderId=${orderId}`;
+    };
+
+    function showToast(message) {
+      const toast = document.createElement('div');
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #191919;
+        color: #FFD700;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        border: 2px solid #FFD700;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        font-weight: 600;
+      `;
+      toast.textContent = message;
+
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideIn {
+          from { transform: translateX(400px); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(() => {
+          if (toast.parentNode) document.body.removeChild(toast);
+        }, 300);
+      }, 2000);
+    }
+
+    loadUserStats();
+
+    // Logout function
+    window.handleLogout = function() {
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.removeItem('userLoggedIn');
+        sessionStorage.removeItem('username');
+        window.location.href = 'index.html';
+      }
+    };
+
+    // Search function
+    window.handleSearch = function(event) {
+      event.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (query) {
+        alert('Search functionality coming soon!\nSearching for: ' + query);
+      }
+    };
+  </script>
+
+  <script src="./js-files/dexscript.js"></script>
+</body>
+</html>

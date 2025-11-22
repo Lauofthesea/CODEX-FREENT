@@ -3,163 +3,257 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FREENT</title>
+  <title>FREENT - Lines Hub</title>
   <link rel="icon" type="image/jpg" href="./assets/lineslogo.jpg" />
   <link rel="stylesheet" href="./css-files/index.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    /* User indicator in nav */
+    .user-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #FFD700;
+      font-weight: 600;
+      margin-right: 1rem;
+    }
+
+    .user-indicator i {
+      font-size: 1.2rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+    }
+  </style>
 </head>
 <body>
   <div id="main-content">
-  <header class="site-header">
-  <div class="header-top">
-    <div class="logo">
-      <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+    <header class="site-header">
+      <div class="header-top">
+        <div class="logo">
+          <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        </div>
+      </div>
+      <nav class="nav-wrapper">
+        <ul class="main-nav">
+          <li><a href="index.html">HOME</a></li>
+          <li class="services-dropdown">
+            <a href="./pages/services.html">SERVICES ▸</a>
+            <ul class="dropdown-menu">
+              <li><a href="./pages/services.html">Document Printing</a></li>
+              <li><a href="./pages/services.html">Photo Printing</a></li>
+              <li><a href="./pages/services.html">Shirt Printing</a></li>
+              <li><a href="./pages/services.html">Tarpaulin Printing</a></li>
+              <li><a href="./pages/services.html">Signages</a></li>
+              <li><a href="./pages/services.html">Stickers</a></li>
+              <li><a href="./pages/services.html">Gift Boxes</a></li>
+              <li><a href="./pages/services.html">Lanyards</a></li>
+              <li><a href="./pages/services.html">Invitations</a></li>
+              <li><a href="./pages/services.html">Customized</a></li>
+              <li><a href="#">More...</a></li>
+            </ul>
+          </li>
+          <!-- ORDERS link - only shown when logged in -->
+          <li id="ordersNavItem" style="display: none;">
+            <a href="user.html">ORDERS</a>
+          </li>
+          <li class="search-wrapper">
+            <form class="search-form" onsubmit="handleSearch(event)">
+              <div class="search-input-wrapper">
+                <i class="fa fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search FREENT..." />
+              </div>
+              <button type="submit" class="search-btn">Search</button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <!-- User indicator - shown when logged in -->
+        <div id="userIndicator" class="user-indicator" style="display: none;">
+          <i class="fas fa-user-circle"></i>
+          <span id="usernameDisplay">User</span>
+        </div>
+        <!-- Login button - shown when not logged in -->
+        <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./pages/login.html'">Login</button>
+        <!-- Logout button - shown when logged in -->
+        <button id="logoutBtn" class="cta login-btn" onclick="handleLogout()" style="display: none;">Logout</button>
+      </div>
+    </header>
+  </div>
+
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">Welcome to Lines Hub's FREENT</h1>
+      <p class="hero-subtext">Your Freedom to Print</p>
+      <button class="get-started" onclick="scrollToSamples()">Explore</button>
+    </div>
+  </section>
+
+  <div class="advantages">
+    <div class="advantage-item">
+      <img src="./assets/cartIcon.png" alt="Convenient" />
+      <p>Convenient</p>
+    </div>
+    <div class="advantage-item">
+      <img src="./assets/starIcon.png" alt="Quality" />
+      <p>Quality</p>
+    </div>
+    <div class="advantage-item">
+      <img src="./assets/clockIcon.png" alt="Fast Service" />
+      <p>Fast Service</p>
     </div>
   </div>
-  <nav class="nav-wrapper">
-    <ul class="main-nav">
-  <li><a href="index.html">HOME</a></li>
-  <li class="services-dropdown">
-    <a href="./pages/services.html">SERVICES ▸</a>
-    <ul class="dropdown-menu">
-      <li><a href="./pages/services.html">Document Printing</a></li>
-      <li><a href="./pages/services.html">Photo Printing</a></li>
-      <li><a href="./pages/services.html">Shirt Printing</a></li>
-      <li><a href="./pages/services.html">Tarpaulin Printing</a></li>
-      <li><a href="./pages/services.html">Signages</a></li>
-      <li><a href="./pages/services.html">Stickers</a></li>
-      <li><a href="./pages/services.html">Gift Boxes</a></li>
-      <li><a href="./pages/services.html">Lanyards</a></li>
-      <li><a href="./pages/services.html">Invitations</a></li>
-      <li><a href="./pages/services.html">Customized</a></li>
-      <li><a href="#">More...</a></li>
-    </ul>
-  </li>
-  <li class="search-wrapper">
-    <form class="search-form" onsubmit="handleSearch(event)">
-      <div class="search-input-wrapper">
-        <i class="fa fa-search search-icon"></i>
-        <input type="text" id="search-input" placeholder="Search FREENT..." />
-      </div>
-      <button type="submit" class="search-btn">Search</button>
-    </form>
-  </li>
-</ul>
-    </nav>
-    <button class="cta login-btn" onclick="window.location.href='../pages/login.html'">Login</button>
-  </header>
-</div>
 
-    <section class="hero">
-  <div class="hero-content">
-    <h1 class="hero-title">Welcome to Lines Hub’s FREENT</h1>
-    <p class="hero-subtext">Your Freedom to Print</p>
-    <button class="get-started" onclick="scrollToSamples()">Explore</button>
-  </div>
-</section>
-<div class="advantages">
-  <div class="advantage-item">
-    <img src="./assets/cartIcon.png" alt="Convenient" />
-    <p>Convenient</p>
-  </div>
-  <div class="advantage-item">
-    <img src="./assets/starIcon.png" alt="Quality" />
-    <p>Quality</p>
-  </div>
-  <div class="advantage-item">
-    <img src="./assets/clockIcon.png" alt="Fast Service" />
-    <p>Fast Service</p>
-  </div>
-</div>
-
-<section id="scroll-teaser" class="scroll-teaser">
-  <div class="teaser-content">
-    <h2>What We Offer</h2>
-    <div class="teaser-columns">
-      <div class="teaser-left">
-        <h3>Services at Affordable Rates</h3>
-        <ul>
-          <li>T-Shirt Printing (DTF, Sublimation, Vinyl)</li>
-          <li>Signages</li>
-          <li>Waterproof Stickers</li>
-          <li>Personalized Items (Mugs, Tumblers, etc.)</li>
-          <li>Gift Boxes</li>
-        </ul>
-      </div>
-      <div class="teaser-right">
-        <h3>We Also Make</h3>
-        <ul>
-          <li>Tarpaulins</li>
-          <li>Invitations</li>
-          <li>Lanyards</li>
-          <li>IDs</li>
-          <li>Photos</li>
-          <li>Documents</li>
-          <li>And more...</li>
-        </ul>
+  <section id="scroll-teaser" class="scroll-teaser">
+    <div class="teaser-content">
+      <h2>What We Offer</h2>
+      <div class="teaser-columns">
+        <div class="teaser-left">
+          <h3>Services at Affordable Rates</h3>
+          <ul>
+            <li>T-Shirt Printing (DTF, Sublimation, Vinyl)</li>
+            <li>Signages</li>
+            <li>Waterproof Stickers</li>
+            <li>Personalized Items (Mugs, Tumblers, etc.)</li>
+            <li>Gift Boxes</li>
+          </ul>
+        </div>
+        <div class="teaser-right">
+          <h3>We Also Make</h3>
+          <ul>
+            <li>Tarpaulins</li>
+            <li>Invitations</li>
+            <li>Lanyards</li>
+            <li>IDs</li>
+            <li>Photos</li>
+            <li>Documents</li>
+            <li>And more...</li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section id="samples-section" class="samples">
-  <h2>Featured Prints</h2>
-  <div class="sample-gallery">
-    
-    <div class="sample-item"><img src="./assets/sample1.jpg" alt="Sample 1" /><strong>Customized Caps</strong></div>
-    <div class="sample-item"><img src="./assets/sample2.jpg" alt="Sample 2" /><strong>Tote Bags</strong></div>
-    <div class="sample-item"><img src="./assets/sample3.jpg" alt="Sample 3" /><strong>Tumblers</strong></div>
-    <div class="sample-item"><img src="./assets/sample4-1.jpg" alt="Sample 4" /><strong>Book Bindings</strong></div>
-    <div class="sample-item"><img src="./assets/sample5.jpg" alt="Sample 5" /><strong>Full Sublimations Shirts<strong></div>
-    <div class="sample-item"><img src="./assets/sample6.jpg" alt="Sample 6" /><strong>Full Sublimation Jackets</strong></div>
-  </div>
-
-  <div class="view-services-wrapper">
-    <button class="view-services" onclick="window.location.href='./pages/services.html'">
-  View Services &raquo;
-</button>
-  </div>
-
-  <div class="more-samples">
-    <h3>More Samples</h3>
+  <section id="samples-section" class="samples">
+    <h2>Featured Prints</h2>
     <div class="sample-gallery">
-    <div class="sample-item"><img src="#" alt="Placeholder1" /></div>
-    <div class="sample-item"><img src="#" alt="Placeholder2" /></div>
-    <div class="sample-item"><img src="#" alt="Placeholder3" /></div>
-    <div class="sample-item"><img src="#" alt="Placeholder4" /></div>
-    <div class="sample-item"><img src="#" alt="Placeholder5" /></div>
-    <div class="sample-item"><img src="#" alt="Placeholder6" /></div>
+      <div class="sample-item"><img src="./assets/sample1.jpg" alt="Sample 1" /><strong>Customized Caps</strong></div>
+      <div class="sample-item"><img src="./assets/sample2.jpg" alt="Sample 2" /><strong>Tote Bags</strong></div>
+      <div class="sample-item"><img src="./assets/sample3.jpg" alt="Sample 3" /><strong>Tumblers</strong></div>
+      <div class="sample-item"><img src="./assets/sample4-1.jpg" alt="Sample 4" /><strong>Book Bindings</strong></div>
+      <div class="sample-item"><img src="./assets/sample5.jpg" alt="Sample 5" /><strong>Full Sublimations Shirts</strong></div>
+      <div class="sample-item"><img src="./assets/sample6.jpg" alt="Sample 6" /><strong>Full Sublimation Jackets</strong></div>
     </div>
-  </div>
-</section>
+
+    <div class="view-services-wrapper">
+      <button class="view-services" onclick="window.location.href='./pages/services.html'">
+        View Services &raquo;
+      </button>
+    </div>
+
+    <div class="more-samples">
+      <h3>More Samples</h3>
+      <div class="sample-gallery">
+        <div class="sample-item"><img src="#" alt="Placeholder1" /></div>
+        <div class="sample-item"><img src="#" alt="Placeholder2" /></div>
+        <div class="sample-item"><img src="#" alt="Placeholder3" /></div>
+        <div class="sample-item"><img src="#" alt="Placeholder4" /></div>
+        <div class="sample-item"><img src="#" alt="Placeholder5" /></div>
+        <div class="sample-item"><img src="#" alt="Placeholder6" /></div>
+      </div>
+    </div>
+  </section>
  
-  </div>
-<footer class="site-footer">
-  <div class="footer-content">
-    <div class="footer-brand">
-      <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
-      <p>Lines Printing Services<br />Your Freedom to Print</p>
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <img src="./assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
+        <p>Lines Printing Services<br />Your Freedom to Print</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="#">About</a>
+        <a href="./pages/services.html">Services</a>
+        <a href="#" id="footerOrdersLink">Portfolio</a>
+        <a href="#">Contact</a>
+      </div>
+
+      <div class="footer-contact">
+        <p>📍 E. Locson Drive, Talon-talon, Zamboanga City</p>
+        <p>📞 - - - - - </p>
+        <p>📧 linesprintingservices@gmail.com</p>
+      </div>
     </div>
 
-    <div class="footer-links">
-      <a href="#">About</a>
-      <a href="#">Services</a>
-      <a href="#">Portfolio</a>
-      <a href="#">Contact</a>
+    <div class="footer-bottom">
+      <p>&copy; 2025 Lines Printing Services. All rights reserved.</p>
     </div>
+  </footer>
 
-    <div class="footer-contact">
-      <p>📍 E. Locson Drive, Talon-talon, Zamboanga City</p>
-      <p>📞 - - - - - </p>
-      <p>📧 linesprintingservices@gmail.com</p>
-    </div>
-  </div>
+  <script>
+    // Check login status and update navigation
+    function updateNavigation() {
+      const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+      const username = sessionStorage.getItem('username') || 'User';
+      
+      if (userLoggedIn === 'true') {
+        // User is logged in - show user elements
+        document.getElementById('userIndicator').style.display = 'flex';
+        document.getElementById('usernameDisplay').textContent = username;
+        document.getElementById('logoutBtn').style.display = 'block';
+        document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('ordersNavItem').style.display = 'block';
+        
+        // Update footer link to Orders
+        const footerLink = document.getElementById('footerOrdersLink');
+        footerLink.textContent = 'Track Orders';
+        footerLink.href = 'user.html';
+      } else {
+        // User is not logged in - show login button
+        document.getElementById('userIndicator').style.display = 'none';
+        document.getElementById('logoutBtn').style.display = 'none';
+        document.getElementById('loginBtn').style.display = 'block';
+        document.getElementById('ordersNavItem').style.display = 'none';
+      }
+    }
 
-  <div class="footer-bottom">
-    <p>&copy; 2025 Lines Printing Services. All rights reserved.</p>
-  </div>
-</footer>
+    // Logout function
+    function handleLogout() {
+      if (confirm('Are you sure you want to logout?')) {
+        sessionStorage.removeItem('userLoggedIn');
+        sessionStorage.removeItem('username');
+        sessionStorage.removeItem('userRole');
+        updateNavigation();
+        alert('You have been logged out successfully!');
+      }
+    }
 
-<script src="./js-files/dexscript.js"></script>
+    // Scroll to samples section
+    function scrollToSamples() {
+      document.getElementById('samples-section').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Handle search
+    function handleSearch(event) {
+      event.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      if (query) {
+        alert('Searching for: ' + query);
+      }
+    }
+
+    // Initialize navigation on page load
+    updateNavigation();
+
+    // Make functions globally accessible
+    window.handleLogout = handleLogout;
+    window.scrollToSamples = scrollToSamples;
+    window.handleSearch = handleSearch;
+  </script>
+
+  <script src="./js-files/dexscript.js"></script>
 </body>
 </html>
