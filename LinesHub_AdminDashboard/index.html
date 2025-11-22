@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line Hubs Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', sans-serif; }
+  .animate-fadeIn { animation: fadeIn 0.2s ease-in-out; }
+  @keyframes fadeIn { from {opacity:0} to {opacity:1} }
+
+
+@keyframes modalShow {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-modalShow {
+  animation: modalShow 0.25s ease-out forwards;
+}
+
+</style>
+</head>
+<body class="bg-gray-100 flex">
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-white h-screen shadow-lg flex flex-col fixed left-0 top-0">
+  <div class="p-6 flex items-center space-x-3 border-b">
+    <img src="https://via.placeholder.com/40" class="w-10 h-10 rounded-full">
+    <h1 class="text-xl font-bold text-[#0B0A7A]">Line Hubs</h1>
+  </div>
+  <nav class="flex-1 p-4 space-y-3">
+    <button onclick="showSection('dashboardSection')" id="dashboardBtn" class="w-full text-left px-4 py-3 bg-indigo-600 text-white rounded-xl">Dashboard</button>
+    <button onclick="showSection('ordersSection')" id="ordersBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Orders</button>
+    <button onclick="showSection('historySection')" id="historyBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Transaction History</button>
+    <button onclick="showSection('messagesSection')" id="messagesBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Messages</button>
+  </nav>
+  <div class="p-4 border-t">
+    <button class="w-full px-4 py-3 bg-red-600 text-white rounded-xl">Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="flex-1 ml-64">
+  <header class="px-6 pt-6">
+    <h1 id="pageTitle" class="text-3xl font-semibold text-gray-800">Dashboard</h1>
+  </header>
+  <main class="p-6">
+
+    <!-- DASHBOARD SECTION -->
+    <div id="dashboardSection" class="space-y-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gradient-to-r from-[#716FF3] to-[#9E9ACF] text-white rounded-2xl shadow p-6">
+          <p class="text-sm font-medium">Total Orders Today</p>
+          <p id="totalOrdersToday" class="mt-2 text-3xl font-bold">0</p>
+        </div>
+        <div class="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-2xl shadow p-6">
+          <p class="text-sm font-medium">Pending Orders</p>
+          <p id="pendingOrders" class="mt-2 text-3xl font-bold">0</p>
+        </div>
+        <div class="bg-gradient-to-r from-green-400 to-green-600 text-white rounded-2xl shadow p-6">
+          <p class="text-sm font-medium">Revenue Today</p>
+          <p id="revenueToday" class="mt-2 text-3xl font-bold">₱0</p>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Recent Orders</h2>
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-100 text-left">
+            <tr>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Order ID</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Customer</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Product</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Qty</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Type</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Status</th>
+            </tr>
+          </thead>
+          <tbody id="dashboardOrdersBody" class="divide-y divide-gray-200 text-left"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS SECTION -->
+    <div id="ordersSection" class="hidden space-y-6">
+      <div class="flex space-x-4 mb-4">
+        <button onclick="filterOrdersByType('all')" id="tabAll" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">All</button>
+        <button onclick="filterOrdersByType('recent')" id="tabRecent" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Recent</button>
+        <button onclick="filterOrdersByType('pending')" id="tabPending" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Pending</button>
+      </div>
+      <div class="flex flex-col md:flex-row gap-4 mb-4">
+        <input id="orderSearch" type="text" placeholder="Search orders..." class="px-4 py-2 border rounded-lg w-full md:w-1/3" onkeyup="filterOrders()">
+        <select id="orderSort" class="px-4 py-2 border rounded-lg" onchange="sortOrders()">
+          <option value="">Sort By</option>
+          <option value="dateAsc">Date ↑ (Oldest)</option>
+          <option value="dateDesc">Date ↓ (Newest)</option>
+          <option value="qtyAsc">Quantity ↑</option>
+          <option value="qtyDesc">Quantity ↓</option>
+          <option value="status">Status</option>
+        </select>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+        <table id="ordersTable" class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-100 text-left">
+            <tr>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Order ID</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Customer</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Product</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Qty</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Type</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Status</th>
+              <th class="px-4 py-3 text-sm font-medium text-gray-700">Date</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody" class="text-left"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRANSACTION HISTORY -->
+    <div id="historySection" class="hidden">
+      <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-100 text-left">
+            <tr>
+              <th class="px-4 py-3">Order ID</th>
+              <th class="px-4 py-3">Customer</th>
+              <th class="px-4 py-3">Product</th>
+              <th class="px-4 py-3">Qty</th>
+              <th class="px-4 py-3">Type</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Date</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody" class="text-left"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MESSAGES SECTION -->
+    <div id="messagesSection" class="hidden">
+      <div class="bg-white rounded-2xl shadow p-4 h-[75vh] flex overflow-hidden">
+        <aside class="w-1/3 border-r p-4 overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Messages</h2>
+            <button id="newConvBtn" class="px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700">+ New</button>
+          </div>
+          <div class="space-y-3" id="conversationsList"></div>
+        </aside>
+        <section class="flex-1 flex flex-col">
+          <div class="p-4 border-b flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <img id="convAvatar" src="https://via.placeholder.com/48" class="w-12 h-12 rounded-full" alt="avatar">
+              <div>
+                <div id="convTitle" class="font-semibold text-lg">Select a conversation</div>
+                <div id="convSubtitle" class="text-sm text-gray-500">Order • Client info</div>
+              </div>
+            </div>
+            <div id="orderMini" class="text-right hidden">
+              <div id="orderMiniTitle" class="font-semibold"></div>
+              <div id="orderMiniMeta" class="text-sm text-gray-500"></div>
+            </div>
+          </div>
+          <div id="messagesWindow" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50">
+            <div id="messagesEmpty" class="text-center text-gray-400">No conversation selected</div>
+          </div>
+          <div class="p-4 border-t">
+            <div class="flex items-center gap-3">
+              <input id="messageInput" class="flex-1 px-4 py-2 border rounded-lg" placeholder="Type a message...">
+              <button id="sendMsgBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">Send</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- ORDER DETAILS MODAL -->
+    <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
+  <div class="bg-white w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
+        <button onclick="closeOrderModal()" class="absolute top-3 right-4 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
+        <h2 class="text-2xl font-semibold mb-6 pb-3 border-b text-gray-800">Order Details</h2>
+        <div id="orderDetailsContent" class="space-y-4 text-gray-700"></div>
+      </div>
+    </div>
+
+    <!-- NEW MESSAGE MODAL -->
+    <div id="newMessageModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-lg animate-fadeIn relative">
+        <button onclick="closeNewMsgModal()" class="absolute top-3 right-4 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+        <h2 class="text-xl font-semibold mb-4">New Conversation</h2>
+        <div class="space-y-3">
+          <input id="nmClientName" type="text" placeholder="Client Name" class="w-full border px-4 py-2 rounded-lg">
+          <input id="nmClientEmail" type="email" placeholder="Client Email (optional)" class="w-full border px-4 py-2 rounded-lg">
+          <input id="nmClientPhone" type="text" placeholder="Client Phone (optional)" class="w-full border px-4 py-2 rounded-lg">
+          <input id="nmOrderId" type="text" placeholder="Order ID (optional)" class="w-full border px-4 py-2 rounded-lg">
+        </div>
+        <button onclick="confirmCreateConv()" class="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Create Conversation</button>
+      </div>
+    </div>
+
+
+
+
+<!-- ========== JAVASCRIPT ========== -->
+<script type="module">
+
+/* Import Firebase */
+import { db } from "./firebase-init.js";
+import { collection, onSnapshot, doc, getDoc, updateDoc, addDoc, query, orderBy, where, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+
+const ordersCol = collection(db, "orders");
+
+window.showSection = showSection;
+window.closeOrderModal = closeOrderModal;
+window.showOrderDetails = showOrderDetails;
+window.updateStatus = updateStatus;
+window.filterOrdersByType = filterOrdersByType;
+window.filterOrders = filterOrders;
+window.sortOrders = sortOrders;
+
+
+// Modal controls
+const newMessageModal = document.getElementById("newMessageModal");
+const nmClientName = document.getElementById("nmClientName");
+const nmClientEmail = document.getElementById("nmClientEmail");
+const nmClientPhone = document.getElementById("nmClientPhone");
+const nmOrderId = document.getElementById("nmOrderId");
+
+window.openNewMsgModal = function(){
+  newMessageModal.classList.remove("hidden");
+};
+
+window.closeNewMsgModal = function(){
+  newMessageModal.classList.add("hidden");
+  nmClientName.value = "";
+  nmClientEmail.value = "";
+  nmClientPhone.value = "";
+  nmOrderId.value = "";
+};
+
+document.getElementById("newConvBtn").addEventListener("click", openNewMsgModal);
+
+
+window.confirmCreateConv = async function(){
+  const name = nmClientName.value.trim();
+  const email = nmClientEmail.value.trim();
+  const phone = nmClientPhone.value.trim();
+  const orderId = nmOrderId.value.trim();
+
+  if(!name){
+    alert("Client name is required");
+    return;
+  }
+
+
+  let orderDetails = {};
+  if(orderId){
+    try {
+      const ordSnap = await getDoc(doc(db, "orders", orderId));
+      if(ordSnap.exists()){
+        orderDetails = ordSnap.data();
+      }
+    } catch(e){
+      console.warn("Order fetch error:", e);
+    }
+  }
+
+  // Create conversation doc
+  const newConvData = {
+    clientName: name,
+    clientEmail: email,
+    clientPhone: phone,
+    orderId: orderId || "",
+    lastMessage: "New conversation started",
+    lastUpdated: serverTimestamp(),
+    unreadCount: 0,
+
+    product: orderDetails.product || "",
+    quantity: orderDetails.quantity || "",
+    total: orderDetails.totalPrice || "",
+    status: orderDetails.status || "",
+  };
+
+  const convRef = await addDoc(collection(db, "conversations"), newConvData);
+  await addDoc(collection(convRef, "messages"), {
+    sender: "system",
+    text: "Conversation created.",
+    ts: serverTimestamp()
+  });
+
+  closeNewMsgModal();
+  openConversation(convRef.id);
+};
+
+
+/* ========== SECTION SWITCHING ========== */
+function showSection(id) {
+  const sections = ["dashboardSection","ordersSection","historySection","messagesSection"];
+  const nav = {
+    dashboardSection:"dashboardBtn",
+    ordersSection:"ordersBtn",
+    historySection:"historyBtn",
+    messagesSection:"messagesBtn"
+  };
+
+  sections.forEach(s => document.getElementById(s).classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
+
+  const titles = {
+    dashboardSection:"Dashboard",
+    ordersSection:"Orders",
+    historySection:"Transaction History",
+    messagesSection:"Messages"
+  };
+  document.getElementById("pageTitle").innerText = titles[id];
+
+  Object.keys(nav).forEach(sec => {
+    const btn = document.getElementById(nav[sec]);
+    if(sec === id){
+      btn.classList.add("bg-indigo-600","text-white");
+      btn.classList.remove("bg-gray-100","text-gray-700");
+    } else {
+      btn.classList.remove("bg-indigo-600","text-white");
+      btn.classList.add("bg-gray-100","text-gray-700");
+    }
+  });
+}
+
+
+/* ========== CLOSE MODAL ========== */
+function closeOrderModal() {
+  document.getElementById("orderModal").classList.add("hidden");
+}
+
+
+/* ========== LOAD ORDERS LIVE FROM FIRESTORE ========== */
+const dashboardOrdersBody = document.getElementById("dashboardOrdersBody");
+const ordersBody = document.getElementById("ordersBody");
+const historyBody = document.getElementById("historyBody");
+
+onSnapshot(ordersCol, (snapshot) => {
+
+  dashboardOrdersBody.innerHTML = "";
+  ordersBody.innerHTML = "";
+  historyBody.innerHTML = "";
+
+  let totalOrders = 0;
+  let pendingOrders = 0;
+  let revenue = 0;
+
+  snapshot.forEach(docSnap => {
+    const order = docSnap.data();
+    order.docId = docSnap.id;
+
+    totalOrders++;
+
+    if(order.status.toLowerCase() === "pending") pendingOrders++;
+    if(["delivered","complete"].includes(order.status.toLowerCase()))
+      revenue += order.total || 0;
+
+    const row = `
+      <tr class="hover:bg-gray-50 cursor-pointer" onclick="showOrderDetails('${order.docId}')">
+        <td class="px-4 py-3">${order.orderId}</td>
+        <td class="px-4 py-3">${order.customer}</td>
+        <td class="px-4 py-3">${order.product}</td>
+        <td class="px-4 py-3">${order.quantity}</td>
+        <td class="px-4 py-3">${order.type || "-"}</td>
+        <td class="px-4 py-3">${order.status}</td>
+      </tr>
+    `;
+
+    dashboardOrdersBody.innerHTML += row;
+    ordersBody.innerHTML += `
+      ${row.replace("</tr>", `<td class="px-4 py-3">${order.date || "-"}</td></tr>`)}
+    `;
+
+    if(["delivered","complete"].includes(order.status.toLowerCase())){
+      historyBody.innerHTML += `
+        <tr>
+          <td class="px-4 py-3">${order.orderId}</td>
+          <td class="px-4 py-3">${order.customer}</td>
+          <td class="px-4 py-3">${order.product}</td>
+          <td class="px-4 py-3">${order.quantity}</td>
+          <td class="px-4 py-3">${order.type || "-"}</td>
+          <td class="px-4 py-3">${order.status}</td>
+          <td class="px-4 py-3">${order.date || "-"}</td>
+        </tr>
+      `;
+    }
+
+  });
+
+  document.getElementById("totalOrdersToday").innerText = totalOrders;
+  document.getElementById("pendingOrders").innerText = pendingOrders;
+  document.getElementById("revenueToday").innerText = "₱" + revenue;
+
+});
+
+
+/* ========== ORDER DETAILS MODAL ========== */
+async function showOrderDetails(id) {
+  const snap = await getDoc(doc(db, "orders", id));
+  const order = snap.data();
+
+  document.getElementById("orderDetailsContent").innerHTML = `
+    <p><strong>Order ID:</strong> ${order.orderId}</p>
+    <p><strong>Customer:</strong> ${order.customer}</p>
+    <p><strong>Contact:</strong> ${order.contact || "-"}</p>
+    <p><strong>Email:</strong> ${order.email || "-"}</p>
+
+    <hr class="my-2">
+
+    <p><strong>Product:</strong> ${order.product}</p>
+    <p><strong>Type:</strong> ${order.type || "-"}</p>
+    <p><strong>Size:</strong> ${order.size || "-"}</p>
+    <p><strong>Height:</strong> ${order.height || "-"} cm</p>
+    <p><strong>Width:</strong> ${order.width || "-"} cm</p>
+
+    <hr class="my-2">
+
+    <p><strong>Quantity:</strong> ${order.quantity}</p>
+    <p><strong>Price per item:</strong> ₱${order.price || 0}</p>
+    <p><strong>Total Price:</strong> <span class="font-semibold text-green-600">₱${parseFloat(order.total) || 0}</span></p>
+
+    <hr class="my-2">
+
+    <p><strong>Notes:</strong> ${order.notes || "-"}</p>
+
+    <hr class="my-2">
+
+    <p><strong>Status:</strong>
+      <select id="statusSelect" class="border px-2 py-1 rounded">
+        <option ${order.status==="Pending"?"selected":""}>Pending</option>
+        <option ${order.status==="On Production"?"selected":""}>On Production</option>
+        <option ${order.status==="On Delivery"?"selected":""}>On Delivery</option>
+        <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
+        <option ${order.status==="Complete"?"selected":""}>Complete</option>
+      </select>
+
+      <button onclick="updateStatus('${id}')" 
+        class="ml-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
+        Update
+      </button>
+    </p>
+
+    <p><strong>Date:</strong> ${order.date || "-"}</p>
+  `;
+
+  document.getElementById("orderModal").classList.remove("hidden");
+}
+
+
+window.openConversation = openConversation;
+window.sendMessage = sendMessage;
+window.createConversation = createConversation;
+
+// DOM refs
+const conversationsList = document.getElementById("conversationsList");
+const messagesWindow = document.getElementById("messagesWindow");
+const messageInput = document.getElementById("messageInput");
+const sendMsgBtn = document.getElementById("sendMsgBtn");
+const convTitle = document.getElementById("convTitle");
+const convSubtitle = document.getElementById("convSubtitle");
+const convAvatar = document.getElementById("convAvatar");
+const orderMini = document.getElementById("orderMini");
+const orderMiniTitle = document.getElementById("orderMiniTitle");
+const orderMiniMeta = document.getElementById("orderMiniMeta");
+const messagesEmpty = document.getElementById("messagesEmpty");
+const newConvBtn = document.getElementById("newConvBtn");
+
+// State
+let currentConvId = null;
+let currentMessagesUnsub = null;
+
+// Conversations listener (real-time)
+const convCol = collection(db, "conversations");
+const convQuery = query(convCol, orderBy("lastUpdated", "desc"));
+onSnapshot(convQuery, snapshot => {
+  conversationsList.innerHTML = "";
+  snapshot.forEach(docSnap => {
+    const conv = { id: docSnap.id, ...docSnap.data() };
+    conversationsList.innerHTML += renderConversationItem(conv);
+  });
+});
+
+function renderConversationItem(conv){
+  const last = conv.lastMessage || "";
+  const unread = conv.unreadCount || 0;
+  const client = conv.clientName || "Unknown";
+  const orderId = conv.orderId ? `<span class="text-xs text-gray-500">#${conv.orderId}</span>` : "";
+  const avatar = conv.avatar || "https://via.placeholder.com/40";
+
+  return `
+    <div onclick="openConversation('${conv.id}')" class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-100 cursor-pointer">
+      <div class="flex items-center gap-3">
+        <img src="${avatar}" class="w-10 h-10 rounded-full" alt="a">
+        <div>
+          <div class="font-medium">${client} ${orderId}</div>
+          <div class="text-sm text-gray-500 truncate" style="max-width:240px">${last}</div>
+        </div>
+      </div>
+      <div class="text-right">
+        ${ conv.lastUpdated ? `<div class="text-xs text-gray-400">${timeAgo(conv.lastUpdated)}</div>` : "" }
+        ${ unread > 0 ? `<div class="mt-1 inline-block bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">${unread}</div>` : "" }
+      </div>
+    </div>
+  `;
+}
+
+
+async function openConversation(convId){
+  if(currentMessagesUnsub) currentMessagesUnsub();
+
+  currentConvId = convId;
+  messagesWindow.innerHTML = "";
+  messagesEmpty.classList.add("hidden");
+
+  const convDocRef = doc(db, "conversations", convId);
+  const convSnap = await getDoc(convDocRef);
+  if(!convSnap.exists()){
+    messagesWindow.innerHTML = "<div class='text-center text-gray-400'>Conversation not found</div>";
+    return;
+  }
+  const conv = convSnap.data();
+
+  convTitle.innerText = conv.clientName || "Unknown client";
+  convSubtitle.innerText = conv.clientEmail ? `${conv.clientEmail} • ${conv.clientPhone || "-"}` : `${conv.clientPhone || "-"}`;
+  convAvatar.src = conv.avatar || "https://via.placeholder.com/48";
+
+  if(conv.orderId){
+    orderMini.classList.remove("hidden");
+    orderMiniTitle.innerText = `${conv.product || "Order"} • #${conv.orderId}`;
+    orderMiniMeta.innerText = `${conv.quantity || "-"} pcs • ${conv.status || "—"} • ₱${parseFloat(conv.total) || 0}`;
+  } else {
+    orderMini.classList.add("hidden");
+  }
+  try { await updateDoc(convDocRef, { unreadCount: 0 }); } catch(e){ console.warn(e); }
+
+  const msgsCol = collection(convDocRef, "messages");
+  const msgsQuery = query(msgsCol, orderBy("ts", "asc"));
+  currentMessagesUnsub = onSnapshot(msgsQuery, snapshot => {
+    messagesWindow.innerHTML = "";
+    snapshot.forEach(docSnap => {
+      const m = docSnap.data();
+      messagesWindow.innerHTML += renderMessageItem(m);
+    });
+    messagesWindow.scrollTop = messagesWindow.scrollHeight;
+  });
+}
+
+function renderMessageItem(m){
+  const isMe = (m.sender === "admin"); // change based on your auth system
+  const side = isMe ? "ml-auto bg-indigo-600 text-white" : "mr-auto bg-white border";
+  const ts = m.ts ? timeAgo(m.ts) : "";
+  const text = escapeHtml(m.text || "");
+  return `<div class="max-w-[70%] ${side} px-4 py-2 rounded-lg shadow-sm">
+            <div class="text-sm">${text}</div>
+            <div class="text-xs text-gray-200 mt-1 text-right">${ts}</div>
+          </div>`;
+}
+
+sendMsgBtn.addEventListener("click", () => sendMessage());
+messageInput.addEventListener("keydown", e => { if(e.key === "Enter") sendMessage(); });
+
+async function sendMessage(){
+  const txt = messageInput.value.trim();
+  if(!txt || !currentConvId) return;
+  const convDocRef = doc(db, "conversations", currentConvId);
+  const msgsColRef = collection(convDocRef, "messages");
+
+  // add message doc
+  await addDoc(msgsColRef, {
+    sender: "admin",          // change if you integrate auth
+    text: txt,
+    ts: serverTimestamp()
+  });
+
+  await updateDoc(convDocRef, {
+    lastMessage: txt,
+    lastUpdated: serverTimestamp()
+  });
+
+  messageInput.value = "";
+}
+
+
+async function createConversation(){
+  const clientName = prompt("Client name:");
+  const clientEmail = prompt("Client email (optional):");
+  const orderId = prompt("Order ID (optional):");
+
+  if(!clientName) return;
+  const data = {
+    clientName,
+    clientEmail: clientEmail || "",
+    orderId: orderId || "",
+    lastMessage: "Conversation started",
+    lastUpdated: serverTimestamp(),
+    unreadCount: 0
+  };
+  const newConvRef = await addDoc(collection(db, "conversations"), data);
+
+  await addDoc(collection(newConvRef, "messages"), {
+    sender: "system",
+    text: "Conversation created.",
+    ts: serverTimestamp()
+  });
+
+  openConversation(newConvRef.id);
+}
+
+function timeAgo(ts){
+  try {
+    const date = ts?.toDate ? ts.toDate() : new Date(ts); if (isNaN(date.getTime())) return "";
+    const diff = (Date.now() - date.getTime())/1000;
+    if(diff < 60) return `${Math.floor(diff)}s`;
+    if(diff < 3600) return `${Math.floor(diff/60)}m`;
+    if(diff < 86400) return `${Math.floor(diff/3600)}h`;
+    return date.toLocaleString();
+  } catch(e){ return ""; }
+}
+
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+
+/* ========== UPDATE ORDER STATUS ========== */
+async function updateStatus(id) {
+  const status = document.getElementById("statusSelect").value;
+  await updateDoc(doc(db, "orders", id), { status });
+  closeOrderModal();
+}
+
+
+/* ========== FILTER BY TYPE ========== */
+function filterOrdersByType(type) {
+  const rows = [...document.querySelectorAll("#ordersTable tbody tr")];
+
+  rows.forEach(r => r.style.display = "none");
+
+  let filtered = rows;
+
+  if(type === "pending")
+    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase() === "pending");
+
+  if(type === "recent") {
+    const today = new Date();
+    filtered = rows.filter(row => {
+      const d = new Date(row.cells[6].innerText); if (isNaN(d.getTime())) return false;
+      return (today - d) / (1000 * 60 * 60 * 24) <= 7;
+    });
+  }
+
+  if(type === "all")
+    filtered = rows;
+
+  filtered.forEach(r => r.style.display = "");
+
+
+  ["tabAll","tabRecent","tabPending"].forEach(id => {
+    document.getElementById(id).classList.remove("bg-indigo-600","text-white");
+    document.getElementById(id).classList.add("bg-gray-200","text-gray-700");
+  });
+
+  const tab = { all:"tabAll", recent:"tabRecent", pending:"tabPending" }[type];
+  const btn = document.getElementById(tab);
+
+  btn.classList.remove("bg-gray-200","text-gray-700");
+  btn.classList.add("bg-indigo-600","text-white");
+}
+
+
+/* ========== SEARCH ========== */
+function filterOrders() {
+  const q = document.getElementById("orderSearch").value.toLowerCase();
+  const rows = document.querySelectorAll("#ordersTable tbody tr");
+
+  rows.forEach(r => {
+    r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+  });
+}
+
+
+/* ========== SORTING (INCLUDES DATE) ========== */
+function sortOrders() {
+  const sort = document.getElementById("orderSort").value;
+  const table = document.getElementById("ordersTable").tBodies[0];
+  const rows = [...table.rows];
+
+  rows.sort((a, b) => {
+
+    const dateA = new Date(a.cells[6].innerText); if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
+    if(sort === "qtyAsc") return a.cells[3].innerText - b.cells[3].innerText;
+    if(sort === "qtyDesc") return b.cells[3].innerText - a.cells[3].innerText;
+    if(sort === "status") return a.cells[5].innerText.localeCompare(b.cells[5].innerText);
+
+    return 0;
+  });
+
+  rows.forEach(r => table.appendChild(r));
+}
+
+</script>
+</body>
+</html>
