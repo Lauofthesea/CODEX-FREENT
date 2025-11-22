@@ -203,7 +203,7 @@
 
   <div class="login-container">
     <div class="login-header">
-      <img src="https://via.placeholder.com/80" alt="Lines Hub Logo" class="logo">
+      <img src="../assets/lineslogo.jpg" alt="Lines Hub Logo" class="logo">
       <h1 class="login-title">Welcome Back</h1>
       <p class="login-subtitle">Lines Hub - FREENT System</p>
     </div>
@@ -244,12 +244,6 @@
       </button>
     </form>
 
-    <div class="demo-credentials">
-      <h4><i class="fas fa-info-circle"></i> Demo Credentials</h4>
-      <p><strong>Username:</strong> user / admin</p>
-      <p><strong>Password:</strong> user123 / admin123</p>
-    </div>
-
     <div class="back-link">
       <a href="../index.html">
         <i class="fas fa-arrow-left"></i> Back to Home
@@ -258,7 +252,7 @@
   </div>
 
   <script>
-    // STEP 2: Update login credentials with user accounts
+     // STEP 2: Update login credentials with user accounts
     const USER_CREDENTIALS = {
       // Regular user account
       user: {
@@ -276,6 +270,7 @@
       }
     };
 
+
     function handleLogin(event) {
       event.preventDefault();
       
@@ -291,6 +286,7 @@
       // Check credentials
       setTimeout(() => {
         const userAccount = USER_CREDENTIALS[username.toLowerCase()];
+        
         
         if (userAccount && userAccount.password === password) {
           // Set session data including email for order filtering

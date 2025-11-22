@@ -23,6 +23,16 @@ let selectedPayment = null;
 let currentService = null;
 let shirtColor = '#ffffff';
 
+// ========== USER DATA HELPER FUNCTIONS ==========
+function getUserEmail() {
+  return sessionStorage.getItem('userEmail') || 'guest@example.com';
+}
+
+function getCustomerName() {
+  return sessionStorage.getItem('username') || 'Guest User';
+}
+// ================================================
+
 // Pricing structures
 const prices = {
   document: {
@@ -152,98 +162,98 @@ function showDocumentForm() {
     </div>
   `;
   calculatePrice();
+  updateSubmitButton();  // Added: Ensures button state is checked on modal open
 }
 
-// Show T-Shirt Designer
 function showShirtDesigner() {
   const formContainer = document.getElementById('dynamicFormContainer');
   formContainer.innerHTML = `
-    <div class="shirt-designer-container">
-      <!-- Designer Canvas Area -->
-      <div class="designer-workspace">
-        <div class="shirt-mockup-container">
-          <canvas id="tshirtCanvas"></canvas>
-        </div>
-        
-        <!-- Design Tools -->
-        <div class="design-tools">
-          <button type="button" class="tool-btn" onclick="addText()" title="Add Text">
-            <i class="fas fa-font"></i> Add Text
-          </button>
-          <button type="button" class="tool-btn" onclick="document.getElementById('designUpload').click()" title="Upload Image">
-            <i class="fas fa-image"></i> Upload Image
-          </button>
-          <input type="file" id="designUpload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)" />
-          <button type="button" class="tool-btn" onclick="deleteSelected()" title="Delete Selected">
-            <i class="fas fa-trash"></i> Delete
-          </button>
-          <button type="button" class="tool-btn" onclick="clearCanvas()" title="Clear All">
-            <i class="fas fa-eraser"></i> Clear All
-          </button>
-        </div>
+    <div class="form-group">
+      <label>Upload Your Design(s)</label>
+      <div class="file-upload-area" onclick="document.getElementById('shirtDesignUpload').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Click to upload your design files</p>
+        <small>PNG, JPG, PDF, AI, PSD (Max 20MB per file)</small>
       </div>
+      <input type="file" id="shirtDesignUpload" accept="image/*,.pdf,.ai,.psd" multiple style="display: none;" />  <!-- Removed inline onchange -->
+      <div id="designFilesInfo" class="file-info" style="display: none;"></div>
+    </div>
 
-      <!-- Shirt Configuration -->
-      <div class="shirt-config">
-        <div class="form-group">
-          <label for="shirtColorPicker">Shirt Color</label>
-          <div class="color-picker-container">
-            <input type="color" id="shirtColorPicker" value="#ffffff" onchange="changeShirtColor(this.value)">
-            <div class="color-presets">
-              <button type="button" class="color-preset" style="background: #ffffff;" onclick="changeShirtColor('#ffffff')" title="White"></button>
-              <button type="button" class="color-preset" style="background: #000000;" onclick="changeShirtColor('#000000')" title="Black"></button>
-              <button type="button" class="color-preset" style="background: #1e3a8a;" onclick="changeShirtColor('#1e3a8a')" title="Navy"></button>
-              <button type="button" class="color-preset" style="background: #dc2626;" onclick="changeShirtColor('#dc2626')" title="Red"></button>
-              <button type="button" class="color-preset" style="background: #16a34a;" onclick="changeShirtColor('#16a34a')" title="Green"></button>
-              <button type="button" class="color-preset" style="background: #6b7280;" onclick="changeShirtColor('#6b7280')" title="Gray"></button>
-            </div>
-          </div>
-        </div>
+    <div class="form-group">
+      <label for="printMethod">Printing Method</label>
+      <select id="printMethod" required>
+        <option value="">Select Method</option>
+        <option value="dtf">DTF (Direct to Film)</option>
+        <option value="sublimation">Sublimation</option>
+        <option value="vinyl">Vinyl Heat Transfer</option>
+      </select>
+    </div>
 
-        <div class="form-group">
-          <label for="printMethod">Printing Method</label>
-          <select id="printMethod" onchange="calculatePrice()">
-            <option value="">Select Method</option>
-            <option value="dtf">DTF (Direct to Film) - ₱250/shirt</option>
-            <option value="sublimation">Sublimation - ₱200/shirt</option>
-            <option value="vinyl">Vinyl Heat Transfer - ₱150/shirt</option>
-          </select>
-        </div>
+    <div class="form-group">
+      <label for="shirtColorSelect">Shirt Color</label>
+      <select id="shirtColorSelect" required>
+        <option value="">Select Color</option>
+        <option value="White">White</option>
+        <option value="Black">Black</option>
+        <option value="Red">Red</option>
+        <option value="Blue">Blue</option>
+        <option value="Green">Green</option>
+        <option value="Navy Blue">Navy Blue</option>
+        <option value="Gray">Gray</option>
+        <option value="Yellow">Yellow</option>
+        <option value="Pink">Pink</option>
+        <option value="Purple">Purple</option>
+        <option value="Orange">Orange</option>
+        <!-- Add more colors as needed -->
+      </select>
+    </div>
 
-        <div class="form-group">
-          <label for="shirtSize">Shirt Size</label>
-          <select id="shirtSize">
-            <option value="">Select Size</option>
-            <option value="xs">Extra Small (XS)</option>
-            <option value="s">Small (S)</option>
-            <option value="m">Medium (M)</option>
-            <option value="l">Large (L)</option>
-            <option value="xl">Extra Large (XL)</option>
-            <option value="2xl">2XL</option>
-            <option value="3xl">3XL</option>
-          </select>
-        </div>
+    <div class="form-group">
+      <label for="shirtSize">Shirt Size</label>
+      <select id="shirtSize" required>
+        <option value="">Select Size</option>
+        <option value="xs">Extra Small (XS)</option>
+        <option value="s">Small (S)</option>
+        <option value="m">Medium (M)</option>
+        <option value="l">Large (L)</option>
+        <option value="xl">Extra Large (XL)</option>
+        <option value="2xl">2XL</option>
+        <option value="3xl">3XL</option>
+      </select>
+    </div>
 
-        <div class="form-group">
-          <label for="quantity">Quantity</label>
-          <input type="number" id="quantity" min="1" max="500" value="1" onchange="calculatePrice()" />
-        </div>
+    <div class="form-group">
+      <label for="quantity">Quantity</label>
+      <input type="number" id="quantity" min="1" max="500" value="1" required />
+    </div>
 
-        <div class="form-group">
-          <label for="shirtNotes">Additional Notes (optional)</label>
-          <textarea id="shirtNotes" rows="2" placeholder="Any special instructions..."></textarea>
-        </div>
+    <div class="form-group">
+      <label for="designInstructions">Design Instructions</label>
+      <textarea id="designInstructions" rows="4" placeholder="Please describe how you want your design printed:
+- Placement (front, back, sleeve, etc.)
+- Size of the design
+- Any special requirements
+- Color preferences for the print" required></textarea>
+      <small style="color: #aaa; display: block; margin-top: 0.5rem;">Be as detailed as possible to help us create your perfect shirt!</small>
+    </div>
+
+    <div class="form-group">
+      <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid #FFD700; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+        <p style="color: #FFD700; font-weight: 600; margin-bottom: 0.5rem;">
+          <i class="fas fa-info-circle"></i> Payment Process
+        </p>
+        <p style="color: #fff; font-size: 0.9rem; line-height: 1.5;">
+          Our team will review your design and instructions. We'll contact you with the final price and payment details before proceeding with production.
+        </p>
       </div>
     </div>
   `;
   
-  // Initialize Fabric.js canvas
-  setTimeout(() => {
-    initShirtCanvas();
-  }, 100);
+   document.getElementById('shirtDesignUpload').addEventListener('change', handleShirtDesignUpload);
   
-  selectedFile = 'custom-design'; // Mark as having a design
+  selectedFile = null;
   calculatePrice();
+  updateSubmitButton();
 }
 
 // Show generic forms for photo, tarpaulin, stickers, customized
@@ -353,7 +363,6 @@ function showGenericForm(service) {
   }
 
   formContainer.innerHTML = html;
-  // reset selection state
   selectedFile = null;
   calculatePrice();
   updateSubmitButton();
@@ -370,10 +379,8 @@ function initShirtCanvas() {
     backgroundColor: '#ffffff'
   });
   
-  // Draw T-shirt outline
   drawTShirtOutline();
   
-  // Add keyboard delete support
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Delete' && canvas) {
       deleteSelected();
@@ -405,7 +412,7 @@ function changeShirtColor(color) {
   
   if (canvas) {
     const objects = canvas.getObjects();
-    const shirtOutline = objects[0]; // First object is the shirt
+    const shirtOutline = objects[0];
     if (shirtOutline) {
       shirtOutline.set('fill', color);
       canvas.renderAll();
@@ -460,7 +467,6 @@ function deleteSelected() {
   const activeObjects = canvas.getActiveObjects();
   if (activeObjects.length) {
     activeObjects.forEach(obj => {
-      // Don't delete the shirt outline (first object)
       if (canvas.getObjects().indexOf(obj) !== 0) {
         canvas.remove(obj);
       }
@@ -474,9 +480,59 @@ function deleteSelected() {
 function clearCanvas() {
   if (!canvas) return;
   
-  const objects = canvas.getObjects().slice(1); // Skip shirt outline
+  const objects = canvas.getObjects().slice(1);
   objects.forEach(obj => canvas.remove(obj));
   canvas.renderAll();
+}
+
+// Handle shirt design file upload (multiple files)
+function handleShirtDesignUpload(event) {
+  console.log('handleShirtDesignUpload called');  // Added: Check if function runs
+  const files = event.target.files;
+  const fileInfo = document.getElementById('designFilesInfo');
+  
+  console.log('Files selected:', files);  // Added: Log the files object
+  if (files.length === 0) {
+    console.log('No files selected');  // Added
+    return;
+  }
+  
+  let totalSize = 0;
+  let fileList = '<div style="margin-top: 1rem;">';
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    totalSize += parseFloat(fileSize);
+    
+    console.log(`File ${i}: ${file.name}, Size: ${fileSize} MB`);  // Added: Log each file
+    if (parseFloat(fileSize) > 20) {
+      alert(`File "${file.name}" is too large. Maximum size is 20MB per file.`);
+      event.target.value = '';
+      selectedFile = null;
+      fileInfo.style.display = 'none';
+      updateSubmitButton();
+      return;
+    }
+    
+    fileList += `
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255, 215, 0, 0.1); border-radius: 6px;">
+        <i class="fas fa-file" style="color: #FFD700;"></i>
+        <strong style="flex: 1; color: #fff;">${file.name}</strong>
+        <span style="color: #aaa; font-size: 0.85rem;">${fileSize} MB</span>
+      </div>
+    `;
+  }
+  
+  fileList += `<p style="color: #FFD700; font-weight: 600; margin-top: 0.5rem;">Total: ${files.length} file(s) - ${totalSize.toFixed(2)} MB</p>`;
+  fileList += '</div>';
+  
+  selectedFile = files;
+  fileInfo.style.display = 'block';
+  fileInfo.innerHTML = fileList;
+  
+  console.log('File info updated, calling updateSubmitButton');  // Added
+  updateSubmitButton();
 }
 
 // Handle document file select
@@ -536,13 +592,9 @@ function calculatePrice() {
     const pricePerPage = prices.document[paperSize] || 0;
     total = pricePerPage * copies;
   } else if (currentService === 'shirt') {
-    const printMethod = document.getElementById('printMethod')?.value;
-    const quantity = parseInt(document.getElementById('quantity')?.value) || 1;
-
-    if (printMethod) {
-      const pricePerShirt = prices.shirt[printMethod] || 0;
-      total = pricePerShirt * quantity;
-    }
+    // For shirt orders, no price calculation - pending admin review
+    document.getElementById('totalPrice').textContent = 'Pending Review';
+    return;
   } else if (currentService === 'photo') {
     if (!selectedFile) {
       document.getElementById('totalPrice').textContent = '₱0.00';
@@ -573,19 +625,22 @@ function updateSubmitButton() {
   
   if (!submitBtn) return;
 
-  // require payment for all
+  if (currentService === 'shirt') {
+    // For shirt orders, check if design files are uploaded and required fields are filled
+    submitBtn.disabled = !selectedFile;
+    return;
+  }
+
   if (!selectedPayment) {
     submitBtn.disabled = true;
     return;
   }
 
-  // services that require a file upload
   if (currentService === 'document' || currentService === 'photo' || currentService === 'customized') {
     submitBtn.disabled = !selectedFile;
     return;
   }
 
-  // for others (shirt, tarpaulin, stickers) allow when payment selected
   submitBtn.disabled = false;
 }
 
@@ -598,69 +653,6 @@ async function handleSubmit(event) {
     await submitShirtOrder();
   } else if (currentService === 'photo' || currentService === 'tarpaulin' || currentService === 'stickers' || currentService === 'customized') {
     await submitGenericOrder(currentService);
-  }
-}
-
-// Generic submit handler for other services
-async function submitGenericOrder(service) {
-  try {
-    let productName = '';
-    let type = '-';
-    let quantity = 1;
-    let notes = '-';
-    let price = 0;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '') || '0';
-
-    if (service === 'photo') {
-      productName = 'Photo Printing';
-      type = document.getElementById('photoSize')?.value || 'small';
-      quantity = parseInt(document.getElementById('photoCopies')?.value) || 1;
-      price = prices.photo[type] || 0;
-      notes = selectedFile?.name || '-';
-    } else if (service === 'tarpaulin') {
-      productName = 'Tarpaulin Printing';
-      type = document.getElementById('tarpaulinSize')?.value || 'small';
-      quantity = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
-      price = prices.tarpaulin[type] || 0;
-      notes = document.getElementById('tarpaulinNotes')?.value || '-';
-    } else if (service === 'stickers') {
-      productName = 'Stickers';
-      quantity = parseInt(document.getElementById('stickerQty')?.value) || 1;
-      price = prices.stickers.perPiece;
-      notes = document.getElementById('stickerNotes')?.value || '-';
-    } else if (service === 'customized') {
-      productName = 'Customized Item';
-      quantity = parseInt(document.getElementById('customQty')?.value) || 1;
-      price = prices.customized.base;
-      notes = selectedFile?.name || '-';
-    }
-
-    const orderData = {
-      orderId: generateOrderId(),
-      customer: 'Guest User',
-      contact: '-',
-      email: '-',
-      product: productName,
-      type: type.toString().toUpperCase(),
-      size: type.toString().toUpperCase(),
-      quantity: parseInt(quantity),
-      price: price,
-      total: parseFloat(totalPrice),
-      notes: notes,
-      status: 'Pending',
-      date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      height: '-',
-      width: '-'
-    };
-
-    await addDoc(collection(db, "orders"), orderData);
-
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${productName}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}`);
-    closeModal();
-  } catch (error) {
-    console.error('Error submitting generic order:', error);
-    alert('Error placing order. Please try again.');
   }
 }
 
@@ -681,50 +673,14 @@ function getCurrentDate() {
   });
 }
 
-async function submitDocumentOrder() {
-  try {
-    const paperSize = document.getElementById('paperSize').value;
-    const copies = document.getElementById('copies').value;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
-    
-    const orderData = {
-      orderId: generateOrderId(),
-      customer: 'Guest User',
-      contact: '-',
-      email: '-',
-      product: 'Document Printing',
-      type: paperSize.toUpperCase(),
-      size: paperSize.toUpperCase(),
-      quantity: parseInt(copies),
-      price: prices.document[paperSize],
-      total: parseFloat(totalPrice),
-      notes: selectedFile.name,
-      status: 'Pending',
-      date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      height: '-',
-      width: '-'
-    };
-    
-    // Save to Firebase
-    await addDoc(collection(db, "orders"), orderData);
-    
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nFile: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYou can track your order using the Order ID.`);
-    
-    closeModal();
-  } catch (error) {
-    console.error("Error submitting order:", error);
-    alert("Error placing order. Please try again.");
-  }
-}
-
+// ========== UPDATED: Document order with user email ==========
 async function submitShirtOrder() {
   try {
     const printMethod = document.getElementById('printMethod').value;
     const shirtSize = document.getElementById('shirtSize').value;
+    const shirtColorSelect = document.getElementById('shirtColorSelect').value;  // Updated to match dropdown ID
     const quantity = document.getElementById('quantity').value;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
-    const notes = document.getElementById('shirtNotes')?.value || '-';
+    const designInstructions = document.getElementById('designInstructions').value;
     
     if (!printMethod) {
       alert('Please select a printing method');
@@ -734,41 +690,52 @@ async function submitShirtOrder() {
       alert('Please select a shirt size');
       return;
     }
+    if (!shirtColorSelect) {  // Updated check (now references the correct variable)
+      alert('Please select a shirt color');
+      return;
+    }
+    if (!designInstructions.trim()) {
+      alert('Please provide design instructions');
+      return;
+    }
+    if (!selectedFile || selectedFile.length === 0) {
+      alert('Please upload at least one design file');
+      return;
+    }
     
-    // Export design as image
-    let designDataURL = '';
-    if (canvas) {
-      designDataURL = canvas.toDataURL({
-        format: 'png',
-        quality: 1
-      });
+    // Create file names list for notes
+    let fileNames = '';
+    if (selectedFile && selectedFile.length) {
+      for (let i = 0; i < selectedFile.length; i++) {
+        fileNames += selectedFile[i].name;
+        if (i < selectedFile.length - 1) fileNames += ', ';
+      }
     }
     
     const orderData = {
       orderId: generateOrderId(),
-      customer: 'Guest User',
+      customer: getCustomerName(),
       contact: '-',
-      email: '-',
+      email: getUserEmail(),
       product: 'T-Shirt Printing',
       type: printMethod.toUpperCase(),
       size: shirtSize.toUpperCase(),
       quantity: parseInt(quantity),
-      price: prices.shirt[printMethod],
-      total: parseFloat(totalPrice),
-      notes: notes,
-      status: 'Pending',
+      price: 0, // Price pending admin review
+      total: 0, // Total pending admin review
+      notes: `Design Files: ${fileNames}\n\nShirt Color: ${shirtColorSelect}\n\nInstructions:\n${designInstructions}`,  // Fixed: Now uses shirtColorSelect
+      status: 'Pending Review',
       date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      shirtColor: shirtColor,
-      designImage: designDataURL.substring(0, 1000),
+      paymentMethod: 'Pending',
+      shirtColor: shirtColorSelect,  // Fixed: Now uses shirtColorSelect
+      designInstructions: designInstructions,
       height: '-',
       width: '-'
     };
     
-    // Save to Firebase
     await addDoc(collection(db, "orders"), orderData);
     
-    alert(`T-Shirt Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColor}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYour custom design has been saved!\nYou can track your order using the Order ID.`);
+    alert(`T-Shirt Design Submitted Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColorSelect}\nQuantity: ${quantity}\nFiles Uploaded: ${selectedFile.length}\n\nOur team will review your design and contact you with pricing and payment details. Thank you!`);  // Fixed: Now uses shirtColorSelect
     
     closeModal();
   } catch (error) {
@@ -824,192 +791,3 @@ window.handleImageUpload = handleImageUpload;
 window.deleteSelected = deleteSelected;
 window.clearCanvas = clearCanvas;
 window.changeShirtColor = changeShirtColor;
-
-
-// Add this function at the beginning of your services.js file
-// This ensures all orders are saved with the logged-in user's email
-
-function getUserEmail() {
-  return sessionStorage.getItem('userEmail') || 'guest@example.com';
-}
-
-function getCustomerName() {
-  return sessionStorage.getItem('username') || 'Guest User';
-}
-
-// UPDATE the submitDocumentOrder function to include email:
-async function submitDocumentOrder() {
-  try {
-    const paperSize = document.getElementById('paperSize').value;
-    const copies = document.getElementById('copies').value;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
-    
-    const orderData = {
-      orderId: generateOrderId(),
-      customer: getCustomerName(),  // Use logged-in user's name
-      contact: '-',
-      email: getUserEmail(),  // ADDED: Save user's email for filtering
-      product: 'Document Printing',
-      type: paperSize.toUpperCase(),
-      size: paperSize.toUpperCase(),
-      quantity: parseInt(copies),
-      price: prices.document[paperSize],
-      total: parseFloat(totalPrice),
-      notes: selectedFile.name,
-      status: 'Pending',
-      date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      height: '-',
-      width: '-'
-    };
-    
-    // Save to Firebase
-    await addDoc(collection(db, "orders"), orderData);
-    
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nFile: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYou can track your order using the Order ID.`);
-    
-    closeModal();
-  } catch (error) {
-    console.error("Error submitting order:", error);
-    alert("Error placing order. Please try again.");
-  }
-}
-
-// UPDATE the submitShirtOrder function to include email:
-async function submitShirtOrder() {
-  try {
-    const printMethod = document.getElementById('printMethod').value;
-    const shirtSize = document.getElementById('shirtSize').value;
-    const quantity = document.getElementById('quantity').value;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '');
-    const notes = document.getElementById('shirtNotes')?.value || '-';
-    
-    if (!printMethod) {
-      alert('Please select a printing method');
-      return;
-    }
-    if (!shirtSize) {
-      alert('Please select a shirt size');
-      return;
-    }
-    
-    // Export design as image
-    let designDataURL = '';
-    if (canvas) {
-      designDataURL = canvas.toDataURL({
-        format: 'png',
-        quality: 1
-      });
-    }
-    
-    const orderData = {
-      orderId: generateOrderId(),
-      customer: getCustomerName(),  // Use logged-in user's name
-      contact: '-',
-      email: getUserEmail(),  // ADDED: Save user's email for filtering
-      product: 'T-Shirt Printing',
-      type: printMethod.toUpperCase(),
-      size: shirtSize.toUpperCase(),
-      quantity: parseInt(quantity),
-      price: prices.shirt[printMethod],
-      total: parseFloat(totalPrice),
-      notes: notes,
-      status: 'Pending',
-      date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      shirtColor: shirtColor,
-      designImage: designDataURL.substring(0, 1000),
-      height: '-',
-      width: '-'
-    };
-    
-    // Save to Firebase
-    await addDoc(collection(db, "orders"), orderData);
-    
-    alert(`T-Shirt Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColor}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}\n\nYour custom design has been saved!\nYou can track your order using the Order ID.`);
-    
-    closeModal();
-  } catch (error) {
-    console.error("Error submitting order:", error);
-    alert("Error placing order. Please try again.");
-  }
-}
-
-// UPDATE the submitGenericOrder function to include email:
-async function submitGenericOrder(service) {
-  try {
-    let productName = '';
-    let type = '-';
-    let quantity = 1;
-    let notes = '-';
-    let price = 0;
-    const totalPrice = document.getElementById('totalPrice').textContent.replace('₱', '') || '0';
-
-    if (service === 'photo') {
-      productName = 'Photo Printing';
-      type = document.getElementById('photoSize')?.value || 'small';
-      quantity = parseInt(document.getElementById('photoCopies')?.value) || 1;
-      price = prices.photo[type] || 0;
-      notes = selectedFile?.name || '-';
-    } else if (service === 'tarpaulin') {
-      productName = 'Tarpaulin Printing';
-      type = document.getElementById('tarpaulinSize')?.value || 'small';
-      quantity = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
-      price = prices.tarpaulin[type] || 0;
-      notes = document.getElementById('tarpaulinNotes')?.value || '-';
-    } else if (service === 'stickers') {
-      productName = 'Stickers';
-      quantity = parseInt(document.getElementById('stickerQty')?.value) || 1;
-      price = prices.stickers.perPiece;
-      notes = document.getElementById('stickerNotes')?.value || '-';
-    } else if (service === 'customized') {
-      productName = 'Customized Item';
-      quantity = parseInt(document.getElementById('customQty')?.value) || 1;
-      price = prices.customized.base;
-      notes = selectedFile?.name || '-';
-    }
-
-    const orderData = {
-      orderId: generateOrderId(),
-      customer: getCustomerName(),  // Use logged-in user's name
-      contact: '-',
-      email: getUserEmail(),  // ADDED: Save user's email for filtering
-      product: productName,
-      type: type.toString().toUpperCase(),
-      size: type.toString().toUpperCase(),
-      quantity: parseInt(quantity),
-      price: price,
-      total: parseFloat(totalPrice),
-      notes: notes,
-      status: 'Pending',
-      date: getCurrentDate(),
-      paymentMethod: selectedPayment,
-      height: '-',
-      width: '-'
-    };
-
-    await addDoc(collection(db, "orders"), orderData);
-
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${productName}\nQuantity: ${quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${totalPrice}`);
-    closeModal();
-  } catch (error) {
-    console.error('Error submitting generic order:', error);
-    alert('Error placing order. Please try again.');
-  }
-}
-
-// Make sure these functions are in your services.js file
-function generateOrderId() {
-  return 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
-}
-
-function getCurrentDate() {
-  const now = new Date();
-  return now.toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
