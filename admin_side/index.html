@@ -11,16 +11,117 @@
   .animate-fadeIn { animation: fadeIn 0.2s ease-in-out; }
   @keyframes fadeIn { from {opacity:0} to {opacity:1} }
 
+  @keyframes modalShow {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
 
-@keyframes modalShow {
-  0% { opacity: 0; transform: translateY(-20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
+  .animate-modalShow {
+    animation: modalShow 0.25s ease-out forwards;
+  }
 
-.animate-modalShow {
-  animation: modalShow 0.25s ease-out forwards;
-}
+  /* Theme alignment */
+  body {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  }
 
+  /* Sidebar styling - matching brand colors */
+  aside {
+    background: linear-gradient(135deg, #191919 0%, #2d2d2d 100%) !important;
+    border-right: 2px solid #FFD700;
+  }
+
+  aside h1 {
+    color: #FFD700 !important;
+  }
+
+  /* Active button color */
+  aside button.bg-indigo-600 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    color: #000 !important;
+  }
+
+  aside button.bg-indigo-600:hover {
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  }
+
+  /* Logout button */
+  aside .bg-red-600 {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  }
+
+  /* Header styling */
+  header {
+    background: linear-gradient(135deg, #191919 0%, #2d2d2d 100%);
+    border-bottom: 2px solid #FFD700;
+  }
+
+  header h1 {
+    color: #FFD700;
+  }
+
+  /* Card gradients - primary */
+  .from-\[\#716FF3\] {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+  }
+
+  /* Button colors */
+  button.bg-indigo-600 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    color: #000 !important;
+    font-weight: 600;
+  }
+
+  button.bg-indigo-600:hover {
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Tab styling */
+  .bg-indigo-600 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
+    color: #000 !important;
+  }
+
+  .bg-indigo-600:hover {
+    opacity: 0.9;
+  }
+
+  /* Input focus */
+  input:focus,
+  select:focus {
+    border-color: #FFD700 !important;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1) !important;
+  }
+
+  input,
+  select {
+    border-color: #d1d5db;
+  }
+
+  /* Table hover */
+  tbody tr:hover {
+    background: rgba(255, 215, 0, 0.05);
+  }
+
+  /* Modal styling */
+  .bg-black.bg-opacity-40 {
+    background: rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .bg-white {
+    background: #f9fafb;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    aside {
+      width: 200px;
+    }
+    .ml-64 {
+      margin-left: 200px;
+    }
+  }
 </style>
 </head>
 <body class="bg-gray-100 flex">
@@ -38,7 +139,13 @@
     <button onclick="showSection('messagesSection')" id="messagesBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Messages</button>
   </nav>
   <div class="p-4 border-t">
-    <button class="w-full px-4 py-3 bg-red-600 text-white rounded-xl">Logout</button>
+    <div class="text-center mb-3">
+      <p class="text-sm text-gray-600"><i class="fas fa-user-shield"></i> Admin Panel</p>
+      <p class="text-xs text-gray-500 mt-1" id="adminUserDisplay">User</p>
+    </div>
+    <button onclick="handleAdminLogout()" class="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl font-medium hover:from-red-700 hover:to-red-800 transition">
+      <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
   </div>
 </aside>
 
@@ -211,6 +318,36 @@ import { db } from "./firebase-init.js";
 import { collection, onSnapshot, doc, getDoc, updateDoc, addDoc, query, orderBy, where, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 
+// Check admin authentication
+function checkAdminAuth() {
+  const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+  const role = sessionStorage.getItem('userRole');
+  
+  if (isLoggedIn !== 'true' || role !== 'admin') {
+    alert('Unauthorized access. Please login as admin.');
+    window.location.href = '../pages/login.html';
+  }
+
+  // Display admin username
+  const username = sessionStorage.getItem('username') || 'Admin';
+  document.getElementById('adminUserDisplay').textContent = username;
+}
+
+// Admin logout function
+function handleAdminLogout() {
+  if (confirm('Are you sure you want to logout?')) {
+    sessionStorage.removeItem('userLoggedIn');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('userRole');
+    sessionStorage.removeItem('userEmail');
+    window.location.href = '../pages/login.html';
+  }
+}
+
+// Initialize auth check
+checkAdminAuth();
+
+
 const ordersCol = collection(db, "orders");
 
 window.showSection = showSection;
@@ -220,6 +357,7 @@ window.updateStatus = updateStatus;
 window.filterOrdersByType = filterOrdersByType;
 window.filterOrders = filterOrders;
 window.sortOrders = sortOrders;
+window.handleAdminLogout = handleAdminLogout;
 
 
 // Modal controls

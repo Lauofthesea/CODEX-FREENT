@@ -21,10 +21,10 @@ export function TshirtModel({
   const meshRef = useRef();
 
   useEffect(() => {
-    if (meshRef.current) {
-      meshRef.current.material.color.set(tshirtColor); // ✅ Dynamically update color
-    }
-  }, [tshirtColor]);
+  if (meshRef.current) {
+    meshRef.current.material.color.set(tshirtColor); 
+  }
+}, [tshirtColor]);
 
   const handleClick = (view) => {
     onViewChange(view);
@@ -52,7 +52,7 @@ export function TshirtModel({
           >
             <meshBasicMaterial transparent opacity={0} />
             <Decal
-              // debug // Makes "bounding box" of the decal visible
+              debug
               position={[0, 0.2, -0.31]} //{pos} // Position of the decal
               rotation={[-Math.PI / 2 - 0.05, 0, 0]} // Rotation of the decal (can be a vector or a degree in radians)
               scale={[0.52, 0.7, 0.5]} //{scale} // Scale of the decal
@@ -66,6 +66,7 @@ export function TshirtModel({
                 polygonOffsetFactor={-1} // The mesh should take precedence over the original
               />
             </Decal>
+            
           </mesh>
           <mesh
             castShadow
@@ -77,7 +78,7 @@ export function TshirtModel({
           >
             <meshBasicMaterial transparent opacity={0} />
             <Decal
-              // debug // Makes "bounding box" of the decal visible
+              debug
               position={[0, -0.2, -0.27]} //{pos} // Position of the decal
               rotation={[Math.PI / 2 - 0.2, 0, Math.PI]} // Rotation of the decal (can be a vector or a degree in radians)
               scale={[0.52, 0.7, 0.5]} //{scale} // Scale of the decal
@@ -93,20 +94,11 @@ export function TshirtModel({
             </Decal>
           </mesh>
           <mesh
-            castShadow
-            receiveShadow
-            geometry={nodes["T-Shirt_4"].geometry}
-            material={materials["left hand"]}
-            scale={7.5}
-            position={[0, 0, 2]}
-          />
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={nodes["T-Shirt_5"].geometry}
-            material={materials["right hand"]}
-            scale={7.5}
-            position={[0, 0, 2]}
+          ref={meshRef}  
+           castShadow
+             receiveShadow
+             geometry={nodes["T-Shirt_1"].geometry}
+             material={materials.Shirt}
           />
         </group>
         <group rotation={[Math.PI / 2, 0, 0]}>

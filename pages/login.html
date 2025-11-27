@@ -168,6 +168,23 @@
       color: #fff;
     }
 
+    .login-link {
+      text-align: center;
+      margin-top: 1rem;
+      color: #aaa;
+    }
+
+    .login-link a {
+      color: #FFD700;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    .login-link a:hover {
+      color: #fff;
+    }
+
     .demo-credentials {
       background: rgba(255, 215, 0, 0.1);
       border: 1px solid #FFD700;
@@ -244,6 +261,10 @@
       </button>
     </form>
 
+    <div class="login-link">
+      Don't have an account? <a href="signup.html">Create one now</a>
+    </div>
+
     <div class="back-link">
       <a href="../index.html">
         <i class="fas fa-arrow-left"></i> Back to Home
@@ -270,11 +291,10 @@
       }
     };
 
-
     function handleLogin(event) {
       event.preventDefault();
       
-      const username = document.getElementById('username').value.trim();
+      const username = document.getElementById('username').value.trim().toLowerCase();
       const password = document.getElementById('password').value;
       const errorMessage = document.getElementById('errorMessage');
       const loginBtn = document.getElementById('loginBtn');
@@ -285,8 +305,8 @@
       
       // Check credentials
       setTimeout(() => {
-        const userAccount = USER_CREDENTIALS[username.toLowerCase()];
-        
+        // First check default credentials
+        const userAccount = USER_CREDENTIALS[username];
         
         if (userAccount && userAccount.password === password) {
           // Set session data including email for order filtering
@@ -303,20 +323,38 @@
             // Redirect to user dashboard
             window.location.href = '../dashboard.html';
           }
-        } else {
-          // Show error message
-          errorMessage.textContent = 'Invalid username or password';
-          errorMessage.classList.add('show');
-          
-          // Re-enable button
-          loginBtn.disabled = false;
-          loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-          
-          // Remove error after 3 seconds
-          setTimeout(() => {
-            errorMessage.classList.remove('show');
-          }, 3000);
+          return;
         }
+
+        // Check registered users in localStorage
+        const registeredUsers = JSON.parse(localStorage.getItem('freentUsers') || '[]');
+        const registeredUser = registeredUsers.find(user => user.username === username && user.password === password);
+        
+        if (registeredUser) {
+          // Set session data
+          sessionStorage.setItem('userLoggedIn', 'true');
+          sessionStorage.setItem('username', registeredUser.fullname);
+          sessionStorage.setItem('userRole', registeredUser.role || 'user');
+          sessionStorage.setItem('userEmail', registeredUser.email);
+          sessionStorage.setItem('userId', registeredUser.id);
+          
+          // Redirect to user dashboard
+          window.location.href = '../dashboard.html';
+          return;
+        }
+
+        // Show error message
+        errorMessage.textContent = 'Invalid username or password';
+        errorMessage.classList.add('show');
+        
+        // Re-enable button
+        loginBtn.disabled = false;
+        loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        
+        // Remove error after 3 seconds
+        setTimeout(() => {
+          errorMessage.classList.remove('show');
+        }, 3000);
       }, 800);
     }
 

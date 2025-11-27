@@ -53,10 +53,13 @@ function App() {
               <div className="h-[400px] md:h-[560px] w-[250px] md:min-w-[500px] relative mx-6 md:mx-0">
                 <Canvas>
                   <OrbitControls
-                    maxPolarAngle={Math.PI / 2} // Limit the vertical rotation to 90 degrees (looking down)
-                    minPolarAngle={Math.PI / 3} // Limit the vertical rotation to 60 degrees (looking up)
-                    // Limit horizontal rotation to 45 degrees to the right
-                  />
+                        maxPolarAngle={Math.PI / 2}
+                          minPolarAngle={Math.PI / 3}
+                            enableZoom={true}
+                               enablePan={false}
+                                     minDistance={3}
+                                        maxDistance={8}
+                                         />
                   <Suspense fallback={null}>
                     <TshirtModel
                       tshirtColor={tshirtColor}
@@ -65,6 +68,9 @@ function App() {
                       designTextureBack={designTextureBack}
                     />
                     <Environment preset="sunset" />
+                    <directionalLight position={[5, 5, 5]} intensity={0.5} />
+                    <directionalLight position={[-5, 5, -5]} intensity={0.3} />
+                    <ambientLight intensity={0.4} />
                   </Suspense>
                 </Canvas>
                 <Loader

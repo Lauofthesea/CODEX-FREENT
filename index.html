@@ -74,6 +74,7 @@
           <i class="fas fa-user-circle"></i>
           <span id="usernameDisplay">User</span>
         </div>
+        <button id="signupBtn" class="cta login-btn" onclick="window.location.href='./pages/signup.html'" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 0.5rem;">Sign Up</button>
          <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./pages/login.html'">Login</button>
         <!-- Logout button - shown when logged in -->
         <button id="logoutBtn" class="cta login-btn" onclick="handleLogout()" style="display: none;">Logout</button>
@@ -202,6 +203,7 @@
         document.getElementById('usernameDisplay').textContent = username;
         document.getElementById('logoutBtn').style.display = 'block';
         document.getElementById('loginBtn').style.display = 'none';
+        document.getElementById('signupBtn').style.display = 'none';
         document.getElementById('ordersNavItem').style.display = 'block';
         
         // Update footer link to Orders
@@ -209,10 +211,11 @@
         footerLink.textContent = 'Track Orders';
         footerLink.href = 'user.html';
       } else {
-        // User is not logged in - show login button
+        // User is not logged in - show login & signup buttons
         document.getElementById('userIndicator').style.display = 'none';
         document.getElementById('logoutBtn').style.display = 'none';
         document.getElementById('loginBtn').style.display = 'block';
+        document.getElementById('signupBtn').style.display = 'block';
         document.getElementById('ordersNavItem').style.display = 'none';
       }
     }
