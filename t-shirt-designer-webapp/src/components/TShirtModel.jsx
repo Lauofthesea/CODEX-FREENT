@@ -53,9 +53,9 @@ export function TshirtModel({
             <meshBasicMaterial transparent opacity={0} />
             <Decal
               debug
-              position={[0, 0.2, -0.31]} //{pos} // Position of the decal
-              rotation={[-Math.PI / 2 - 0.05, 0, 0]} // Rotation of the decal (can be a vector or a degree in radians)
-              scale={[0.52, 0.7, 0.5]} //{scale} // Scale of the decal
+              position={[0, 0.2, -0.31]} 
+              rotation={[-Math.PI / 2 - 0.05, 0, 0]} 
+              scale={[0.52, 0.7, 0.5]} 
               onClick={() => handleClick("front")}
             >
               <meshStandardMaterial
@@ -63,7 +63,7 @@ export function TshirtModel({
                 toneMapped={false}
                 transparent
                 polygonOffset
-                polygonOffsetFactor={-1} // The mesh should take precedence over the original
+                polygonOffsetFactor={-1} 
               />
             </Decal>
             
@@ -79,9 +79,9 @@ export function TshirtModel({
             <meshBasicMaterial transparent opacity={0} />
             <Decal
               debug
-              position={[0, -0.2, -0.27]} //{pos} // Position of the decal
-              rotation={[Math.PI / 2 - 0.2, 0, Math.PI]} // Rotation of the decal (can be a vector or a degree in radians)
-              scale={[0.52, 0.7, 0.5]} //{scale} // Scale of the decal
+              position={[0, -0.2, -0.27]}
+              rotation={[Math.PI / 2 - 0.2, 0, Math.PI]} 
+              scale={[0.52, 0.7, 0.5]} 
               onClick={() => handleClick("back")}
             >
               <meshStandardMaterial
