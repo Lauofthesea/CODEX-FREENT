@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lines Hub Admin Dashboard</title>
+<title>Freent Admin Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css-files/admin-dashboard.css">
+<link rel="stylesheet" href="../css-files/modals.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body class="bg-gray-100 flex">
 
@@ -14,7 +16,7 @@
 <aside class="w-64 bg-white h-screen shadow-lg flex flex-col fixed left-0 top-0">
   <div class="p-6 flex items-center space-x-3 border-b">
     <img src="../assets/lineslogo.jpg" class="w-10 h-10 rounded-full">
-    <h1 class="text-xl font-bold text-[#0B0A7A]">Lines Hub</h1>
+    <h1 class="text-xl font-bold text-[#0B0A7A]">Freent - Admin</h1>
   </div>
   <nav class="flex-1 p-4 space-y-3">
     <button onclick="showSection('dashboardSection')" id="dashboardBtn" class="w-full text-left px-4 py-3 bg-indigo-600 text-white rounded-xl">Dashboard</button>
@@ -83,17 +85,22 @@
         <button onclick="filterOrdersByType('all')" id="tabAll" class="px-4 py-2 bg-indigo-600 text-white rounded-lg">All</button>
         <button onclick="filterOrdersByType('recent')" id="tabRecent" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Recent</button>
         <button onclick="filterOrdersByType('pending')" id="tabPending" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">Pending</button>
+        <button onclick="filterOrdersByType('production')" id="tabProduction" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">In Production</button>
+        <button onclick="filterOrdersByType('delivery')" id="tabDelivery" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg">On Delivery</button>
       </div>
       <div class="flex flex-col md:flex-row gap-4 mb-4">
-        <input id="orderSearch" type="text" placeholder="Search orders..." class="px-4 py-2 border rounded-lg w-full md:w-1/3" onkeyup="filterOrders()">
+        <input id="orderSearch" type="text" placeholder="Search by Order ID, Customer, Email, or Product..." class="px-4 py-2 border rounded-lg w-full md:w-1/2" onkeyup="filterOrders()">
         <select id="orderSort" class="px-4 py-2 border rounded-lg" onchange="sortOrders()">
-          <option value="">Sort By</option>
+          <option value="dateDesc" selected>Date ↓ (Newest)</option>
           <option value="dateAsc">Date ↑ (Oldest)</option>
-          <option value="dateDesc">Date ↓ (Newest)</option>
           <option value="qtyAsc">Quantity ↑</option>
           <option value="qtyDesc">Quantity ↓</option>
           <option value="status">Status</option>
+          <option value="customer">Customer A-Z</option>
         </select>
+        <button onclick="exportOrders()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+          <i class="fas fa-download"></i> Export CSV
+        </button>
       </div>
       <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
         <table id="ordersTable" class="min-w-full divide-y divide-gray-200">
@@ -194,12 +201,17 @@
       </div>
     </div>
 
-    <!-- ORDER DETAILS MODAL -->
+    <!-- ORDER DETAILS MODAL - Enhanced -->
     <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
-        <button onclick="closeOrderModal()" class="absolute top-3 right-4 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
-        <h2 class="text-2xl font-semibold mb-6 pb-3 border-b text-gray-800">Order Details</h2>
-        <div id="orderDetailsContent" class="space-y-4 text-gray-700"></div>
+      <div class="bg-white w-full sm:w-[500px] md:w-[600px] lg:w-[700px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
+        <button onclick="closeOrderModal()" class="absolute top-4 right-4 text-3xl text-gray-400 hover:text-white transition-colors">&times;</button>
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-700">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center">
+            <i class="fas fa-box text-white text-xl"></i>
+          </div>
+          <h2 class="text-2xl font-bold text-white">Order Details</h2>
+        </div>
+        <div id="orderDetailsContent" class="space-y-4"></div>
       </div>
     </div>
 
@@ -233,6 +245,7 @@
 
 
 <!-- ========== JAVASCRIPT ========== -->
+<script src="../js-files/modals.js"></script>
 <script type="module">
 
 /* Import Firebase */
@@ -257,13 +270,19 @@ function checkAdminAuth() {
 
 // Admin logout function
 function handleAdminLogout() {
-  if (confirm('Are you sure you want to logout?')) {
-    sessionStorage.removeItem('userLoggedIn');
-    sessionStorage.removeItem('username');
-    sessionStorage.removeItem('userRole');
-    sessionStorage.removeItem('userEmail');
-    window.location.href = '../pages/login.html';
-  }
+  showConfirmModal(
+    'Confirm Logout',
+    'Are you sure you want to logout from the admin panel?',
+    function() {
+      sessionStorage.removeItem('userLoggedIn');
+      sessionStorage.removeItem('username');
+      sessionStorage.removeItem('userRole');
+      sessionStorage.removeItem('userEmail');
+      showSuccessModal('Logged Out', 'You have been logged out successfully!', function() {
+        window.location.href = '../pages/login.html';
+      });
+    }
+  );
 }
 
 // Initialize auth check
@@ -418,9 +437,22 @@ onSnapshot(ordersCol, (snapshot) => {
   let pendingOrders = 0;
   let revenue = 0;
 
+  // Convert to array and sort by date (newest first)
+  const orders = [];
   snapshot.forEach(docSnap => {
     const order = docSnap.data();
     order.docId = docSnap.id;
+    orders.push(order);
+  });
+
+  // Sort by date - newest first
+  orders.sort((a, b) => {
+    const dateA = new Date(a.date || 0);
+    const dateB = new Date(b.date || 0);
+    return dateB - dateA; // Descending order (newest first)
+  });
+
+  orders.forEach(order => {
 
     totalOrders++;
 
@@ -471,49 +503,144 @@ onSnapshot(ordersCol, (snapshot) => {
 async function showOrderDetails(id) {
   const snap = await getDoc(doc(db, "orders", id));
   const order = snap.data();
+  
+  // Get customer's order history
+  let customerOrdersHTML = '';
+  try {
+    const customerOrdersQuery = query(ordersCol, where("email", "==", order.email));
+    const customerOrdersSnap = await getDocs(customerOrdersQuery);
+    const customerOrders = customerOrdersSnap.docs.map(doc => doc.data());
+    
+    if (customerOrders.length > 1) {
+      customerOrdersHTML = `
+        <div class="bg-blue-900 rounded-xl p-4 border border-blue-700">
+          <h3 class="text-lg font-semibold text-blue-300 mb-2 flex items-center gap-2">
+            <i class="fas fa-history"></i> Customer Order History
+          </h3>
+          <p class="text-blue-200 text-sm mb-2">This customer has <strong>${customerOrders.length}</strong> total orders</p>
+          <div class="space-y-1 text-xs text-blue-200">
+            ${customerOrders.slice(0, 5).map(o => `
+              <div class="flex justify-between">
+                <span>${o.orderId} - ${o.product}</span>
+                <span class="font-semibold">${o.status}</span>
+              </div>
+            `).join('')}
+            ${customerOrders.length > 5 ? `<p class="text-blue-300 mt-2">+ ${customerOrders.length - 5} more orders</p>` : ''}
+          </div>
+        </div>
+      `;
+    }
+  } catch (e) {
+    console.error('Error fetching customer history:', e);
+  }
 
   document.getElementById("orderDetailsContent").innerHTML = `
-    <p><strong>Order ID:</strong> ${order.orderId}</p>
-    <p><strong>Customer:</strong> ${order.customer}</p>
-    <p><strong>Contact:</strong> ${order.contact || "-"}</p>
-    <p><strong>Email:</strong> ${order.email || "-"}</p>
+    <!-- Customer Info Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-user"></i> Customer Information
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-gray-400">Order ID</p>
+          <p class="text-white font-semibold">${order.orderId}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Customer</p>
+          <p class="text-white font-semibold">${order.customer}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Contact</p>
+          <p class="text-white">${order.contact || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Email</p>
+          <p class="text-white">${order.email || "-"}</p>
+        </div>
+      </div>
+    </div>
 
-    <hr class="my-2">
+    <!-- Product Info Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-box-open"></i> Product Details
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-gray-400">Product</p>
+          <p class="text-white font-semibold">${order.product}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Type</p>
+          <p class="text-white">${order.type || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Size</p>
+          <p class="text-white">${order.size || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Dimensions</p>
+          <p class="text-white">${order.height || "-"} × ${order.width || "-"} cm</p>
+        </div>
+      </div>
+    </div>
 
-    <p><strong>Product:</strong> ${order.product}</p>
-    <p><strong>Type:</strong> ${order.type || "-"}</p>
-    <p><strong>Size:</strong> ${order.size || "-"}</p>
-    <p><strong>Height:</strong> ${order.height || "-"} cm</p>
-    <p><strong>Width:</strong> ${order.width || "-"} cm</p>
+    <!-- Pricing Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-dollar-sign"></i> Pricing
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-gray-400">Quantity</p>
+          <p class="text-white font-semibold">${order.quantity}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Price per item</p>
+          <p class="text-white">₱${order.price || 0}</p>
+        </div>
+        <div class="col-span-2">
+          <p class="text-gray-400">Total Price</p>
+          <p class="text-green-400 font-bold text-2xl">₱${parseFloat(order.total) || 0}</p>
+        </div>
+      </div>
+    </div>
 
-    <hr class="my-2">
+    <!-- Notes Section -->
+    ${order.notes ? `
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-2 flex items-center gap-2">
+        <i class="fas fa-sticky-note"></i> Notes
+      </h3>
+      <p class="text-white text-sm whitespace-pre-wrap">${order.notes}</p>
+    </div>
+    ` : ''}
+    
+    <!-- Customer Order History -->
+    ${customerOrdersHTML}
 
-    <p><strong>Quantity:</strong> ${order.quantity}</p>
-    <p><strong>Price per item:</strong> ₱${order.price || 0}</p>
-    <p><strong>Total Price:</strong> <span class="font-semibold text-green-600">₱${parseFloat(order.total) || 0}</span></p>
-
-    <hr class="my-2">
-
-    <p><strong>Notes:</strong> ${order.notes || "-"}</p>
-
-    <hr class="my-2">
-
-    <p><strong>Status:</strong>
-      <select id="statusSelect" class="border px-2 py-1 rounded">
-        <option ${order.status==="Pending"?"selected":""}>Pending</option>
-        <option ${order.status==="On Production"?"selected":""}>On Production</option>
-        <option ${order.status==="On Delivery"?"selected":""}>On Delivery</option>
-        <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
-        <option ${order.status==="Complete"?"selected":""}>Complete</option>
-      </select>
-
-      <button onclick="updateStatus('${id}')" 
-        class="ml-2 bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">
-        Update
-      </button>
-    </p>
-
-    <p><strong>Date:</strong> ${order.date || "-"}</p>
+    <!-- Status Update Section -->
+    <div class="bg-gradient-to-r from-yellow-900 to-yellow-800 rounded-xl p-4 border-2 border-yellow-500">
+      <h3 class="text-lg font-semibold text-yellow-300 mb-3 flex items-center gap-2">
+        <i class="fas fa-sync-alt"></i> Update Status
+      </h3>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <select id="statusSelect" class="flex-1 px-4 py-2 bg-gray-800 border border-yellow-500 text-white rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none">
+          <option ${order.status==="Pending"?"selected":""}>Pending</option>
+          <option ${order.status==="On Production"?"selected":""}>On Production</option>
+          <option ${order.status==="On Delivery"?"selected":""}>On Delivery</option>
+          <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
+          <option ${order.status==="Complete"?"selected":""}>Complete</option>
+        </select>
+        <button onclick="updateStatus('${id}')" 
+          class="px-6 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-lg hover:from-green-700 hover:to-green-800 transition-all transform hover:scale-105 flex items-center justify-center gap-2">
+          <i class="fas fa-check"></i> Update Status
+        </button>
+      </div>
+      <p class="text-yellow-200 text-xs mt-2">
+        <i class="fas fa-info-circle"></i> Current: <strong>${order.status}</strong> | Date: ${order.date || "-"}
+      </p>
+    </div>
   `;
 
   document.getElementById("orderModal").classList.remove("hidden");
@@ -696,8 +823,50 @@ function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g, c => ({'&':'&am
 /* ========== UPDATE ORDER STATUS ========== */
 async function updateStatus(id) {
   const status = document.getElementById("statusSelect").value;
-  await updateDoc(doc(db, "orders", id), { status });
-  closeOrderModal();
+  
+  showConfirmModal(
+    'Confirm Status Update',
+    `Are you sure you want to update the order status to <strong>${status}</strong>?`,
+    async function() {
+      try {
+        // Get order details for notification
+        const orderSnap = await getDoc(doc(db, "orders", id));
+        const orderData = orderSnap.data();
+        
+        // Update order status
+        await updateDoc(doc(db, "orders", id), { 
+          status,
+          lastUpdated: new Date().toISOString()
+        });
+        
+        // Create notification for user
+        const notificationMessages = {
+          'Pending': 'Your order is being reviewed.',
+          'On Production': 'Your order is now in production!',
+          'On Delivery': 'Your order is out for delivery!',
+          'Delivered': 'Your order has been delivered!',
+          'Complete': 'Your order is complete. Thank you for your business!'
+        };
+        
+        await addDoc(collection(db, "notifications"), {
+          userId: orderData.email,
+          orderId: orderData.orderId,
+          title: 'Order Status Updated',
+          message: `Order ${orderData.orderId}: ${notificationMessages[status] || `Status updated to ${status}`}`,
+          type: 'order_updated',
+          read: false,
+          timestamp: new Date().toISOString()
+        });
+        
+        showSuccessModal('Status Updated', `Order status has been successfully updated to <strong>${status}</strong>!<br><br>Customer has been notified.`, function() {
+          closeOrderModal();
+        });
+      } catch (error) {
+        console.error("Error updating status:", error);
+        showErrorModal('Update Failed', 'Failed to update order status. Please try again.');
+      }
+    }
+  );
 }
 
 
@@ -710,7 +879,13 @@ function filterOrdersByType(type) {
   let filtered = rows;
 
   if(type === "pending")
-    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase() === "pending");
+    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase().includes("pending"));
+
+  if(type === "production")
+    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase().includes("production"));
+
+  if(type === "delivery")
+    filtered = rows.filter(r => r.cells[5].innerText.toLowerCase().includes("delivery"));
 
   if(type === "recent") {
     const today = new Date();
@@ -726,16 +901,21 @@ function filterOrdersByType(type) {
   filtered.forEach(r => r.style.display = "");
 
 
-  ["tabAll","tabRecent","tabPending"].forEach(id => {
-    document.getElementById(id).classList.remove("bg-indigo-600","text-white");
-    document.getElementById(id).classList.add("bg-gray-200","text-gray-700");
+  ["tabAll","tabRecent","tabPending","tabProduction","tabDelivery"].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) {
+      el.classList.remove("bg-indigo-600","text-white");
+      el.classList.add("bg-gray-200","text-gray-700");
+    }
   });
 
-  const tab = { all:"tabAll", recent:"tabRecent", pending:"tabPending" }[type];
+  const tab = { all:"tabAll", recent:"tabRecent", pending:"tabPending", production:"tabProduction", delivery:"tabDelivery" }[type];
   const btn = document.getElementById(tab);
 
-  btn.classList.remove("bg-gray-200","text-gray-700");
-  btn.classList.add("bg-indigo-600","text-white");
+  if(btn) {
+    btn.classList.remove("bg-gray-200","text-gray-700");
+    btn.classList.add("bg-indigo-600","text-white");
+  }
 }
 
 
@@ -757,16 +937,83 @@ function sortOrders() {
   const rows = [...table.rows];
 
   rows.sort((a, b) => {
-
-    const dateA = new Date(a.cells[6].innerText); if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) return 0;
-    if(sort === "qtyAsc") return a.cells[3].innerText - b.cells[3].innerText;
-    if(sort === "qtyDesc") return b.cells[3].innerText - a.cells[3].innerText;
-    if(sort === "status") return a.cells[5].innerText.localeCompare(b.cells[5].innerText);
+    const dateA = new Date(a.cells[6].innerText);
+    const dateB = new Date(b.cells[6].innerText);
+    
+    if(sort === "dateAsc") {
+      return dateA - dateB; // Oldest first
+    }
+    if(sort === "dateDesc") {
+      return dateB - dateA; // Newest first
+    }
+    if(sort === "qtyAsc") {
+      return parseInt(a.cells[3].innerText) - parseInt(b.cells[3].innerText);
+    }
+    if(sort === "qtyDesc") {
+      return parseInt(b.cells[3].innerText) - parseInt(a.cells[3].innerText);
+    }
+    if(sort === "status") {
+      return a.cells[5].innerText.localeCompare(b.cells[5].innerText);
+    }
+    if(sort === "customer") {
+      return a.cells[1].innerText.localeCompare(b.cells[1].innerText);
+    }
 
     return 0;
   });
 
   rows.forEach(r => table.appendChild(r));
+}
+
+/* ========== EXPORT ORDERS TO CSV ========== */
+window.exportOrders = async function() {
+  try {
+    const snapshot = await getDocs(ordersCol);
+    
+    if (snapshot.empty) {
+      showErrorModal('No Data', 'No orders to export.');
+      return;
+    }
+    
+    // CSV headers
+    let csv = 'Order ID,Customer,Email,Product,Type,Quantity,Price,Total,Status,Payment Method,Date,Notes\n';
+    
+    // Add data rows
+    snapshot.forEach(doc => {
+      const order = doc.data();
+      const row = [
+        order.orderId || '',
+        order.customer || '',
+        order.email || '',
+        order.product || '',
+        order.type || '',
+        order.quantity || 0,
+        order.price || 0,
+        order.total || 0,
+        order.status || '',
+        order.paymentMethod || '',
+        order.date || '',
+        (order.notes || '').replace(/\n/g, ' ').replace(/,/g, ';')
+      ];
+      csv += row.map(field => `"${field}"`).join(',') + '\n';
+    });
+    
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showSuccessModal('Export Complete', `Successfully exported ${snapshot.size} orders to CSV!`);
+  } catch (error) {
+    console.error('Error exporting orders:', error);
+    showErrorModal('Export Failed', 'Failed to export orders. Please try again.');
+  }
 }
 
 /* ========== SHIRT PRINT ORDERS ========== */
@@ -794,7 +1041,7 @@ async function loadShirtPrintOrders() {
     }
     
     const statusBadge = order.status === "Pending Review" 
-      ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Pending Review</span>'
+      ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Subject for review</span>'
       : `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">${order.status}</span>`;
     
     const row = `
@@ -838,48 +1085,86 @@ async function reviewShirtOrder(docId) {
       const sizesArray = JSON.parse(order.sizes);
       sizesHTML = '<div class="space-y-2">';
       sizesArray.forEach(s => {
-        sizesHTML += `<div class="flex justify-between bg-gray-50 p-2 rounded"><span>Size ${s.size}</span><span class="font-semibold">${s.quantity} pcs</span></div>`;
+        sizesHTML += `<div class="flex justify-between bg-gray-800 p-3 rounded border border-gray-700"><span class="text-white">Size ${s.size}</span><span class="font-semibold text-yellow-400">${s.quantity} pcs</span></div>`;
       });
       sizesHTML += '</div>';
     } catch(e) {
-      sizesHTML = `<p>${order.size || "-"}</p>`;
+      sizesHTML = `<p class="text-white">${order.size || "-"}</p>`;
     }
   }
   
   document.getElementById("shirtReviewContent").innerHTML = `
-    <div class="grid grid-cols-2 gap-6">
-      <div>
-        <h3 class="font-semibold text-lg mb-3 text-gray-700">Order Information</h3>
-        <div class="space-y-2 text-sm">
-          <p><strong>Order ID:</strong> ${order.orderId}</p>
-          <p><strong>Customer:</strong> ${order.customer}</p>
-          <p><strong>Email:</strong> ${order.email || "-"}</p>
-          <p><strong>Date:</strong> ${order.date || "-"}</p>
+    <!-- Customer Info Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-user"></i> Customer Information
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-gray-400">Order ID</p>
+          <p class="text-white font-semibold">${order.orderId}</p>
         </div>
-      </div>
-      
-      <div>
-        <h3 class="font-semibold text-lg mb-3 text-gray-700">Print Details</h3>
-        <div class="space-y-2 text-sm">
-          <p><strong>Method:</strong> ${order.type || "-"}</p>
-          <p><strong>Shirt Color:</strong> ${order.shirtColor || "-"}</p>
-          <p><strong>Total Quantity:</strong> ${order.quantity}</p>
+        <div>
+          <p class="text-gray-400">Customer</p>
+          <p class="text-white font-semibold">${order.customer}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Email</p>
+          <p class="text-white">${order.email || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Date</p>
+          <p class="text-white">${order.date || "-"}</p>
         </div>
       </div>
     </div>
     
-    <div class="mt-4">
-      <h3 class="font-semibold text-lg mb-3 text-gray-700">Sizes Breakdown</h3>
+    <!-- Print Details Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-tshirt"></i> Print Details
+      </h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <p class="text-gray-400">Method</p>
+          <p class="text-white font-semibold">${order.type || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Shirt Color</p>
+          <p class="text-white">${order.shirtColor || "-"}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Total Quantity</p>
+          <p class="text-white font-semibold">${order.quantity}</p>
+        </div>
+        <div>
+          <p class="text-gray-400">Claim Method</p>
+          <p class="text-white">${order.claimMethod || "-"}</p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Sizes Breakdown Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-ruler"></i> Sizes Breakdown
+      </h3>
       ${sizesHTML}
     </div>
     
-    <div class="mt-4">
-      <h3 class="font-semibold text-lg mb-3 text-gray-700">Design Instructions</h3>
-      <div class="bg-gray-50 p-4 rounded whitespace-pre-wrap text-sm">${order.designInstructions || "No instructions provided"}</div>
+    <!-- Design Instructions Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-sticky-note"></i> Design Instructions
+      </h3>
+      <div class="bg-gray-900 p-4 rounded whitespace-pre-wrap text-sm text-white border border-gray-700">${order.designInstructions || "No instructions provided"}</div>
     </div>
     
-    <div class="mt-4">
-      <h3 class="font-semibold text-lg mb-3 text-gray-700">Design Files</h3>
+    <!-- Design Files Section -->
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-file-image"></i> Design Files
+      </h3>
       ${order.files && order.files.length > 0 ? `
         <div class="space-y-2">
           ${order.files.map((file, index) => `
@@ -933,6 +1218,13 @@ async function reviewShirtOrder(docId) {
         </select>
       </div>
       
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Message to Customer (Optional)</label>
+        <textarea id="adminMessage" rows="3" 
+          class="w-full px-4 py-2 border rounded-lg resize-none" 
+          placeholder="Add any special notes or instructions for the customer..."></textarea>
+      </div>
+      
       <div class="mt-6 flex gap-3">
         <button onclick="updateShirtPrice('${docId}')" 
           class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
@@ -964,48 +1256,72 @@ async function updateShirtPrice(docId) {
   const pricePerItem = parseFloat(document.getElementById("pricePerItem").value) || 0;
   const totalPrice = parseFloat(document.getElementById("totalPrice").value) || 0;
   const status = document.getElementById("shirtStatus").value;
+  const adminMessage = document.getElementById("adminMessage").value.trim();
   
   if (pricePerItem <= 0) {
-    alert("Please enter a valid price");
+    showErrorModal('Invalid Price', 'Please enter a valid price per item.');
     return;
   }
   
-  try {
-    // Get order details for notification
-    const orderSnap = await getDoc(doc(db, "orders", docId));
-    const orderData = orderSnap.data();
-    
-    // Update order
-    await updateDoc(doc(db, "orders", docId), {
-      price: pricePerItem,
-      total: totalPrice,
-      status: status,
-      reviewedAt: new Date().toISOString()
-    });
-    
-    // Create notification for user
-    await addDoc(collection(db, "notifications"), {
-      userId: orderData.email,
-      orderId: orderData.orderId,
-      title: 'Order Updated',
-      message: `Your shirt print order (${orderData.orderId}) has been reviewed. Price: ₱${totalPrice}. Status: ${status}`,
-      type: 'order_updated',
-      read: false,
-      timestamp: new Date().toISOString(),
-      details: {
-        price: pricePerItem,
-        total: totalPrice,
-        status: status
+  showConfirmModal(
+    'Confirm Update',
+    `Are you sure you want to update this order?<br><br>
+     <strong>Price:</strong> ₱${totalPrice}<br>
+     <strong>Status:</strong> ${status}<br>
+     ${adminMessage ? `<strong>Message:</strong> ${adminMessage}` : ''}`,
+    async function() {
+      try {
+        // Get order details for notification
+        const orderSnap = await getDoc(doc(db, "orders", docId));
+        const orderData = orderSnap.data();
+        
+        // Update order
+        await updateDoc(doc(db, "orders", docId), {
+          price: pricePerItem,
+          total: totalPrice,
+          status: status,
+          reviewedAt: new Date().toISOString()
+        });
+        
+        // Create notification message
+        let notificationMessage = adminMessage 
+          ? adminMessage 
+          : `Your shirt print order (${orderData.orderId}) has been reviewed. Price: ₱${totalPrice}. Status: ${status}`;
+        
+        // Create notification for user
+        await addDoc(collection(db, "notifications"), {
+          userId: orderData.email,
+          orderId: orderData.orderId,
+          title: 'Shirt Print Order Updated',
+          message: notificationMessage,
+          type: 'order_updated',
+          read: false,
+          timestamp: new Date().toISOString(),
+          details: {
+            price: pricePerItem,
+            total: totalPrice,
+            status: status,
+            adminMessage: adminMessage || null
+          }
+        });
+        
+        showSuccessModal(
+          'Order Updated Successfully!',
+          `<strong>Order ID:</strong> ${orderData.orderId}<br>
+           <strong>Price:</strong> ₱${totalPrice}<br>
+           <strong>Status:</strong> ${status}<br><br>
+           Customer has been notified via their dashboard.`,
+          function() {
+            closeShirtReviewModal();
+            loadShirtPrintOrders();
+          }
+        );
+      } catch (error) {
+        console.error("Error updating order:", error);
+        showErrorModal('Update Failed', 'Error updating order. Please try again.');
       }
-    });
-    
-    alert(`Order updated successfully!\nPrice: ₱${totalPrice}\nStatus: ${status}\n\nCustomer has been notified.`);
-    closeShirtReviewModal();
-    loadShirtPrintOrders();
-  } catch (error) {
-    console.error("Error updating order:", error);
-    alert("Error updating order. Please try again.");
-  }
+    }
+  );
 }
 
 // Import getDocs for querying

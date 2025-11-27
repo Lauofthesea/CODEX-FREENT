@@ -6,6 +6,7 @@
   <title>FREENT - Lines Hub</title>
   <link rel="icon" type="image/jpg" href="./assets/lineslogo.jpg" />
   <link rel="stylesheet" href="./css-files/index.css" />
+  <link rel="stylesheet" href="./css-files/modals.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
@@ -42,9 +43,10 @@
             <form class="search-form" onsubmit="handleSearch(event)">
               <div class="search-input-wrapper">
                 <i class="fa fa-search search-icon"></i>
-                <input type="text" id="search-input" placeholder="Search FREENT..." />
+                <input type="text" id="search-input" placeholder="Search FREENT..." oninput="showSearchSuggestions(event)" />
               </div>
             </form>
+            <div id="searchSuggestions" class="search-suggestions"></div>
           </li>
         </ul>
       </nav>
@@ -130,7 +132,7 @@
         View Services &raquo;
       </button>
     </div>
-
+<!-- 
     <div class="more-samples">
       <h3>More Samples</h3>
       <div class="sample-gallery">
@@ -142,6 +144,7 @@
         <div class="sample-item"><img src="#" alt="Placeholder6" /></div>
       </div>
     </div>
+   -->
   </section>
  
   <footer class="site-footer">
@@ -201,13 +204,17 @@
 
     // Logout function
     function handleLogout() {
-      if (confirm('Are you sure you want to logout?')) {
-        sessionStorage.removeItem('userLoggedIn');
-        sessionStorage.removeItem('username');
-        sessionStorage.removeItem('userRole');
-        updateNavigation();
-        alert('You have been logged out successfully!');
-      }
+      showConfirmModal(
+        'Confirm Logout',
+        'Are you sure you want to logout?',
+        function() {
+          sessionStorage.removeItem('userLoggedIn');
+          sessionStorage.removeItem('username');
+          sessionStorage.removeItem('userRole');
+          updateNavigation();
+          showSuccessModal('Logged Out', 'You have been logged out successfully!');
+        }
+      );
     }
 
     // Scroll to samples section
@@ -215,14 +222,77 @@
       document.getElementById('samples-section').scrollIntoView({ behavior: 'smooth' });
     }
 
+    // Search data
+    const searchData = [
+      { name: 'Document Printing', category: 'Service', icon: 'fas fa-file-alt', url: './pages/services.html#document' },
+      { name: 'Photo Printing', category: 'Service', icon: 'fas fa-image', url: './pages/services.html#photo' },
+      { name: 'Shirt Printing', category: 'Service', icon: 'fas fa-tshirt', url: './pages/services.html#shirt' },
+      { name: 'Tarpaulin Printing', category: 'Service', icon: 'fas fa-rectangle-ad', url: './pages/services.html#tarpaulin' },
+      { name: 'Signages', category: 'Service', icon: 'fas fa-sign', url: './pages/services.html#signages' },
+      { name: 'Stickers', category: 'Service', icon: 'fas fa-sticky-note', url: './pages/services.html#stickers' },
+      { name: 'Gift Boxes', category: 'Service', icon: 'fas fa-gift', url: './pages/services.html#gifts' },
+      { name: 'Lanyards', category: 'Service', icon: 'fas fa-id-badge', url: './pages/services.html#lanyards' },
+      { name: 'Invitations', category: 'Service', icon: 'fas fa-envelope', url: './pages/services.html#invitations' },
+      { name: 'Customized Items', category: 'Service', icon: 'fas fa-magic', url: './pages/services.html#customized' },
+      { name: 'Track Orders', category: 'Page', icon: 'fas fa-box', url: './user.html' },
+      { name: 'Dashboard', category: 'Page', icon: 'fas fa-tachometer-alt', url: './dashboard.html' },
+      { name: 'Services', category: 'Page', icon: 'fas fa-concierge-bell', url: './pages/services.html' }
+    ];
+
+    // Show search suggestions
+    function showSearchSuggestions(event) {
+      const query = event.target.value.trim().toLowerCase();
+      const suggestionsDiv = document.getElementById('searchSuggestions');
+      
+      if (query.length === 0) {
+        suggestionsDiv.classList.remove('active');
+        return;
+      }
+
+      const filtered = searchData.filter(item => 
+        item.name.toLowerCase().includes(query) || 
+        item.category.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        suggestionsDiv.innerHTML = '<div class="no-results">No results found</div>';
+        suggestionsDiv.classList.add('active');
+        return;
+      }
+
+      suggestionsDiv.innerHTML = filtered.map(item => `
+        <div class="suggestion-item" onclick="navigateToSuggestion('${item.url}')">
+          <i class="${item.icon}"></i>
+          <span class="suggestion-text">${item.name}</span>
+          <span class="suggestion-category">${item.category}</span>
+        </div>
+      `).join('');
+      
+      suggestionsDiv.classList.add('active');
+    }
+
+    // Navigate to suggestion
+    function navigateToSuggestion(url) {
+      window.location.href = url;
+    }
+
     // Handle search
     function handleSearch(event) {
       event.preventDefault();
       const query = document.getElementById('search-input').value.trim();
       if (query) {
-        alert('Searching for: ' + query);
+        window.location.href = `./pages/services.html?search=${encodeURIComponent(query)}`;
       }
     }
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+      const searchWrapper = document.querySelector('.search-wrapper');
+      const suggestionsDiv = document.getElementById('searchSuggestions');
+      if (searchWrapper && !searchWrapper.contains(event.target)) {
+        suggestionsDiv.classList.remove('active');
+      }
+    });
 
     // Initialize navigation on page load
     updateNavigation();
@@ -231,8 +301,11 @@
     window.handleLogout = handleLogout;
     window.scrollToSamples = scrollToSamples;
     window.handleSearch = handleSearch;
+    window.showSearchSuggestions = showSearchSuggestions;
+    window.navigateToSuggestion = navigateToSuggestion;
   </script>
 
+  <script src="./js-files/modals.js"></script>
   <script src="./js-files/dexscript.js"></script>
 </body>
 </html>

@@ -459,11 +459,6 @@ header {
   gap: 1.5rem;
 }
 
-.sample-item {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
 .sample-item img {
   width: 100%;
   height: auto;

@@ -65,7 +65,9 @@ const prices = {
     a3: 15,
     a5: 3,
     letter: 5,
-    legal: 7
+    legal: 7,
+    colorSurcharge: 3, // Additional cost per page for colored printing
+    deliveryFee: 50
   },
   shirt: {
     dtf: 250,
@@ -75,18 +77,22 @@ const prices = {
   photo: {
     small: 25,
     medium: 50,
-    large: 100
+    large: 100,
+    deliveryFee: 50
   },
   tarpaulin: {
     small: 500,
     medium: 1000,
-    large: 2000
+    large: 2000,
+    deliveryFee: 100
   },
   stickers: {
-    perPiece: 15
+    perPiece: 15,
+    deliveryFee: 50
   },
   customized: {
-    base: 150
+    base: 150,
+    deliveryFee: 50
   }
 };
 
@@ -114,6 +120,19 @@ function scrollToServices() {
 }
 
 function openModal(service) {
+  // Check if user is logged in before opening order modal
+  const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+  if (!isLoggedIn) {
+    showConfirmModal(
+      'Login Required',
+      'You need to be logged in to place an order. Would you like to go to the login page?',
+      function() {
+        window.location.href = './login.html';
+      }
+    );
+    return;
+  }
+
   currentService = service;
   const modalOverlay = document.getElementById('modalOverlay');
   const modalTitle = document.getElementById('modalTitle');
@@ -166,8 +185,12 @@ function showDocumentForm() {
         <p>Click to upload or drag and drop</p>
         <small>PDF, DOCX, DOC, TXT (Max 10MB)</small>
       </div>
-      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" onchange="handleGenericFileUpload(event, 'document')" />
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" onchange="handleDocumentFileUpload(event)" />
       <div id="uploadedFilesList" class="uploaded-files-list"></div>
+      <div id="pageCountDisplay" style="display: none; margin-top: 0.5rem; padding: 0.75rem; background: rgba(79, 70, 229, 0.1); border-radius: 8px; border: 1px solid rgba(79, 70, 229, 0.3);">
+        <i class="fas fa-file-alt" style="color: #4F46E5;"></i>
+        <span style="color: #fff; font-weight: 600; margin-left: 0.5rem;">Pages detected: <span id="pageCount">0</span></span>
+      </div>
     </div>
 
     <div class="form-group">
@@ -182,12 +205,32 @@ function showDocumentForm() {
     </div>
 
     <div class="form-group">
+      <label for="printColor">Print Color</label>
+      <select id="printColor" onchange="calculatePrice()">
+        <option value="bw">Black & White</option>
+        <option value="color">Colored (+₱3/page)</option>
+      </select>
+    </div>
+
+    <div class="form-group">
       <label for="copies">Number of Copies</label>
       <input type="number" id="copies" min="1" max="1000" value="1" onchange="calculatePrice()" />
     </div>
+
+    <div class="form-group">
+      <label for="claimMethod">Claim Method</label>
+      <select id="claimMethod" onchange="calculatePrice()">
+        <option value="">Select Method</option>
+        <option value="Pickup">Pickup</option>
+        <option value="Delivery">Delivery (+₱50)</option>
+      </select>
+    </div>
+
+    <input type="hidden" id="documentPages" value="1" />
   `;
   selectedFile = null;
   window.uploadedFiles = [];
+  window.documentPageCount = 1;
   calculatePrice();
   updateSubmitButton();
 }
@@ -376,6 +419,86 @@ function showShirtUploadForm() {
   updateSubmitButton();
 }
 
+// Document file upload with page count detection
+async function handleDocumentFileUpload(event) {
+  const files = Array.from(event.target.files);
+  const maxSize = 10;
+  
+  if (!window.uploadedFiles) {
+    window.uploadedFiles = [];
+  }
+  
+  for (const file of files) {
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    
+    if (parseFloat(fileSize) > maxSize) {
+      showErrorModal('File Too Large', `File "${file.name}" is too large. Maximum size is ${maxSize}MB per file.`);
+      continue;
+    }
+    
+    window.uploadedFiles.push(file);
+    
+    // Try to detect page count for PDF files
+    if (file.type === 'application/pdf') {
+      try {
+        const pageCount = await detectPDFPageCount(file);
+        window.documentPageCount = pageCount;
+        document.getElementById('documentPages').value = pageCount;
+        document.getElementById('pageCount').textContent = pageCount;
+        document.getElementById('pageCountDisplay').style.display = 'block';
+      } catch (error) {
+        console.warn('Could not detect page count:', error);
+        // Default to 1 page if detection fails
+        window.documentPageCount = 1;
+        document.getElementById('documentPages').value = 1;
+      }
+    } else {
+      // For non-PDF files, default to 1 page
+      window.documentPageCount = 1;
+      document.getElementById('documentPages').value = 1;
+      document.getElementById('pageCountDisplay').style.display = 'none';
+    }
+  }
+  
+  updateUploadedFilesList();
+  selectedFile = window.uploadedFiles;
+  updateSubmitButton();
+  calculatePrice();
+}
+
+// Detect PDF page count
+async function detectPDFPageCount(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = function(e) {
+      const contents = e.target.result;
+      
+      // Simple page count detection using /Type /Page pattern
+      // This is a basic method and may not work for all PDFs
+      const matches = contents.match(/\/Type\s*\/Page[^s]/g);
+      
+      if (matches) {
+        resolve(matches.length);
+      } else {
+        // Fallback: try to find /Count in Pages object
+        const countMatch = contents.match(/\/Count\s+(\d+)/);
+        if (countMatch) {
+          resolve(parseInt(countMatch[1]));
+        } else {
+          resolve(1); // Default to 1 if can't detect
+        }
+      }
+    };
+    
+    reader.onerror = function() {
+      reject(new Error('Failed to read file'));
+    };
+    
+    reader.readAsText(file);
+  });
+}
+
 // Generic file upload handler for all services
 function handleGenericFileUpload(event, serviceType) {
   const files = Array.from(event.target.files);
@@ -389,7 +512,7 @@ function handleGenericFileUpload(event, serviceType) {
     const fileSize = (file.size / 1024 / 1024).toFixed(2);
     
     if (parseFloat(fileSize) > maxSize) {
-      alert(`File "${file.name}" is too large. Maximum size is ${maxSize}MB per file.`);
+      showErrorModal('File Too Large', `File "${file.name}" is too large. Maximum size is ${maxSize}MB per file.`);
       return;
     }
     
@@ -551,6 +674,15 @@ function showGenericForm(service) {
         <label for="photoCopies">Copies</label>
         <input type="number" id="photoCopies" min="1" value="1" onchange="calculatePrice()" />
       </div>
+
+      <div class="form-group">
+        <label for="photoClaimMethod">Claim Method</label>
+        <select id="photoClaimMethod" onchange="calculatePrice()">
+          <option value="">Select Method</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Delivery">Delivery (+₱50)</option>
+        </select>
+      </div>
     `;
   } else if (service === 'tarpaulin') {
     html = `
@@ -580,6 +712,15 @@ function showGenericForm(service) {
       </div>
 
       <div class="form-group">
+        <label for="tarpaulinClaimMethod">Claim Method</label>
+        <select id="tarpaulinClaimMethod" onchange="calculatePrice()">
+          <option value="">Select Method</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Delivery">Delivery (+₱100)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
         <label for="tarpaulinNotes">Notes (optional)</label>
         <textarea id="tarpaulinNotes" rows="3" placeholder="Any special instructions..." 
           style="resize: none; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 0.75rem; font-family: inherit;"></textarea>
@@ -601,6 +742,15 @@ function showGenericForm(service) {
       <div class="form-group">
         <label for="stickerQty">Quantity</label>
         <input type="number" id="stickerQty" min="1" value="10" onchange="calculatePrice()" />
+      </div>
+
+      <div class="form-group">
+        <label for="stickerClaimMethod">Claim Method</label>
+        <select id="stickerClaimMethod" onchange="calculatePrice()">
+          <option value="">Select Method</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Delivery">Delivery (+₱50)</option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -626,6 +776,15 @@ function showGenericForm(service) {
         <label for="customQty">Quantity</label>
         <input type="number" id="customQty" min="1" value="1" onchange="calculatePrice()" />
       </div>
+
+      <div class="form-group">
+        <label for="customClaimMethod">Claim Method</label>
+        <select id="customClaimMethod" onchange="calculatePrice()">
+          <option value="">Select Method</option>
+          <option value="Pickup">Pickup</option>
+          <option value="Delivery">Delivery (+₱50)</option>
+        </select>
+      </div>
     `;
   }
 
@@ -648,7 +807,7 @@ function handleFileSelect(event) {
     const maxSize = 10;
     
     if (fileSize > maxSize) {
-      alert('File size must be less than 10MB');
+      showErrorModal('File Too Large', 'File size must be less than 10MB');
       event.target.value = '';
       selectedFile = null;
       fileInfo.style.display = 'none';
@@ -691,12 +850,29 @@ function calculatePrice() {
     }
 
     const paperSize = document.getElementById('paperSize').value;
+    const printColor = document.getElementById('printColor')?.value || 'bw';
     const copies = parseInt(document.getElementById('copies').value) || 1;
-    const pricePerPage = prices.document[paperSize] || 0;
-    total = pricePerPage * copies;
+    const pages = parseInt(document.getElementById('documentPages')?.value) || 1;
+    const claimMethod = document.getElementById('claimMethod')?.value;
+    
+    // Base price per page
+    let pricePerPage = prices.document[paperSize] || 0;
+    
+    // Add color surcharge if colored printing
+    if (printColor === 'color') {
+      pricePerPage += prices.document.colorSurcharge;
+    }
+    
+    // Calculate: (price per page × pages × copies)
+    total = pricePerPage * pages * copies;
+    
+    // Add delivery fee if delivery selected
+    if (claimMethod === 'Delivery') {
+      total += prices.document.deliveryFee;
+    }
   } else if (currentService === 'shirt') {
-    // For shirt orders, no price calculation - pending admin review
-    document.getElementById('totalPrice').textContent = 'Pending Review';
+    
+    document.getElementById('totalPrice').textContent = 'This order will be reviewed for pricing.';
     return;
   } else if (currentService === 'photo') {
     if (!selectedFile) {
@@ -705,19 +881,47 @@ function calculatePrice() {
     }
     const size = document.getElementById('photoSize')?.value || 'small';
     const qty = parseInt(document.getElementById('photoCopies')?.value) || 1;
-    const pricePer = prices.photo[size] || 0;
+    const claimMethod = document.getElementById('photoClaimMethod')?.value;
+    
+    let pricePer = prices.photo[size] || 0;
     total = pricePer * qty;
+    
+    // Add delivery fee if delivery selected
+    if (claimMethod === 'Delivery') {
+      total += prices.photo.deliveryFee;
+    }
   } else if (currentService === 'tarpaulin') {
     const size = document.getElementById('tarpaulinSize')?.value || 'small';
     const qty = parseInt(document.getElementById('tarpaulinQty')?.value) || 1;
-    const pricePer = prices.tarpaulin[size] || 0;
+    const claimMethod = document.getElementById('tarpaulinClaimMethod')?.value;
+    
+    let pricePer = prices.tarpaulin[size] || 0;
     total = pricePer * qty;
+    
+    // Add delivery fee if delivery selected
+    if (claimMethod === 'Delivery') {
+      total += prices.tarpaulin.deliveryFee;
+    }
   } else if (currentService === 'stickers') {
     const qty = parseInt(document.getElementById('stickerQty')?.value) || 1;
+    const claimMethod = document.getElementById('stickerClaimMethod')?.value;
+    
     total = prices.stickers.perPiece * qty;
+    
+    // Add delivery fee if delivery selected
+    if (claimMethod === 'Delivery') {
+      total += prices.stickers.deliveryFee;
+    }
   } else if (currentService === 'customized') {
     const qty = parseInt(document.getElementById('customQty')?.value) || 1;
+    const claimMethod = document.getElementById('customClaimMethod')?.value;
+    
     total = prices.customized.base * qty;
+    
+    // Add delivery fee if delivery selected
+    if (claimMethod === 'Delivery') {
+      total += prices.customized.deliveryFee;
+    }
   }
 
   document.getElementById('totalPrice').textContent = `₱${total.toFixed(2)}`;
@@ -778,6 +982,19 @@ function getCurrentDate() {
 
 // ========== UPDATED: Document order with user email ==========
 async function submitShirtOrder() {
+  // Check if user is logged in
+  const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+  if (!isLoggedIn) {
+    showConfirmModal(
+      'Login Required',
+      'You need to be logged in to place an order. Would you like to go to the login page?',
+      function() {
+        window.location.href = './login.html';
+      }
+    );
+    return;
+  }
+
   try {
     const printMethod = document.getElementById('printMethod').value;
     const shirtColorSelect = document.getElementById('shirtColorSelect').value;
@@ -786,35 +1003,35 @@ async function submitShirtOrder() {
     const designInstructions = document.getElementById('designInstructions').value;
     
     if (!printMethod) {
-      alert('Please select a printing method');
+      showErrorModal('Missing Information', 'Please select a printing method');
       return;
     }
     if (!shirtColorSelect) {
-      alert('Please select a shirt color');
+      showErrorModal('Missing Information', 'Please select a shirt color');
       return;
     }
     if (!claimMethod) {
-      alert('Please select a claim method (Pickup or Delivery)');
+      showErrorModal('Missing Information', 'Please select a claim method (Pickup or Delivery)');
       return;
     }
     if (!window.shirtSizes || window.shirtSizes.length === 0) {
-      alert('Please add at least one size');
+      showErrorModal('Missing Information', 'Please add at least one size');
       return;
     }
     
     // Validate all sizes are selected
     const invalidSizes = window.shirtSizes.filter(s => !s.size);
     if (invalidSizes.length > 0) {
-      alert('Please select a size for all entries');
+      showErrorModal('Invalid Selection', 'Please select a size for all entries');
       return;
     }
     
     if (!designInstructions.trim()) {
-      alert('Please provide design instructions');
+      showErrorModal('Missing Information', 'Please provide design instructions');
       return;
     }
     if (!selectedFile || selectedFile.length === 0) {
-      alert('Please upload at least one design file');
+      showErrorModal('Missing Files', 'Please upload at least one design file');
       return;
     }
     
@@ -891,12 +1108,19 @@ async function submitShirtOrder() {
     submitBtn.innerHTML = originalText;
     submitBtn.disabled = false;
     
-    alert(`T-Shirt Design Submitted Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nShirt Color: ${shirtColorSelect}\nTotal Quantity: ${quantity}\nFiles Uploaded: ${uploadedFiles.length}\n\nOur team will review your design and contact you with pricing and payment details. Thank you!`);
-    
-    closeModal();
+    showSuccessModal(
+      'Order Submitted Successfully!',
+      `<strong>Order ID:</strong> ${orderData.orderId}<br>
+       <strong>Method:</strong> ${printMethod.toUpperCase()}<br>
+       <strong>Shirt Color:</strong> ${shirtColorSelect}<br>
+       <strong>Total Quantity:</strong> ${quantity}<br>
+       <strong>Files Uploaded:</strong> ${uploadedFiles.length}<br><br>
+       Our team will review your design and contact you with pricing and payment details. Thank you!`,
+      closeModal
+    );
   } catch (error) {
     console.error("Error submitting order:", error);
-    alert("Error placing order. Please try again.");
+    showErrorModal('Error', 'Error placing order. Please try again.');
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
       submitBtn.disabled = false;
@@ -908,21 +1132,54 @@ async function submitShirtOrder() {
 
 // ========== DOCUMENT ORDER SUBMISSION ==========
 async function submitDocumentOrder() {
+  // Check if user is logged in
+  const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+  if (!isLoggedIn) {
+    showConfirmModal(
+      'Login Required',
+      'You need to be logged in to place an order. Would you like to go to the login page?',
+      function() {
+        window.location.href = './login.html';
+      }
+    );
+    return;
+  }
+
   try {
     if (!selectedFile) {
-      alert('Please upload a document');
+      showErrorModal('Missing File', 'Please upload a document');
       return;
     }
     
     if (!selectedPayment) {
-      alert('Please select a payment method');
+      showErrorModal('Missing Information', 'Please select a payment method');
+      return;
+    }
+    
+    const claimMethod = document.getElementById('claimMethod')?.value;
+    if (!claimMethod) {
+      showErrorModal('Missing Information', 'Please select a claim method (Pickup or Delivery)');
       return;
     }
     
     const paperSize = document.getElementById('paperSize').value;
+    const printColor = document.getElementById('printColor')?.value || 'bw';
     const copies = parseInt(document.getElementById('copies').value) || 1;
-    const pricePerPage = prices.document[paperSize] || 0;
-    const total = pricePerPage * copies;
+    const pages = parseInt(document.getElementById('documentPages')?.value) || 1;
+    
+    // Calculate price
+    let pricePerPage = prices.document[paperSize] || 0;
+    if (printColor === 'color') {
+      pricePerPage += prices.document.colorSurcharge;
+    }
+    
+    let total = pricePerPage * pages * copies;
+    if (claimMethod === 'Delivery') {
+      total += prices.document.deliveryFee;
+    }
+    
+    const colorText = printColor === 'color' ? 'Colored' : 'Black & White';
+    const fileName = Array.isArray(selectedFile) ? selectedFile[0].name : selectedFile.name;
     
     const orderData = {
       orderId: generateOrderId(),
@@ -930,24 +1187,49 @@ async function submitDocumentOrder() {
       contact: '-',
       email: getUserEmail(),
       product: 'Document Printing',
-      type: paperSize.toUpperCase(),
+      type: `${paperSize.toUpperCase()} - ${colorText}`,
       size: paperSize.toUpperCase(),
       quantity: copies,
       price: pricePerPage,
       total: total,
-      notes: `File: ${selectedFile.name}`,
+      notes: `File: ${fileName}\nPages: ${pages}\nColor: ${colorText}\nClaim: ${claimMethod}`,
       status: 'Pending',
       date: getCurrentDate(),
       paymentMethod: selectedPayment.toUpperCase(),
+      claimMethod: claimMethod,
+      printColor: printColor,
+      pages: pages,
       height: '-',
       width: '-'
     };
     
     await addDoc(collection(db, "orders"), orderData);
     
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nDocument: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${total.toFixed(2)}\n\nThank you for your order!`);
+    // Create notification
+    await addDoc(collection(db, "notifications"), {
+      userId: getUserEmail(),
+      orderId: orderData.orderId,
+      title: 'Order Submitted',
+      message: `Your document printing order (${orderData.orderId}) has been submitted successfully.`,
+      type: 'order_submitted',
+      read: false,
+      timestamp: new Date().toISOString()
+    });
     
-    closeModal();
+    showSuccessModal(
+      'Order Placed Successfully!',
+      `<strong>Order ID:</strong> ${orderData.orderId}<br>
+       <strong>Document:</strong> ${fileName}<br>
+       <strong>Pages:</strong> ${pages}<br>
+       <strong>Paper Size:</strong> ${paperSize.toUpperCase()}<br>
+       <strong>Color:</strong> ${colorText}<br>
+       <strong>Copies:</strong> ${copies}<br>
+       <strong>Claim Method:</strong> ${claimMethod}<br>
+       <strong>Payment:</strong> ${selectedPayment.toUpperCase()}<br>
+       <strong>Total:</strong> ₱${total.toFixed(2)}<br><br>
+       Thank you for your order!`,
+      closeModal
+    );
   } catch (error) {
     console.error("Error submitting order:", error);
     alert("Error placing order. Please try again.");
@@ -957,9 +1239,22 @@ async function submitDocumentOrder() {
 
 // ========== GENERIC ORDER SUBMISSION (Photo, Tarpaulin, Stickers, Customized) ==========
 async function submitGenericOrder(service) {
+  // Check if user is logged in
+  const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+  if (!isLoggedIn) {
+    showConfirmModal(
+      'Login Required',
+      'You need to be logged in to place an order. Would you like to go to the login page?',
+      function() {
+        window.location.href = './login.html';
+      }
+    );
+    return;
+  }
+
   try {
     if (!selectedPayment) {
-      alert('Please select a payment method');
+      showErrorModal('Missing Information', 'Please select a payment method');
       return;
     }
     
@@ -977,13 +1272,25 @@ async function submitGenericOrder(service) {
     
     if (service === 'photo') {
       if (!selectedFile) {
-        alert('Please upload a photo');
+        showErrorModal('Missing File', 'Please upload a photo');
         return;
       }
+      const claimMethod = document.getElementById('photoClaimMethod')?.value;
+      if (!claimMethod) {
+        showErrorModal('Missing Information', 'Please select a claim method');
+        return;
+      }
+      
       const size = document.getElementById('photoSize').value;
       const qty = parseInt(document.getElementById('photoCopies').value) || 1;
-      const pricePer = prices.photo[size] || 0;
-      const total = pricePer * qty;
+      let pricePer = prices.photo[size] || 0;
+      let total = pricePer * qty;
+      
+      if (claimMethod === 'Delivery') {
+        total += prices.photo.deliveryFee;
+      }
+      
+      const fileName = Array.isArray(selectedFile) ? selectedFile[0].name : selectedFile.name;
       
       orderData.product = 'Photo Printing';
       orderData.type = size.toUpperCase();
@@ -991,14 +1298,25 @@ async function submitGenericOrder(service) {
       orderData.quantity = qty;
       orderData.price = pricePer;
       orderData.total = total;
-      orderData.notes = `File: ${selectedFile.name}`;
+      orderData.claimMethod = claimMethod;
+      orderData.notes = `File: ${fileName}\nClaim: ${claimMethod}`;
       
     } else if (service === 'tarpaulin') {
+      const claimMethod = document.getElementById('tarpaulinClaimMethod')?.value;
+      if (!claimMethod) {
+        showErrorModal('Missing Information', 'Please select a claim method');
+        return;
+      }
+      
       const size = document.getElementById('tarpaulinSize').value;
       const qty = parseInt(document.getElementById('tarpaulinQty').value) || 1;
       const notes = document.getElementById('tarpaulinNotes').value;
-      const pricePer = prices.tarpaulin[size] || 0;
-      const total = pricePer * qty;
+      let pricePer = prices.tarpaulin[size] || 0;
+      let total = pricePer * qty;
+      
+      if (claimMethod === 'Delivery') {
+        total += prices.tarpaulin.deliveryFee;
+      }
       
       orderData.product = 'Tarpaulin Printing';
       orderData.type = size.toUpperCase();
@@ -1006,12 +1324,23 @@ async function submitGenericOrder(service) {
       orderData.quantity = qty;
       orderData.price = pricePer;
       orderData.total = total;
-      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      orderData.claimMethod = claimMethod;
+      orderData.notes = `${notes || ''}\nClaim: ${claimMethod}${selectedFile ? `\nFile: ${selectedFile.name}` : ''}`;
       
     } else if (service === 'stickers') {
+      const claimMethod = document.getElementById('stickerClaimMethod')?.value;
+      if (!claimMethod) {
+        showErrorModal('Missing Information', 'Please select a claim method');
+        return;
+      }
+      
       const qty = parseInt(document.getElementById('stickerQty').value) || 1;
       const notes = document.getElementById('stickerNotes').value;
-      const total = prices.stickers.perPiece * qty;
+      let total = prices.stickers.perPiece * qty;
+      
+      if (claimMethod === 'Delivery') {
+        total += prices.stickers.deliveryFee;
+      }
       
       orderData.product = 'Stickers';
       orderData.type = 'Custom';
@@ -1019,15 +1348,28 @@ async function submitGenericOrder(service) {
       orderData.quantity = qty;
       orderData.price = prices.stickers.perPiece;
       orderData.total = total;
-      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      orderData.claimMethod = claimMethod;
+      orderData.notes = `${notes || ''}\nClaim: ${claimMethod}${selectedFile ? `\nFile: ${selectedFile.name}` : ''}`;
       
     } else if (service === 'customized') {
       if (!selectedFile) {
-        alert('Please upload a design');
+        showErrorModal('Missing File', 'Please upload a design');
         return;
       }
+      const claimMethod = document.getElementById('customClaimMethod')?.value;
+      if (!claimMethod) {
+        showErrorModal('Missing Information', 'Please select a claim method');
+        return;
+      }
+      
       const qty = parseInt(document.getElementById('customQty').value) || 1;
-      const total = prices.customized.base * qty;
+      let total = prices.customized.base * qty;
+      
+      if (claimMethod === 'Delivery') {
+        total += prices.customized.deliveryFee;
+      }
+      
+      const fileName = Array.isArray(selectedFile) ? selectedFile[0].name : selectedFile.name;
       
       orderData.product = 'Customized Item';
       orderData.type = 'Custom';
@@ -1035,17 +1377,37 @@ async function submitGenericOrder(service) {
       orderData.quantity = qty;
       orderData.price = prices.customized.base;
       orderData.total = total;
-      orderData.notes = `File: ${selectedFile.name}`;
+      orderData.claimMethod = claimMethod;
+      orderData.notes = `File: ${fileName}\nClaim: ${claimMethod}`;
     }
     
     await addDoc(collection(db, "orders"), orderData);
     
-    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${orderData.product}\nQuantity: ${orderData.quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${orderData.total.toFixed(2)}\n\nThank you for your order!`);
+    // Create notification
+    await addDoc(collection(db, "notifications"), {
+      userId: getUserEmail(),
+      orderId: orderData.orderId,
+      title: 'Order Submitted',
+      message: `Your ${orderData.product.toLowerCase()} order (${orderData.orderId}) has been submitted successfully.`,
+      type: 'order_submitted',
+      read: false,
+      timestamp: new Date().toISOString()
+    });
     
-    closeModal();
+    showSuccessModal(
+      'Order Placed Successfully!',
+      `<strong>Order ID:</strong> ${orderData.orderId}<br>
+       <strong>Product:</strong> ${orderData.product}<br>
+       <strong>Quantity:</strong> ${orderData.quantity}<br>
+       <strong>Claim Method:</strong> ${orderData.claimMethod}<br>
+       <strong>Payment:</strong> ${selectedPayment.toUpperCase()}<br>
+       <strong>Total:</strong> ₱${orderData.total.toFixed(2)}<br><br>
+       Thank you for your order!`,
+      closeModal
+    );
   } catch (error) {
     console.error("Error submitting order:", error);
-    alert("Error placing order. Please try again.");
+    showErrorModal('Error', 'Error placing order. Please try again.');
   }
 }
 
@@ -1067,11 +1429,101 @@ function resetForm() {
   document.getElementById('totalPrice').textContent = '₱0.00';
 }
 
+// Search data
+const searchData = [
+  { name: 'Document Printing', category: 'Service', icon: 'fas fa-file-alt', action: () => openModal('document') },
+  { name: 'Photo Printing', category: 'Service', icon: 'fas fa-image', action: () => openModal('photo') },
+  { name: 'Shirt Printing', category: 'Service', icon: 'fas fa-tshirt', action: () => openShirtDesignerChoice() },
+  { name: 'Tarpaulin Printing', category: 'Service', icon: 'fas fa-rectangle-ad', action: () => openModal('tarpaulin') },
+  { name: 'Signages', category: 'Service', icon: 'fas fa-sign', url: '#signages' },
+  { name: 'Stickers', category: 'Service', icon: 'fas fa-sticky-note', action: () => openModal('stickers') },
+  { name: 'Gift Boxes', category: 'Service', icon: 'fas fa-gift', url: '#gifts' },
+  { name: 'Lanyards', category: 'Service', icon: 'fas fa-id-badge', url: '#lanyards' },
+  { name: 'Invitations', category: 'Service', icon: 'fas fa-envelope', url: '#invitations' },
+  { name: 'Customized Items', category: 'Service', icon: 'fas fa-magic', action: () => openModal('customized') }
+];
+
+// Show search suggestions
+function showSearchSuggestions(event) {
+  const query = event.target.value.trim().toLowerCase();
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  
+  if (!suggestionsDiv) return;
+  
+  if (query.length === 0) {
+    suggestionsDiv.classList.remove('active');
+    return;
+  }
+
+  const filtered = searchData.filter(item => 
+    item.name.toLowerCase().includes(query) || 
+    item.category.toLowerCase().includes(query)
+  );
+
+  if (filtered.length === 0) {
+    suggestionsDiv.innerHTML = '<div class="no-results">No results found</div>';
+    suggestionsDiv.classList.add('active');
+    return;
+  }
+
+  suggestionsDiv.innerHTML = filtered.map((item, index) => `
+    <div class="suggestion-item" onclick="selectSuggestion(${index}, '${query}')">
+      <i class="${item.icon}"></i>
+      <span class="suggestion-text">${item.name}</span>
+      <span class="suggestion-category">${item.category}</span>
+    </div>
+  `).join('');
+  
+  suggestionsDiv.classList.add('active');
+}
+
+// Select suggestion
+function selectSuggestion(index, query) {
+  const filtered = searchData.filter(item => 
+    item.name.toLowerCase().includes(query.toLowerCase()) || 
+    item.category.toLowerCase().includes(query.toLowerCase())
+  );
+  
+  const item = filtered[index];
+  if (item) {
+    if (item.action) {
+      item.action();
+    } else if (item.url) {
+      window.location.href = item.url;
+    }
+  }
+  
+  // Close suggestions
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  if (suggestionsDiv) {
+    suggestionsDiv.classList.remove('active');
+  }
+  
+  // Clear search input
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.value = '';
+  }
+}
+
 function handleSearch(event) {
   event.preventDefault();
-  const searchInput = document.getElementById('search-input').value;
-  if (searchInput.trim()) {
-    alert(`Search functionality coming soon!\nYou searched for: ${searchInput}`);
+  const searchInput = document.getElementById('search-input').value.trim();
+  if (searchInput) {
+    // Try to find exact match
+    const match = searchData.find(item => 
+      item.name.toLowerCase() === searchInput.toLowerCase()
+    );
+    
+    if (match) {
+      if (match.action) {
+        match.action();
+      } else if (match.url) {
+        window.location.href = match.url;
+      }
+    } else {
+      showInfoModal('No Results', `No exact match found for: ${searchInput}`);
+    }
   }
 }
 
@@ -1081,6 +1533,15 @@ document.addEventListener('keydown', (e) => {
     if (modalOverlay && modalOverlay.classList.contains('active')) {
       closeModal();
     }
+  }
+});
+
+// Close search suggestions when clicking outside
+document.addEventListener('click', function(event) {
+  const searchWrapper = document.querySelector('.search-wrapper');
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  if (searchWrapper && suggestionsDiv && !searchWrapper.contains(event.target)) {
+    suggestionsDiv.classList.remove('active');
   }
 });
 
@@ -1100,9 +1561,12 @@ window.handleFileSelect = handleFileSelect;
 window.selectPayment = selectPayment;
 window.handleSubmit = handleSubmit;
 window.handleSearch = handleSearch;
+window.showSearchSuggestions = showSearchSuggestions;
+window.selectSuggestion = selectSuggestion;
 window.calculatePrice = calculatePrice;
 window.updateSubmitButton = updateSubmitButton;
 window.handleGenericFileUpload = handleGenericFileUpload;
+window.handleDocumentFileUpload = handleDocumentFileUpload;
 window.handleShirtFilesUpload = handleShirtFilesUpload;
 window.removeUploadedFile = removeUploadedFile;
 window.addSizeRow = addSizeRow;

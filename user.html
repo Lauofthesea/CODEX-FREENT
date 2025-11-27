@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css-files/index.css">
   <link rel="stylesheet" href="./css-files/user-order.css">
+  <link rel="stylesheet" href="./css-files/modals.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- All styles moved to user-order.css -->
 </head>
@@ -29,10 +30,10 @@
             <form class="search-form" onsubmit="handleSearch(event)">
               <div class="search-input-wrapper">
                 <i class="fa fa-search search-icon"></i>
-                <input type="text" id="search-input" placeholder="Search FREENT..." />
+                <input type="text" id="search-input" placeholder="Search FREENT..." oninput="showSearchSuggestions(event)" />
               </div>
-              <button type="submit" class="search-btn">Search</button>
             </form>
+            <div id="searchSuggestions" class="search-suggestions"></div>
           </li>
         </ul>
       </nav>
@@ -385,7 +386,7 @@
   window.trackOrder = async function trackOrder() {
     const orderId = document.getElementById('orderIdInput').value.trim();
     if (!orderId) {
-      alert('Please enter an Order ID');
+      showErrorModal('Missing Information', 'Please enter an Order ID to track your order.');
       return;
     }
 
@@ -415,7 +416,7 @@
       document.getElementById('orderDetailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       console.error("Error tracking order:", error);
-      alert("Error tracking order. Please try again.");
+      showErrorModal('Error', 'Error tracking order. Please try again.');
     }
   };
 
@@ -465,16 +466,81 @@
 
   document.getElementById("trackBtn").addEventListener("click", trackOrder);
 
+  // Search data
+  const searchData = [
+    { name: 'Document Printing', category: 'Service', icon: 'fas fa-file-alt', url: './pages/services.html#document' },
+    { name: 'Photo Printing', category: 'Service', icon: 'fas fa-image', url: './pages/services.html#photo' },
+    { name: 'Shirt Printing', category: 'Service', icon: 'fas fa-tshirt', url: './pages/services.html#shirt' },
+    { name: 'Tarpaulin Printing', category: 'Service', icon: 'fas fa-rectangle-ad', url: './pages/services.html#tarpaulin' },
+    { name: 'Signages', category: 'Service', icon: 'fas fa-sign', url: './pages/services.html#signages' },
+    { name: 'Stickers', category: 'Service', icon: 'fas fa-sticky-note', url: './pages/services.html#stickers' },
+    { name: 'Gift Boxes', category: 'Service', icon: 'fas fa-gift', url: './pages/services.html#gifts' },
+    { name: 'Lanyards', category: 'Service', icon: 'fas fa-id-badge', url: './pages/services.html#lanyards' },
+    { name: 'Invitations', category: 'Service', icon: 'fas fa-envelope', url: './pages/services.html#invitations' },
+    { name: 'Customized Items', category: 'Service', icon: 'fas fa-magic', url: './pages/services.html#customized' },
+    { name: 'Dashboard', category: 'Page', icon: 'fas fa-tachometer-alt', url: '../dashboard.html' },
+    { name: 'Services', category: 'Page', icon: 'fas fa-concierge-bell', url: './pages/services.html' },
+    { name: 'Home', category: 'Page', icon: 'fas fa-home', url: '../index.html' }
+  ];
+
+  // Show search suggestions
+  window.showSearchSuggestions = function(event) {
+    const query = event.target.value.trim().toLowerCase();
+    const suggestionsDiv = document.getElementById('searchSuggestions');
+    
+    if (!suggestionsDiv) return;
+    
+    if (query.length === 0) {
+      suggestionsDiv.classList.remove('active');
+      return;
+    }
+
+    const filtered = searchData.filter(item => 
+      item.name.toLowerCase().includes(query) || 
+      item.category.toLowerCase().includes(query)
+    );
+
+    if (filtered.length === 0) {
+      suggestionsDiv.innerHTML = '<div class="no-results">No results found</div>';
+      suggestionsDiv.classList.add('active');
+      return;
+    }
+
+    suggestionsDiv.innerHTML = filtered.map(item => `
+      <div class="suggestion-item" onclick="navigateToSuggestion('${item.url}')">
+        <i class="${item.icon}"></i>
+        <span class="suggestion-text">${item.name}</span>
+        <span class="suggestion-category">${item.category}</span>
+      </div>
+    `).join('');
+    
+    suggestionsDiv.classList.add('active');
+  };
+
+  // Navigate to suggestion
+  window.navigateToSuggestion = function(url) {
+    window.location.href = url;
+  };
+
   // Handle search
   window.handleSearch = function(event) {
     event.preventDefault();
     const query = document.getElementById('search-input').value.trim();
     if (query) {
-      alert('Search functionality coming soon!\nSearching for: ' + query);
+      window.location.href = `./pages/services.html?search=${encodeURIComponent(query)}`;
     }
   };
+
+  // Close suggestions when clicking outside
+  document.addEventListener('click', function(event) {
+    const searchWrapper = document.querySelector('.search-wrapper');
+    const suggestionsDiv = document.getElementById('searchSuggestions');
+    if (searchWrapper && suggestionsDiv && !searchWrapper.contains(event.target)) {
+      suggestionsDiv.classList.remove('active');
+    }
+  });
 </script>
 
-
+<script src="./js-files/modals.js"></script>
 </body>
 </html>

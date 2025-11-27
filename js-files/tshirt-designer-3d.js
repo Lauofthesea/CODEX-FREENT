@@ -425,43 +425,141 @@ function updateTextColor(value) {
 }
 
 // Export design
-function exportDesign() {
+// Export format selection
+let selectedExportFormat = 'glb';
+
+function selectExportFormat(format, button) {
+  selectedExportFormat = format;
+  
+  // Update button states
+  document.querySelectorAll('.export-format-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  button.classList.add('active');
+  
+  showToast(`Export format set to ${format.toUpperCase()}`);
+}
+
+// Export design with 3D model
+async function exportDesign() {
   if (!activeCanvas) return;
   
-  // Export front view
-  const frontDataURL = frontCanvas.toDataURL({
-    format: 'png',
-    quality: 1
-  });
-  
-  // Download front
-  const link = document.createElement('a');
-  link.download = 'tshirt-design-front.png';
-  link.href = frontDataURL;
-  link.click();
-  
-  // If back canvas has content, export it too
-  if (backCanvas.getObjects().length > 0) {
-    const backDataURL = backCanvas.toDataURL({
+  try {
+    showToast('Preparing export...');
+    
+    // Export 2D designs first
+    const frontDataURL = frontCanvas.toDataURL({
       format: 'png',
       quality: 1
     });
     
-    setTimeout(() => {
-      const backLink = document.createElement('a');
-      backLink.download = 'tshirt-design-back.png';
-      backLink.href = backDataURL;
-      backLink.click();
-    }, 500);
+    const link = document.createElement('a');
+    link.download = 'tshirt-design-front.png';
+    link.href = frontDataURL;
+    link.click();
+    
+    if (backCanvas.getObjects().length > 0) {
+      const backDataURL = backCanvas.toDataURL({
+        format: 'png',
+        quality: 1
+      });
+      
+      setTimeout(() => {
+        const backLink = document.createElement('a');
+        backLink.download = 'tshirt-design-back.png';
+        backLink.href = backDataURL;
+        backLink.click();
+      }, 500);
+    }
+    
+    // Export 3D model
+    setTimeout(async () => {
+      await export3DModel();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Export error:', error);
+    showToast('Export failed. Please try again.');
+  }
+}
+
+// Export 3D model as GLB or GLTF
+async function export3DModel() {
+  if (!scene) {
+    showToast('No 3D model to export');
+    return;
   }
   
-  showToast('Design exported!');
+  try {
+    const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+    const exporter = new GLTFExporter();
+    
+    const options = {
+      binary: selectedExportFormat === 'glb',
+      trs: false,
+      onlyVisible: true,
+      truncateDrawRange: true,
+      maxTextureSize: 2048
+    };
+    
+    exporter.parse(
+      scene,
+      function(result) {
+        if (selectedExportFormat === 'glb') {
+          // GLB format (binary)
+          const blob = new Blob([result], { type: 'application/octet-stream' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'tshirt-3d-model.glb';
+          link.click();
+          URL.revokeObjectURL(url);
+          showToast('3D model exported as GLB!');
+        } else {
+          // GLTF format (JSON)
+          const output = JSON.stringify(result, null, 2);
+          const blob = new Blob([output], { type: 'text/plain' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'tshirt-3d-model.gltf';
+          link.click();
+          URL.revokeObjectURL(url);
+          showToast('3D model exported as GLTF!');
+        }
+      },
+      function(error) {
+        console.error('Export error:', error);
+        showToast('3D export failed');
+      },
+      options
+    );
+  } catch (error) {
+    console.error('3D export error:', error);
+    showToast('3D export not available');
+  }
+}
+
+// Save design (for future implementation with backend)
+function saveDesign() {
+  showToast('Save feature coming soon! Use Export for now.');
 }
 
 // Close designer
 function closeDesigner() {
-  if (confirm('Are you sure you want to close? Unsaved changes will be lost.')) {
-    window.location.href = '../pages/services.html';
+  // Check if modals are available
+  if (typeof showConfirmModal === 'function') {
+    showConfirmModal(
+      'Close Designer',
+      'Are you sure you want to close? Unsaved changes will be lost.',
+      function() {
+        window.location.href = '../pages/services.html';
+      }
+    );
+  } else {
+    if (confirm('Are you sure you want to close? Unsaved changes will be lost.')) {
+      window.location.href = '../pages/services.html';
+    }
   }
 }
 
@@ -524,4 +622,7 @@ window.updateFontSize = updateFontSize;
 window.updateFontFamily = updateFontFamily;
 window.updateTextColor = updateTextColor;
 window.exportDesign = exportDesign;
+window.export3DModel = export3DModel;
+window.selectExportFormat = selectExportFormat;
+window.saveDesign = saveDesign;
 window.closeDesigner = closeDesigner;

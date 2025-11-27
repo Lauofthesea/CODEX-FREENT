@@ -328,6 +328,12 @@ body {
   border: none;
   font-size: 0.9rem;
   background-color: transparent;
+  outline: none;
+}
+
+.search-input-wrapper input:focus {
+  outline: none;
+  box-shadow: none;
 }
 
 .search-icon {
@@ -338,21 +344,6 @@ body {
   color: #888;
   font-size: 1rem;
   pointer-events: none;
-}
-
-.search-btn {
-  padding: 0.69rem 1.6rem;
-  border: none;
-  border-radius: 30px;
-  background-color: #FFD700;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.search-btn:hover {
-  background-color: #fff;
 }
 
 .search-wrapper.active #search-field {
@@ -716,7 +707,7 @@ nav a {
   color: #aaa;
 }
 
-* User indicator in nav */
+/* User indicator in nav */
 .user-indicator {
   display: flex;
   align-items: center;
@@ -733,4 +724,71 @@ nav a {
 .header-actions {
   display: flex;
   align-items: center;
+}
+
+/* Search Suggestions */
+.search-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  margin-top: 0.5rem;
+}
+
+.search-suggestions.active {
+  display: block;
+}
+
+.suggestion-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: background 0.2s ease;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: #f8f8f8;
+}
+
+.suggestion-item i {
+  color: #FFD700;
+  font-size: 1rem;
+}
+
+.suggestion-text {
+  flex: 1;
+}
+
+.suggestion-category {
+  font-size: 0.75rem;
+  color: #888;
+  background: #f0f0f0;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.no-results {
+  padding: 1rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.search-wrapper {
+  position: relative;
 }
