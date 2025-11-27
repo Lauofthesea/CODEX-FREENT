@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Orders folder - where design files are uploaded
+    match /orders/{orderId}/{fileName} {
+      // Allow anyone to upload files (for order submissions)
+      allow create: if true;
+      
+      // Allow anyone to read/download files (for admin review and customer access)
+      allow read: if true;
+      
+      // Only authenticated users (admins) can update or delete
+      allow update, delete: if request.auth != null;
+      
+      // File size limit: 20MB
+      allow create: if request.resource.size < 20 * 1024 * 1024;
+    }
+    
+    // Profile pictures folder (if you add this feature later)
+    match /profiles/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.resource.size < 5 * 1024 * 1024;  // 5MB limit
+    }
+    
+    // Default deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

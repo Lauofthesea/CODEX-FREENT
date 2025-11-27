@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Orders collection - allow read/write for authenticated users
+    match /orders/{orderId} {
+      allow read: if true;  // Anyone can read orders (for tracking)
+      allow create: if true;  // Anyone can create orders
+      allow update: if request.auth != null;  // Only authenticated users (admins) can update
+      allow delete: if request.auth != null;  // Only authenticated users (admins) can delete
+    }
+    
+    // Notifications collection
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null || resource.data.userId == request.auth.token.email;
+      allow create: if true;  // System can create notifications
+      allow update: if request.auth != null || resource.data.userId == request.auth.token.email;
+      allow delete: if request.auth != null;
+    }
+    
+    // Conversations collection (for messaging)
+    match /conversations/{conversationId} {
+      allow read, write: if request.auth != null;  // Only authenticated users
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+    
+    // Users collection (if you add user profiles later)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

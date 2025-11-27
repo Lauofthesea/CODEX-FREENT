@@ -715,3 +715,22 @@ nav a {
   font-size: 0.8rem;
   color: #aaa;
 }
+
+* User indicator in nav */
+.user-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #FFD700;
+  font-weight: 600;
+  margin-right: 1rem;
+}
+
+.user-indicator i {
+  font-size: 1.2rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+}

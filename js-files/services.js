@@ -1,8 +1,6 @@
-// T-Shirt Designer using Fabric.js
-// Lines Hub - FREENT System with Firebase Integration
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -16,12 +14,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
-let canvas = null;
 let selectedFile = null;
 let selectedPayment = null;
 let currentService = null;
-let shirtColor = '#ffffff';
 
 // ========== USER DATA HELPER FUNCTIONS ==========
 function getUserEmail() {
@@ -30,6 +27,34 @@ function getUserEmail() {
 
 function getCustomerName() {
   return sessionStorage.getItem('username') || 'Guest User';
+}
+
+// ========== FILE UPLOAD TO FIREBASE STORAGE ==========
+async function uploadFilesToStorage(files, orderId) {
+  const uploadedFiles = [];
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const timestamp = Date.now();
+    const fileName = `${orderId}_${timestamp}_${file.name}`;
+    const storageRef = ref(storage, `orders/${orderId}/${fileName}`);
+    
+    try {
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      uploadedFiles.push({
+        name: file.name,
+        url: downloadURL,
+        size: file.size,
+        type: file.type
+      });
+    } catch (error) {
+      console.error(`Error uploading ${file.name}:`, error);
+    }
+  }
+  
+  return uploadedFiles;
 }
 // ================================================
 
@@ -102,7 +127,7 @@ function openModal(service) {
   if (service === 'document') {
     showDocumentForm();
   } else if (service === 'shirt') {
-    showShirtDesigner();
+    showShirtUploadForm();
   } else if (service === 'photo' || service === 'tarpaulin' || service === 'stickers' || service === 'customized') {
     showGenericForm(service);
   }
@@ -141,8 +166,8 @@ function showDocumentForm() {
         <p>Click to upload or drag and drop</p>
         <small>PDF, DOCX, DOC, TXT (Max 10MB)</small>
       </div>
-      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" onchange="handleFileSelect(event)" />
-      <div id="fileInfo" class="file-info" style="display: none;"></div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt" onchange="handleGenericFileUpload(event, 'document')" />
+      <div id="uploadedFilesList" class="uploaded-files-list"></div>
     </div>
 
     <div class="form-group">
@@ -161,27 +186,134 @@ function showDocumentForm() {
       <input type="number" id="copies" min="1" max="1000" value="1" onchange="calculatePrice()" />
     </div>
   `;
+  selectedFile = null;
+  window.uploadedFiles = [];
   calculatePrice();
-  updateSubmitButton();  // Added: Ensures button state is checked on modal open
+  updateSubmitButton();
 }
 
-function showShirtDesigner() {
+// Enhanced Shirt Upload Form with file management and size selection
+function showShirtUploadForm() {
   const formContainer = document.getElementById('dynamicFormContainer');
   formContainer.innerHTML = `
+    <style>
+      .uploaded-files-list {
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+      }
+      .file-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: rgba(255, 215, 0, 0.1);
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+        border: 1px solid rgba(255, 215, 0, 0.3);
+      }
+      .file-item i {
+        color: #FFD700;
+        font-size: 1.2rem;
+      }
+      .file-item-info {
+        flex: 1;
+        color: #fff;
+      }
+      .file-item-name {
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+      }
+      .file-item-size {
+        font-size: 0.85rem;
+        opacity: 0.8;
+      }
+      .file-remove-btn {
+        background: #dc2626;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        transition: background 0.3s ease;
+      }
+      .file-remove-btn:hover {
+        background: #b91c1c;
+      }
+      .size-selection-container {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: rgba(79, 70, 229, 0.1);
+        border-radius: 8px;
+        border: 2px solid rgba(79, 70, 229, 0.3);
+      }
+      .size-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 6px;
+        margin-bottom: 0.5rem;
+      }
+      .size-item select {
+        flex: 1;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #d1d5db;
+        background: #fff;
+        color: #000;
+      }
+      .size-item input {
+        width: 80px;
+        padding: 0.5rem;
+        border-radius: 4px;
+        border: 1px solid #d1d5db;
+      }
+      .add-size-btn {
+        width: 100%;
+        padding: 0.6rem;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        transition: background 0.3s ease;
+      }
+      .add-size-btn:hover {
+        background: #059669;
+      }
+      .remove-size-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.85rem;
+      }
+      .remove-size-btn:hover {
+        background: #dc2626;
+      }
+    </style>
+
     <div class="form-group">
-      <label>Upload Your Design(s)</label>
+      <label>Upload Design Files</label>
       <div class="file-upload-area" onclick="document.getElementById('shirtDesignUpload').click()">
         <i class="fas fa-cloud-upload-alt"></i>
-        <p>Click to upload your design files</p>
-        <small>PNG, JPG, PDF, AI, PSD (Max 20MB per file)</small>
+        <p>Click to upload design files</p>
+        <small>JPG, PNG, PDF (Max 20MB per file)</small>
       </div>
-      <input type="file" id="shirtDesignUpload" accept="image/*,.pdf,.ai,.psd" multiple style="display: none;" />  <!-- Removed inline onchange -->
-      <div id="designFilesInfo" class="file-info" style="display: none;"></div>
+      <input type="file" id="shirtDesignUpload" accept="image/*,.pdf" multiple onchange="handleShirtFilesUpload(event)" style="display: none;" />
+      <div id="uploadedFilesList" class="uploaded-files-list"></div>
     </div>
 
     <div class="form-group">
       <label for="printMethod">Printing Method</label>
-      <select id="printMethod" required>
+      <select id="printMethod" onchange="updateShirtForm()">
         <option value="">Select Method</option>
         <option value="dtf">DTF (Direct to Film)</option>
         <option value="sublimation">Sublimation</option>
@@ -191,68 +323,200 @@ function showShirtDesigner() {
 
     <div class="form-group">
       <label for="shirtColorSelect">Shirt Color</label>
-      <select id="shirtColorSelect" required>
+      <select id="shirtColorSelect" onchange="updateShirtForm()">
         <option value="">Select Color</option>
         <option value="White">White</option>
         <option value="Black">Black</option>
-        <option value="Red">Red</option>
-        <option value="Blue">Blue</option>
-        <option value="Green">Green</option>
         <option value="Navy Blue">Navy Blue</option>
+        <option value="Red">Red</option>
+        <option value="Green">Green</option>
         <option value="Gray">Gray</option>
         <option value="Yellow">Yellow</option>
         <option value="Pink">Pink</option>
         <option value="Purple">Purple</option>
         <option value="Orange">Orange</option>
-        <!-- Add more colors as needed -->
       </select>
     </div>
 
     <div class="form-group">
-      <label for="shirtSize">Shirt Size</label>
-      <select id="shirtSize" required>
-        <option value="">Select Size</option>
-        <option value="xs">Extra Small (XS)</option>
-        <option value="s">Small (S)</option>
-        <option value="m">Medium (M)</option>
-        <option value="l">Large (L)</option>
-        <option value="xl">Extra Large (XL)</option>
-        <option value="2xl">2XL</option>
-        <option value="3xl">3XL</option>
+      <label for="claimMethod">Claim Method</label>
+      <select id="claimMethod" onchange="updateShirtForm()">
+        <option value="">Select Method</option>
+        <option value="Pickup">Pickup</option>
+        <option value="Delivery">Delivery</option>
       </select>
     </div>
 
     <div class="form-group">
-      <label for="quantity">Quantity</label>
-      <input type="number" id="quantity" min="1" max="500" value="1" required />
+      <label>Shirt Sizes & Quantities</label>
+      <div id="sizeSelectionContainer" class="size-selection-container">
+        <p style="color: #fff; margin-bottom: 1rem; font-size: 0.9rem;">
+          <i class="fas fa-info-circle"></i> Add sizes and quantities for your order
+        </p>
+        <div id="sizesList"></div>
+        <button type="button" class="add-size-btn" onclick="addSizeRow()">
+          <i class="fas fa-plus"></i> Add Size
+        </button>
+      </div>
     </div>
 
     <div class="form-group">
       <label for="designInstructions">Design Instructions</label>
-      <textarea id="designInstructions" rows="4" placeholder="Please describe how you want your design printed:
-- Placement (front, back, sleeve, etc.)
-- Size of the design
-- Any special requirements
-- Color preferences for the print" required></textarea>
-      <small style="color: #aaa; display: block; margin-top: 0.5rem;">Be as detailed as possible to help us create your perfect shirt!</small>
+      <textarea id="designInstructions" rows="4" placeholder="Describe your design requirements, placement, colors, etc..." 
+        style="resize: none; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 0.75rem; font-family: inherit;"></textarea>
     </div>
 
-    <div class="form-group">
-      <div style="background: rgba(255, 215, 0, 0.1); border: 1px solid #FFD700; border-radius: 8px; padding: 1rem; margin-top: 1rem;">
-        <p style="color: #FFD700; font-weight: 600; margin-bottom: 0.5rem;">
-          <i class="fas fa-info-circle"></i> Payment Process
-        </p>
-        <p style="color: #fff; font-size: 0.9rem; line-height: 1.5;">
-          Our team will review your design and instructions. We'll contact you with the final price and payment details before proceeding with production.
-        </p>
-      </div>
-    </div>
+    <input type="hidden" id="quantity" value="0" />
   `;
   
-   document.getElementById('shirtDesignUpload').addEventListener('change', handleShirtDesignUpload);
-  
-  selectedFile = null;
+  selectedFile = [];
+  window.uploadedFiles = [];
+  window.shirtSizes = [];
   calculatePrice();
+  updateSubmitButton();
+}
+
+// Generic file upload handler for all services
+function handleGenericFileUpload(event, serviceType) {
+  const files = Array.from(event.target.files);
+  const maxSize = serviceType === 'shirt' ? 20 : 10;
+  
+  if (!window.uploadedFiles) {
+    window.uploadedFiles = [];
+  }
+  
+  files.forEach(file => {
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    
+    if (parseFloat(fileSize) > maxSize) {
+      alert(`File "${file.name}" is too large. Maximum size is ${maxSize}MB per file.`);
+      return;
+    }
+    
+    window.uploadedFiles.push(file);
+  });
+  
+  updateUploadedFilesList();
+  selectedFile = window.uploadedFiles;
+  updateSubmitButton();
+  if (typeof calculatePrice === 'function') {
+    calculatePrice();
+  }
+}
+
+// Handle multiple file uploads for shirt (backward compatibility)
+function handleShirtFilesUpload(event) {
+  handleGenericFileUpload(event, 'shirt');
+}
+
+// Update uploaded files list display
+function updateUploadedFilesList() {
+  const filesList = document.getElementById('uploadedFilesList');
+  
+  if (!window.uploadedFiles || window.uploadedFiles.length === 0) {
+    filesList.innerHTML = '';
+    return;
+  }
+  
+  let html = '';
+  window.uploadedFiles.forEach((file, index) => {
+    const fileSize = (file.size / 1024 / 1024).toFixed(2);
+    html += `
+      <div class="file-item">
+        <i class="fas fa-file-image"></i>
+        <div class="file-item-info">
+          <div class="file-item-name">${file.name}</div>
+          <div class="file-item-size">${fileSize} MB</div>
+        </div>
+        <button type="button" class="file-remove-btn" onclick="removeUploadedFile(${index})">
+          <i class="fas fa-times"></i> Remove
+        </button>
+      </div>
+    `;
+  });
+  
+  filesList.innerHTML = html;
+}
+
+// Remove uploaded file
+function removeUploadedFile(index) {
+  if (window.uploadedFiles) {
+    window.uploadedFiles.splice(index, 1);
+    updateUploadedFilesList();
+    selectedFile = window.uploadedFiles;
+    updateSubmitButton();
+  }
+}
+
+// Add size row
+function addSizeRow() {
+  if (!window.shirtSizes) {
+    window.shirtSizes = [];
+  }
+  
+  const sizeIndex = window.shirtSizes.length;
+  window.shirtSizes.push({ size: '', quantity: 1 });
+  
+  updateSizesList();
+}
+
+// Update sizes list display
+function updateSizesList() {
+  const sizesList = document.getElementById('sizesList');
+  
+  if (!window.shirtSizes || window.shirtSizes.length === 0) {
+    sizesList.innerHTML = '<p style="color: #aaa; text-align: center; padding: 1rem;">No sizes added yet</p>';
+    document.getElementById('quantity').value = 0;
+    return;
+  }
+  
+  let html = '';
+  let totalQty = 0;
+  
+  window.shirtSizes.forEach((item, index) => {
+    totalQty += parseInt(item.quantity) || 0;
+    html += `
+      <div class="size-item">
+        <select onchange="updateSizeValue(${index}, 'size', this.value)">
+          <option value="">Select Size</option>
+          <option value="XS" ${item.size === 'XS' ? 'selected' : ''}>Extra Small (XS)</option>
+          <option value="S" ${item.size === 'S' ? 'selected' : ''}>Small (S)</option>
+          <option value="M" ${item.size === 'M' ? 'selected' : ''}>Medium (M)</option>
+          <option value="L" ${item.size === 'L' ? 'selected' : ''}>Large (L)</option>
+          <option value="XL" ${item.size === 'XL' ? 'selected' : ''}>Extra Large (XL)</option>
+          <option value="2XL" ${item.size === '2XL' ? 'selected' : ''}>2XL</option>
+          <option value="3XL" ${item.size === '3XL' ? 'selected' : ''}>3XL</option>
+        </select>
+        <input type="number" min="1" value="${item.quantity}" onchange="updateSizeValue(${index}, 'quantity', this.value)" placeholder="Qty" />
+        <button type="button" class="remove-size-btn" onclick="removeSizeRow(${index})">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    `;
+  });
+  
+  sizesList.innerHTML = html;
+  document.getElementById('quantity').value = totalQty;
+}
+
+// Update size value
+function updateSizeValue(index, field, value) {
+  if (window.shirtSizes && window.shirtSizes[index]) {
+    window.shirtSizes[index][field] = field === 'quantity' ? parseInt(value) || 1 : value;
+    updateSizesList();
+  }
+}
+
+// Remove size row
+function removeSizeRow(index) {
+  if (window.shirtSizes) {
+    window.shirtSizes.splice(index, 1);
+    updateSizesList();
+  }
+}
+
+// Update shirt form
+function updateShirtForm() {
   updateSubmitButton();
 }
 
@@ -270,8 +534,8 @@ function showGenericForm(service) {
           <p>Click to upload or drag and drop</p>
           <small>JPG, PNG (Max 10MB)</small>
         </div>
-        <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)" />
-        <div id="fileInfo" class="file-info" style="display: none;"></div>
+        <input type="file" id="fileInput" accept="image/*" multiple onchange="handleGenericFileUpload(event, 'photo')" />
+        <div id="uploadedFilesList" class="uploaded-files-list"></div>
       </div>
 
       <div class="form-group">
@@ -295,10 +559,10 @@ function showGenericForm(service) {
         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>Click to upload</p>
-          <small>PDF, JPG, PNG (Max 20MB)</small>
+          <small>PDF, JPG, PNG (Max 10MB)</small>
         </div>
-        <input type="file" id="fileInput" accept=".pdf,image/*" onchange="handleFileSelect(event)" />
-        <div id="fileInfo" class="file-info" style="display: none;"></div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" multiple onchange="handleGenericFileUpload(event, 'tarpaulin')" />
+        <div id="uploadedFilesList" class="uploaded-files-list"></div>
       </div>
 
       <div class="form-group">
@@ -317,11 +581,23 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="tarpaulinNotes">Notes (optional)</label>
-        <textarea id="tarpaulinNotes" rows="2" placeholder="Any special instructions..."></textarea>
+        <textarea id="tarpaulinNotes" rows="3" placeholder="Any special instructions..." 
+          style="resize: none; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 0.75rem; font-family: inherit;"></textarea>
       </div>
     `;
   } else if (service === 'stickers') {
     html = `
+      <div class="form-group">
+        <label>Upload Artwork (optional)</label>
+        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload</p>
+          <small>PDF, JPG, PNG (Max 10MB)</small>
+        </div>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" multiple onchange="handleGenericFileUpload(event, 'stickers')" />
+        <div id="uploadedFilesList" class="uploaded-files-list"></div>
+      </div>
+
       <div class="form-group">
         <label for="stickerQty">Quantity</label>
         <input type="number" id="stickerQty" min="1" value="10" onchange="calculatePrice()" />
@@ -329,17 +605,8 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="stickerNotes">Notes (size/material)</label>
-        <textarea id="stickerNotes" rows="2" placeholder="Sticker size, finish, or other notes"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Upload Artwork (optional)</label>
-        <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Click to upload</p>
-        </div>
-        <input type="file" id="fileInput" accept="image/*,application/pdf" onchange="handleFileSelect(event)" />
-        <div id="fileInfo" class="file-info" style="display: none;"></div>
+        <textarea id="stickerNotes" rows="3" placeholder="Sticker size, finish, or other notes" 
+          style="resize: none; background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid rgba(255, 215, 0, 0.3); border-radius: 8px; padding: 0.75rem; font-family: inherit;"></textarea>
       </div>
     `;
   } else if (service === 'customized') {
@@ -349,10 +616,10 @@ function showGenericForm(service) {
         <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>Click to upload</p>
-          <small>PDF, JPG, PNG (Max 15MB)</small>
+          <small>PDF, JPG, PNG (Max 10MB)</small>
         </div>
-        <input type="file" id="fileInput" accept=".pdf,image/*" onchange="handleFileSelect(event)" />
-        <div id="fileInfo" class="file-info" style="display: none;"></div>
+        <input type="file" id="fileInput" accept=".pdf,image/*" multiple onchange="handleGenericFileUpload(event, 'customized')" />
+        <div id="uploadedFilesList" class="uploaded-files-list"></div>
       </div>
 
       <div class="form-group">
@@ -364,176 +631,12 @@ function showGenericForm(service) {
 
   formContainer.innerHTML = html;
   selectedFile = null;
+  window.uploadedFiles = [];
   calculatePrice();
   updateSubmitButton();
 }
 
-// Initialize Fabric.js Canvas
-function initShirtCanvas() {
-  const canvasEl = document.getElementById('tshirtCanvas');
-  if (!canvasEl) return;
-  
-  canvas = new fabric.Canvas('tshirtCanvas', {
-    width: 400,
-    height: 500,
-    backgroundColor: '#ffffff'
-  });
-  
-  drawTShirtOutline();
-  
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Delete' && canvas) {
-      deleteSelected();
-    }
-  });
-}
 
-// Draw T-shirt outline on canvas
-function drawTShirtOutline() {
-  const shirtPath = new fabric.Path(
-    'M 200 50 L 180 100 L 150 120 L 150 450 L 250 450 L 250 120 L 220 100 Z',
-    {
-      fill: shirtColor,
-      stroke: '#cccccc',
-      strokeWidth: 2,
-      selectable: false,
-      evented: false
-    }
-  );
-  
-  canvas.add(shirtPath);
-  canvas.sendToBack(shirtPath);
-}
-
-// Change shirt color
-function changeShirtColor(color) {
-  shirtColor = color;
-  document.getElementById('shirtColorPicker').value = color;
-  
-  if (canvas) {
-    const objects = canvas.getObjects();
-    const shirtOutline = objects[0];
-    if (shirtOutline) {
-      shirtOutline.set('fill', color);
-      canvas.renderAll();
-    }
-  }
-}
-
-// Add text to canvas
-function addText() {
-  if (!canvas) return;
-  
-  const text = new fabric.IText('Your Text', {
-    left: 200,
-    top: 250,
-    fontSize: 30,
-    fill: '#000000',
-    fontFamily: 'Arial'
-  });
-  
-  canvas.add(text);
-  canvas.setActiveObject(text);
-  canvas.renderAll();
-}
-
-// Handle image upload
-function handleImageUpload(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    fabric.Image.fromURL(e.target.result, function(img) {
-      img.scale(0.5);
-      img.set({
-        left: 200,
-        top: 250,
-        originX: 'center',
-        originY: 'center'
-      });
-      canvas.add(img);
-      canvas.setActiveObject(img);
-      canvas.renderAll();
-    });
-  };
-  reader.readAsDataURL(file);
-}
-
-// Delete selected object
-function deleteSelected() {
-  if (!canvas) return;
-  
-  const activeObjects = canvas.getActiveObjects();
-  if (activeObjects.length) {
-    activeObjects.forEach(obj => {
-      if (canvas.getObjects().indexOf(obj) !== 0) {
-        canvas.remove(obj);
-      }
-    });
-    canvas.discardActiveObject();
-    canvas.renderAll();
-  }
-}
-
-// Clear all designs (keep shirt outline)
-function clearCanvas() {
-  if (!canvas) return;
-  
-  const objects = canvas.getObjects().slice(1);
-  objects.forEach(obj => canvas.remove(obj));
-  canvas.renderAll();
-}
-
-// Handle shirt design file upload (multiple files)
-function handleShirtDesignUpload(event) {
-  console.log('handleShirtDesignUpload called');  // Added: Check if function runs
-  const files = event.target.files;
-  const fileInfo = document.getElementById('designFilesInfo');
-  
-  console.log('Files selected:', files);  // Added: Log the files object
-  if (files.length === 0) {
-    console.log('No files selected');  // Added
-    return;
-  }
-  
-  let totalSize = 0;
-  let fileList = '<div style="margin-top: 1rem;">';
-  
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const fileSize = (file.size / 1024 / 1024).toFixed(2);
-    totalSize += parseFloat(fileSize);
-    
-    console.log(`File ${i}: ${file.name}, Size: ${fileSize} MB`);  // Added: Log each file
-    if (parseFloat(fileSize) > 20) {
-      alert(`File "${file.name}" is too large. Maximum size is 20MB per file.`);
-      event.target.value = '';
-      selectedFile = null;
-      fileInfo.style.display = 'none';
-      updateSubmitButton();
-      return;
-    }
-    
-    fileList += `
-      <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; padding: 0.5rem; background: rgba(255, 215, 0, 0.1); border-radius: 6px;">
-        <i class="fas fa-file" style="color: #FFD700;"></i>
-        <strong style="flex: 1; color: #fff;">${file.name}</strong>
-        <span style="color: #aaa; font-size: 0.85rem;">${fileSize} MB</span>
-      </div>
-    `;
-  }
-  
-  fileList += `<p style="color: #FFD700; font-weight: 600; margin-top: 0.5rem;">Total: ${files.length} file(s) - ${totalSize.toFixed(2)} MB</p>`;
-  fileList += '</div>';
-  
-  selectedFile = files;
-  fileInfo.style.display = 'block';
-  fileInfo.innerHTML = fileList;
-  
-  console.log('File info updated, calling updateSubmitButton');  // Added
-  updateSubmitButton();
-}
 
 // Handle document file select
 function handleFileSelect(event) {
@@ -677,8 +780,8 @@ function getCurrentDate() {
 async function submitShirtOrder() {
   try {
     const printMethod = document.getElementById('printMethod').value;
-    const shirtSize = document.getElementById('shirtSize').value;
-    const shirtColorSelect = document.getElementById('shirtColorSelect').value;  // Updated to match dropdown ID
+    const shirtColorSelect = document.getElementById('shirtColorSelect').value;
+    const claimMethod = document.getElementById('claimMethod').value;
     const quantity = document.getElementById('quantity').value;
     const designInstructions = document.getElementById('designInstructions').value;
     
@@ -686,14 +789,26 @@ async function submitShirtOrder() {
       alert('Please select a printing method');
       return;
     }
-    if (!shirtSize) {
-      alert('Please select a shirt size');
-      return;
-    }
-    if (!shirtColorSelect) {  // Updated check (now references the correct variable)
+    if (!shirtColorSelect) {
       alert('Please select a shirt color');
       return;
     }
+    if (!claimMethod) {
+      alert('Please select a claim method (Pickup or Delivery)');
+      return;
+    }
+    if (!window.shirtSizes || window.shirtSizes.length === 0) {
+      alert('Please add at least one size');
+      return;
+    }
+    
+    // Validate all sizes are selected
+    const invalidSizes = window.shirtSizes.filter(s => !s.size);
+    if (invalidSizes.length > 0) {
+      alert('Please select a size for all entries');
+      return;
+    }
+    
     if (!designInstructions.trim()) {
       alert('Please provide design instructions');
       return;
@@ -703,39 +818,134 @@ async function submitShirtOrder() {
       return;
     }
     
-    // Create file names list for notes
-    let fileNames = '';
-    if (selectedFile && selectedFile.length) {
-      for (let i = 0; i < selectedFile.length; i++) {
-        fileNames += selectedFile[i].name;
-        if (i < selectedFile.length - 1) fileNames += ', ';
+    // Show uploading message
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting order...';
+    
+    // Generate order ID first
+    const orderId = generateOrderId();
+    
+    // Try to upload files to Firebase Storage (optional - may fail due to CORS)
+    let uploadedFiles = [];
+    try {
+      if (selectedFile && selectedFile.length > 0) {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading files...';
+        uploadedFiles = await uploadFilesToStorage(selectedFile, orderId);
       }
+    } catch (error) {
+      console.warn("File upload failed (CORS issue), storing file info only:", error);
+      // Store file info without URLs as fallback
+      uploadedFiles = Array.from(selectedFile).map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: null // Will need manual upload or different storage solution
+      }));
     }
     
+    // Format sizes for display
+    let sizesText = '';
+    window.shirtSizes.forEach(item => {
+      sizesText += `${item.size}: ${item.quantity} pcs\n`;
+    });
+    
     const orderData = {
-      orderId: generateOrderId(),
+      orderId: orderId,
       customer: getCustomerName(),
       contact: '-',
       email: getUserEmail(),
       product: 'T-Shirt Printing',
       type: printMethod.toUpperCase(),
-      size: shirtSize.toUpperCase(),
+      size: 'Multiple',
       quantity: parseInt(quantity),
-      price: 0, // Price pending admin review
-      total: 0, // Total pending admin review
-      notes: `Design Files: ${fileNames}\n\nShirt Color: ${shirtColorSelect}\n\nInstructions:\n${designInstructions}`,  // Fixed: Now uses shirtColorSelect
+      price: 0,
+      total: 0,
+      notes: `Shirt Color: ${shirtColorSelect}\nClaim Method: ${claimMethod}\n\nSizes:\n${sizesText}\nInstructions:\n${designInstructions}`,
       status: 'Pending Review',
       date: getCurrentDate(),
       paymentMethod: 'Pending',
-      shirtColor: shirtColorSelect,  // Fixed: Now uses shirtColorSelect
+      claimMethod: claimMethod,
+      shirtColor: shirtColorSelect,
       designInstructions: designInstructions,
+      sizes: JSON.stringify(window.shirtSizes),
+      files: uploadedFiles,
       height: '-',
       width: '-'
     };
     
     await addDoc(collection(db, "orders"), orderData);
     
-    alert(`T-Shirt Design Submitted Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nSize: ${shirtSize.toUpperCase()}\nShirt Color: ${shirtColorSelect}\nQuantity: ${quantity}\nFiles Uploaded: ${selectedFile.length}\n\nOur team will review your design and contact you with pricing and payment details. Thank you!`);  // Fixed: Now uses shirtColorSelect
+    // Create notification for user
+    await addDoc(collection(db, "notifications"), {
+      userId: getUserEmail(),
+      orderId: orderId,
+      title: 'Order Submitted',
+      message: `Your shirt print order (${orderId}) has been submitted and is pending review.`,
+      type: 'order_submitted',
+      read: false,
+      timestamp: new Date().toISOString()
+    });
+    
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
+    
+    alert(`T-Shirt Design Submitted Successfully!\n\nOrder ID: ${orderData.orderId}\nMethod: ${printMethod.toUpperCase()}\nShirt Color: ${shirtColorSelect}\nTotal Quantity: ${quantity}\nFiles Uploaded: ${uploadedFiles.length}\n\nOur team will review your design and contact you with pricing and payment details. Thank you!`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Place Order';
+    }
+  }
+}
+
+
+// ========== DOCUMENT ORDER SUBMISSION ==========
+async function submitDocumentOrder() {
+  try {
+    if (!selectedFile) {
+      alert('Please upload a document');
+      return;
+    }
+    
+    if (!selectedPayment) {
+      alert('Please select a payment method');
+      return;
+    }
+    
+    const paperSize = document.getElementById('paperSize').value;
+    const copies = parseInt(document.getElementById('copies').value) || 1;
+    const pricePerPage = prices.document[paperSize] || 0;
+    const total = pricePerPage * copies;
+    
+    const orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),
+      contact: '-',
+      email: getUserEmail(),
+      product: 'Document Printing',
+      type: paperSize.toUpperCase(),
+      size: paperSize.toUpperCase(),
+      quantity: copies,
+      price: pricePerPage,
+      total: total,
+      notes: `File: ${selectedFile.name}`,
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment.toUpperCase(),
+      height: '-',
+      width: '-'
+    };
+    
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nDocument: ${selectedFile.name}\nPaper Size: ${paperSize.toUpperCase()}\nCopies: ${copies}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${total.toFixed(2)}\n\nThank you for your order!`);
     
     closeModal();
   } catch (error) {
@@ -743,6 +953,103 @@ async function submitShirtOrder() {
     alert("Error placing order. Please try again.");
   }
 }
+
+
+// ========== GENERIC ORDER SUBMISSION (Photo, Tarpaulin, Stickers, Customized) ==========
+async function submitGenericOrder(service) {
+  try {
+    if (!selectedPayment) {
+      alert('Please select a payment method');
+      return;
+    }
+    
+    let orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),
+      contact: '-',
+      email: getUserEmail(),
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment.toUpperCase(),
+      height: '-',
+      width: '-'
+    };
+    
+    if (service === 'photo') {
+      if (!selectedFile) {
+        alert('Please upload a photo');
+        return;
+      }
+      const size = document.getElementById('photoSize').value;
+      const qty = parseInt(document.getElementById('photoCopies').value) || 1;
+      const pricePer = prices.photo[size] || 0;
+      const total = pricePer * qty;
+      
+      orderData.product = 'Photo Printing';
+      orderData.type = size.toUpperCase();
+      orderData.size = size.toUpperCase();
+      orderData.quantity = qty;
+      orderData.price = pricePer;
+      orderData.total = total;
+      orderData.notes = `File: ${selectedFile.name}`;
+      
+    } else if (service === 'tarpaulin') {
+      const size = document.getElementById('tarpaulinSize').value;
+      const qty = parseInt(document.getElementById('tarpaulinQty').value) || 1;
+      const notes = document.getElementById('tarpaulinNotes').value;
+      const pricePer = prices.tarpaulin[size] || 0;
+      const total = pricePer * qty;
+      
+      orderData.product = 'Tarpaulin Printing';
+      orderData.type = size.toUpperCase();
+      orderData.size = size.toUpperCase();
+      orderData.quantity = qty;
+      orderData.price = pricePer;
+      orderData.total = total;
+      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      
+    } else if (service === 'stickers') {
+      const qty = parseInt(document.getElementById('stickerQty').value) || 1;
+      const notes = document.getElementById('stickerNotes').value;
+      const total = prices.stickers.perPiece * qty;
+      
+      orderData.product = 'Stickers';
+      orderData.type = 'Custom';
+      orderData.size = 'Custom';
+      orderData.quantity = qty;
+      orderData.price = prices.stickers.perPiece;
+      orderData.total = total;
+      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      
+    } else if (service === 'customized') {
+      if (!selectedFile) {
+        alert('Please upload a design');
+        return;
+      }
+      const qty = parseInt(document.getElementById('customQty').value) || 1;
+      const total = prices.customized.base * qty;
+      
+      orderData.product = 'Customized Item';
+      orderData.type = 'Custom';
+      orderData.size = 'Custom';
+      orderData.quantity = qty;
+      orderData.price = prices.customized.base;
+      orderData.total = total;
+      orderData.notes = `File: ${selectedFile.name}`;
+    }
+    
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${orderData.product}\nQuantity: ${orderData.quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${orderData.total.toFixed(2)}\n\nThank you for your order!`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+  }
+}
+
+
 
 function resetForm() {
   const form = document.getElementById('orderForm');
@@ -778,6 +1085,13 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Make functions globally accessible
+window._openModal = openModal;
+window._closeModal = closeModal;
+window._closeModalOnOverlay = closeModalOnOverlay;
+window._selectPayment = selectPayment;
+window._handleSubmit = handleSubmit;
+
+// Also assign to non-prefixed for direct access
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.closeModalOnOverlay = closeModalOnOverlay;
@@ -786,8 +1100,16 @@ window.handleFileSelect = handleFileSelect;
 window.selectPayment = selectPayment;
 window.handleSubmit = handleSubmit;
 window.handleSearch = handleSearch;
-window.addText = addText;
-window.handleImageUpload = handleImageUpload;
-window.deleteSelected = deleteSelected;
-window.clearCanvas = clearCanvas;
-window.changeShirtColor = changeShirtColor;
+window.calculatePrice = calculatePrice;
+window.updateSubmitButton = updateSubmitButton;
+window.handleGenericFileUpload = handleGenericFileUpload;
+window.handleShirtFilesUpload = handleShirtFilesUpload;
+window.removeUploadedFile = removeUploadedFile;
+window.addSizeRow = addSizeRow;
+window.updateSizeValue = updateSizeValue;
+window.removeSizeRow = removeSizeRow;
+window.updateShirtForm = updateShirtForm;
+
+// Dispatch event to signal module is ready
+window.dispatchEvent(new Event('servicesModuleReady'));
+console.log('Services module functions registered');

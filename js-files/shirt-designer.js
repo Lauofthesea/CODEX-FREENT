@@ -427,6 +427,101 @@ function submitDocumentOrder() {
   closeModal();
 }
 
+
+// ========== GENERIC ORDER SUBMISSION (Photo, Tarpaulin, Stickers, Customized) ==========
+async function submitGenericOrder(service) {
+  try {
+    if (!selectedPayment) {
+      alert('Please select a payment method');
+      return;
+    }
+    
+    let orderData = {
+      orderId: generateOrderId(),
+      customer: getCustomerName(),
+      contact: '-',
+      email: getUserEmail(),
+      status: 'Pending',
+      date: getCurrentDate(),
+      paymentMethod: selectedPayment.toUpperCase(),
+      height: '-',
+      width: '-'
+    };
+    
+    if (service === 'photo') {
+      if (!selectedFile) {
+        alert('Please upload a photo');
+        return;
+      }
+      const size = document.getElementById('photoSize').value;
+      const qty = parseInt(document.getElementById('photoCopies').value) || 1;
+      const pricePer = prices.photo[size] || 0;
+      const total = pricePer * qty;
+      
+      orderData.product = 'Photo Printing';
+      orderData.type = size.toUpperCase();
+      orderData.size = size.toUpperCase();
+      orderData.quantity = qty;
+      orderData.price = pricePer;
+      orderData.total = total;
+      orderData.notes = `File: ${selectedFile.name}`;
+      
+    } else if (service === 'tarpaulin') {
+      const size = document.getElementById('tarpaulinSize').value;
+      const qty = parseInt(document.getElementById('tarpaulinQty').value) || 1;
+      const notes = document.getElementById('tarpaulinNotes').value;
+      const pricePer = prices.tarpaulin[size] || 0;
+      const total = pricePer * qty;
+      
+      orderData.product = 'Tarpaulin Printing';
+      orderData.type = size.toUpperCase();
+      orderData.size = size.toUpperCase();
+      orderData.quantity = qty;
+      orderData.price = pricePer;
+      orderData.total = total;
+      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      
+    } else if (service === 'stickers') {
+      const qty = parseInt(document.getElementById('stickerQty').value) || 1;
+      const notes = document.getElementById('stickerNotes').value;
+      const total = prices.stickers.perPiece * qty;
+      
+      orderData.product = 'Stickers';
+      orderData.type = 'Custom';
+      orderData.size = 'Custom';
+      orderData.quantity = qty;
+      orderData.price = prices.stickers.perPiece;
+      orderData.total = total;
+      orderData.notes = notes || (selectedFile ? `File: ${selectedFile.name}` : '-');
+      
+    } else if (service === 'customized') {
+      if (!selectedFile) {
+        alert('Please upload a design');
+        return;
+      }
+      const qty = parseInt(document.getElementById('customQty').value) || 1;
+      const total = prices.customized.base * qty;
+      
+      orderData.product = 'Customized Item';
+      orderData.type = 'Custom';
+      orderData.size = 'Custom';
+      orderData.quantity = qty;
+      orderData.price = prices.customized.base;
+      orderData.total = total;
+      orderData.notes = `File: ${selectedFile.name}`;
+    }
+    
+    await addDoc(collection(db, "orders"), orderData);
+    
+    alert(`Order Placed Successfully!\n\nOrder ID: ${orderData.orderId}\nProduct: ${orderData.product}\nQuantity: ${orderData.quantity}\nPayment: ${selectedPayment.toUpperCase()}\nTotal: ₱${orderData.total.toFixed(2)}\n\nThank you for your order!`);
+    
+    closeModal();
+  } catch (error) {
+    console.error("Error submitting order:", error);
+    alert("Error placing order. Please try again.");
+  }
+}
+
 function submitShirtOrder() {
   const printMethod = document.getElementById('printMethod').value;
   const shirtSize = document.getElementById('shirtSize').value;
@@ -457,6 +552,7 @@ function submitShirtOrder() {
   
   closeModal();
 }
+
 
 function resetForm() {
   const form = document.getElementById('orderForm');

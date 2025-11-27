@@ -6,123 +6,7 @@
 <title>Lines Hub Admin Dashboard</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  body { font-family: 'Inter', sans-serif; }
-  .animate-fadeIn { animation: fadeIn 0.2s ease-in-out; }
-  @keyframes fadeIn { from {opacity:0} to {opacity:1} }
-
-  @keyframes modalShow {
-    0% { opacity: 0; transform: translateY(-20px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-
-  .animate-modalShow {
-    animation: modalShow 0.25s ease-out forwards;
-  }
-
-  /* Theme alignment */
-  body {
-    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  }
-
-  /* Sidebar styling - matching brand colors */
-  aside {
-    background: linear-gradient(135deg, #191919 0%, #2d2d2d 100%) !important;
-    border-right: 2px solid #FFD700;
-  }
-
-  aside h1 {
-    color: #FFD700 !important;
-  }
-
-  /* Active button color */
-  aside button.bg-indigo-600 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-    color: #000 !important;
-  }
-
-  aside button.bg-indigo-600:hover {
-    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-  }
-
-  /* Logout button */
-  aside .bg-red-600 {
-    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-  }
-
-  /* Header styling */
-  header {
-    background: linear-gradient(135deg, #191919 0%, #2d2d2d 100%);
-    border-bottom: 2px solid #FFD700;
-  }
-
-  header h1 {
-    color: #FFD700;
-  }
-
-  /* Card gradients - primary */
-  .from-\[\#716FF3\] {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-  }
-
-  /* Button colors */
-  button.bg-indigo-600 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-    color: #000 !important;
-    font-weight: 600;
-  }
-
-  button.bg-indigo-600:hover {
-    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-    transform: translateY(-2px);
-  }
-
-  /* Tab styling */
-  .bg-indigo-600 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%) !important;
-    color: #000 !important;
-  }
-
-  .bg-indigo-600:hover {
-    opacity: 0.9;
-  }
-
-  /* Input focus */
-  input:focus,
-  select:focus {
-    border-color: #FFD700 !important;
-    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1) !important;
-  }
-
-  input,
-  select {
-    border-color: #d1d5db;
-  }
-
-  /* Table hover */
-  tbody tr:hover {
-    background: rgba(255, 215, 0, 0.05);
-  }
-
-  /* Modal styling */
-  .bg-black.bg-opacity-40 {
-    background: rgba(0, 0, 0, 0.6) !important;
-  }
-
-  .bg-white {
-    background: #f9fafb;
-  }
-
-  /* Responsive adjustments */
-  @media (max-width: 1024px) {
-    aside {
-      width: 200px;
-    }
-    .ml-64 {
-      margin-left: 200px;
-    }
-  }
-</style>
+<link rel="stylesheet" href="../css-files/admin-dashboard.css">
 </head>
 <body class="bg-gray-100 flex">
 
@@ -135,6 +19,9 @@
   <nav class="flex-1 p-4 space-y-3">
     <button onclick="showSection('dashboardSection')" id="dashboardBtn" class="w-full text-left px-4 py-3 bg-indigo-600 text-white rounded-xl">Dashboard</button>
     <button onclick="showSection('ordersSection')" id="ordersBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Orders</button>
+    <button onclick="showSection('shirtPrintSection')" id="shirtPrintBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">
+      <i class="fas fa-tshirt"></i> Shirt Print
+    </button>
     <button onclick="showSection('historySection')" id="historyBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Transaction History</button>
     <button onclick="showSection('messagesSection')" id="messagesBtn" class="w-full text-left px-4 py-3 bg-gray-100 text-gray-700 rounded-xl">Messages</button>
   </nav>
@@ -226,6 +113,30 @@
       </div>
     </div>
 
+    <!-- SHIRT PRINT SECTION -->
+    <div id="shirtPrintSection" class="hidden space-y-6">
+      <div class="bg-white rounded-2xl shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-700 mb-4">Shirt Print Orders - Pending Review</h2>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100 text-left">
+              <tr>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Order ID</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Customer</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Method</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Sizes</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Total Qty</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Status</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Date</th>
+                <th class="px-4 py-3 text-sm font-medium text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="shirtPrintBody" class="divide-y divide-gray-200 text-left"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- TRANSACTION HISTORY -->
     <div id="historySection" class="hidden">
       <div class="bg-white rounded-2xl shadow p-6 overflow-x-auto">
@@ -285,10 +196,21 @@
 
     <!-- ORDER DETAILS MODAL -->
     <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
-  <div class="bg-white w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
+      <div class="bg-white w-full sm:w-[500px] md:w-[550px] lg:w-[600px] max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
         <button onclick="closeOrderModal()" class="absolute top-3 right-4 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
         <h2 class="text-2xl font-semibold mb-6 pb-3 border-b text-gray-800">Order Details</h2>
         <div id="orderDetailsContent" class="space-y-4 text-gray-700"></div>
+      </div>
+    </div>
+
+    <!-- SHIRT PRINT REVIEW MODAL -->
+    <div id="shirtReviewModal" class="fixed inset-0 bg-black bg-opacity-40 hidden z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto p-8 rounded-2xl shadow-xl relative animate-modalShow">
+        <button onclick="closeShirtReviewModal()" class="absolute top-3 right-4 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
+        <h2 class="text-2xl font-semibold mb-6 pb-3 border-b text-gray-800">
+          <i class="fas fa-tshirt text-yellow-500"></i> Review Shirt Print Order
+        </h2>
+        <div id="shirtReviewContent" class="space-y-6"></div>
       </div>
     </div>
 
@@ -436,10 +358,11 @@ window.confirmCreateConv = async function(){
 
 /* ========== SECTION SWITCHING ========== */
 function showSection(id) {
-  const sections = ["dashboardSection","ordersSection","historySection","messagesSection"];
+  const sections = ["dashboardSection","ordersSection","shirtPrintSection","historySection","messagesSection"];
   const nav = {
     dashboardSection:"dashboardBtn",
     ordersSection:"ordersBtn",
+    shirtPrintSection:"shirtPrintBtn",
     historySection:"historyBtn",
     messagesSection:"messagesBtn"
   };
@@ -450,6 +373,7 @@ function showSection(id) {
   const titles = {
     dashboardSection:"Dashboard",
     ordersSection:"Orders",
+    shirtPrintSection:"Shirt Print Orders",
     historySection:"Transaction History",
     messagesSection:"Messages"
   };
@@ -465,6 +389,11 @@ function showSection(id) {
       btn.classList.add("bg-gray-100","text-gray-700");
     }
   });
+  
+  // Load shirt print orders when section is shown
+  if(id === 'shirtPrintSection') {
+    loadShirtPrintOrders();
+  }
 }
 
 
@@ -839,6 +768,248 @@ function sortOrders() {
 
   rows.forEach(r => table.appendChild(r));
 }
+
+/* ========== SHIRT PRINT ORDERS ========== */
+const shirtPrintBody = document.getElementById("shirtPrintBody");
+
+async function loadShirtPrintOrders() {
+  const q = query(ordersCol, where("product", "==", "T-Shirt Printing"));
+  const snapshot = await getDocs(q);
+  
+  shirtPrintBody.innerHTML = "";
+  
+  snapshot.forEach(docSnap => {
+    const order = docSnap.data();
+    order.docId = docSnap.id;
+    
+    // Parse sizes if available
+    let sizesDisplay = order.size || "-";
+    if (order.sizes) {
+      try {
+        const sizesArray = JSON.parse(order.sizes);
+        sizesDisplay = sizesArray.map(s => `${s.size}(${s.quantity})`).join(", ");
+      } catch(e) {
+        sizesDisplay = order.size || "-";
+      }
+    }
+    
+    const statusBadge = order.status === "Pending Review" 
+      ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">Pending Review</span>'
+      : `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">${order.status}</span>`;
+    
+    const row = `
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3">${order.orderId}</td>
+        <td class="px-4 py-3">${order.customer}</td>
+        <td class="px-4 py-3">${order.type || "-"}</td>
+        <td class="px-4 py-3 text-sm">${sizesDisplay}</td>
+        <td class="px-4 py-3">${order.quantity}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3 text-sm">${order.date || "-"}</td>
+        <td class="px-4 py-3">
+          <button onclick="reviewShirtOrder('${order.docId}')" 
+            class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
+            <i class="fas fa-eye"></i> Review
+          </button>
+        </td>
+      </tr>
+    `;
+    
+    shirtPrintBody.innerHTML += row;
+  });
+  
+  if (snapshot.empty) {
+    shirtPrintBody.innerHTML = '<tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">No shirt print orders found</td></tr>';
+  }
+}
+
+window.reviewShirtOrder = reviewShirtOrder;
+window.closeShirtReviewModal = closeShirtReviewModal;
+window.updateShirtPrice = updateShirtPrice;
+
+async function reviewShirtOrder(docId) {
+  const snap = await getDoc(doc(db, "orders", docId));
+  const order = snap.data();
+  
+  // Parse sizes
+  let sizesHTML = '';
+  if (order.sizes) {
+    try {
+      const sizesArray = JSON.parse(order.sizes);
+      sizesHTML = '<div class="space-y-2">';
+      sizesArray.forEach(s => {
+        sizesHTML += `<div class="flex justify-between bg-gray-50 p-2 rounded"><span>Size ${s.size}</span><span class="font-semibold">${s.quantity} pcs</span></div>`;
+      });
+      sizesHTML += '</div>';
+    } catch(e) {
+      sizesHTML = `<p>${order.size || "-"}</p>`;
+    }
+  }
+  
+  document.getElementById("shirtReviewContent").innerHTML = `
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <h3 class="font-semibold text-lg mb-3 text-gray-700">Order Information</h3>
+        <div class="space-y-2 text-sm">
+          <p><strong>Order ID:</strong> ${order.orderId}</p>
+          <p><strong>Customer:</strong> ${order.customer}</p>
+          <p><strong>Email:</strong> ${order.email || "-"}</p>
+          <p><strong>Date:</strong> ${order.date || "-"}</p>
+        </div>
+      </div>
+      
+      <div>
+        <h3 class="font-semibold text-lg mb-3 text-gray-700">Print Details</h3>
+        <div class="space-y-2 text-sm">
+          <p><strong>Method:</strong> ${order.type || "-"}</p>
+          <p><strong>Shirt Color:</strong> ${order.shirtColor || "-"}</p>
+          <p><strong>Total Quantity:</strong> ${order.quantity}</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="mt-4">
+      <h3 class="font-semibold text-lg mb-3 text-gray-700">Sizes Breakdown</h3>
+      ${sizesHTML}
+    </div>
+    
+    <div class="mt-4">
+      <h3 class="font-semibold text-lg mb-3 text-gray-700">Design Instructions</h3>
+      <div class="bg-gray-50 p-4 rounded whitespace-pre-wrap text-sm">${order.designInstructions || "No instructions provided"}</div>
+    </div>
+    
+    <div class="mt-4">
+      <h3 class="font-semibold text-lg mb-3 text-gray-700">Design Files</h3>
+      ${order.files && order.files.length > 0 ? `
+        <div class="space-y-2">
+          ${order.files.map((file, index) => `
+            <div class="flex items-center justify-between bg-gray-50 p-3 rounded border">
+              <div class="flex items-center gap-3">
+                <i class="fas fa-file text-blue-500 text-xl"></i>
+                <div>
+                  <div class="font-medium text-sm">${file.name}</div>
+                  <div class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                </div>
+              </div>
+              <a href="${file.url}" target="_blank" download="${file.name}"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                <i class="fas fa-download"></i> Download
+              </a>
+            </div>
+          `).join('')}
+        </div>
+      ` : `
+        <div class="bg-yellow-50 border border-yellow-200 p-4 rounded">
+          <p class="text-sm text-yellow-800">
+            <i class="fas fa-info-circle"></i> No files uploaded for this order.
+          </p>
+        </div>
+      `}
+    </div>
+    
+    <div class="mt-6 pt-6 border-t">
+      <h3 class="font-semibold text-lg mb-4 text-gray-700">Set Price & Update Status</h3>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Price per Item (₱)</label>
+          <input type="number" id="pricePerItem" value="${order.price || 0}" 
+            class="w-full px-4 py-2 border rounded-lg" min="0" step="0.01">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Total Price (₱)</label>
+          <input type="number" id="totalPrice" value="${order.total || 0}" 
+            class="w-full px-4 py-2 border rounded-lg bg-gray-100" readonly>
+        </div>
+      </div>
+      
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Update Status</label>
+        <select id="shirtStatus" class="w-full px-4 py-2 border rounded-lg">
+          <option value="Pending Review" ${order.status === "Pending Review" ? "selected" : ""}>Pending Review</option>
+          <option value="Processing" ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+          <option value="On Production" ${order.status === "On Production" ? "selected" : ""}>On Production</option>
+          <option value="Ready for Pickup" ${order.status === "Ready for Pickup" ? "selected" : ""}>Ready for Pickup</option>
+          <option value="Completed" ${order.status === "Completed" ? "selected" : ""}>Completed</option>
+        </select>
+      </div>
+      
+      <div class="mt-6 flex gap-3">
+        <button onclick="updateShirtPrice('${docId}')" 
+          class="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold">
+          <i class="fas fa-check"></i> Update & Notify Customer
+        </button>
+        <button onclick="closeShirtReviewModal()" 
+          class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+          Cancel
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // Auto-calculate total when price per item changes
+  document.getElementById("pricePerItem").addEventListener("input", function() {
+    const pricePerItem = parseFloat(this.value) || 0;
+    const quantity = parseInt(order.quantity) || 0;
+    document.getElementById("totalPrice").value = (pricePerItem * quantity).toFixed(2);
+  });
+  
+  document.getElementById("shirtReviewModal").classList.remove("hidden");
+}
+
+function closeShirtReviewModal() {
+  document.getElementById("shirtReviewModal").classList.add("hidden");
+}
+
+async function updateShirtPrice(docId) {
+  const pricePerItem = parseFloat(document.getElementById("pricePerItem").value) || 0;
+  const totalPrice = parseFloat(document.getElementById("totalPrice").value) || 0;
+  const status = document.getElementById("shirtStatus").value;
+  
+  if (pricePerItem <= 0) {
+    alert("Please enter a valid price");
+    return;
+  }
+  
+  try {
+    // Get order details for notification
+    const orderSnap = await getDoc(doc(db, "orders", docId));
+    const orderData = orderSnap.data();
+    
+    // Update order
+    await updateDoc(doc(db, "orders", docId), {
+      price: pricePerItem,
+      total: totalPrice,
+      status: status,
+      reviewedAt: new Date().toISOString()
+    });
+    
+    // Create notification for user
+    await addDoc(collection(db, "notifications"), {
+      userId: orderData.email,
+      orderId: orderData.orderId,
+      title: 'Order Updated',
+      message: `Your shirt print order (${orderData.orderId}) has been reviewed. Price: ₱${totalPrice}. Status: ${status}`,
+      type: 'order_updated',
+      read: false,
+      timestamp: new Date().toISOString(),
+      details: {
+        price: pricePerItem,
+        total: totalPrice,
+        status: status
+      }
+    });
+    
+    alert(`Order updated successfully!\nPrice: ₱${totalPrice}\nStatus: ${status}\n\nCustomer has been notified.`);
+    closeShirtReviewModal();
+    loadShirtPrintOrders();
+  } catch (error) {
+    console.error("Error updating order:", error);
+    alert("Error updating order. Please try again.");
+  }
+}
+
+// Import getDocs for querying
+import { getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 </script>
 </body>

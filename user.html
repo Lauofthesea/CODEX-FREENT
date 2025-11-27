@@ -7,326 +7,9 @@
   <link rel="icon" type="image/jpg" href="./assets/lineslogo.jpg" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css-files/index.css">
+  <link rel="stylesheet" href="./css-files/user-order.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <style>
-    /* Additional styles for tracking page */
-    body {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
-
-    .user-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #FFD700;
-      font-weight: 600;
-      margin-right: 1rem;
-    }
-
-    .user-indicator i {
-      font-size: 1.2rem;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-    }
-
-    .tracking-container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-
-    .tracking-card {
-      background: rgba(26, 26, 26, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 1.5rem;
-      padding: 2.5rem;
-      border: 2px solid #FFD700;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-      margin-bottom: 2rem;
-    }
-
-    .page-title {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #FFD700;
-      margin-bottom: 0.5rem;
-    }
-
-    .page-subtitle {
-      color: #aaa;
-      margin-bottom: 2rem;
-    }
-
-    .search-section {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .search-label {
-      display: block;
-      color: #FFD700;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      font-size: 1.1rem;
-    }
-
-    .search-input-group {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .search-input {
-      flex: 1;
-      padding: 1rem;
-      border: 1px solid #FFD700;
-      border-radius: 0.75rem;
-      background: rgba(255, 255, 255, 0.1);
-      color: #fff;
-      font-size: 1rem;
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #fff;
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
-    }
-
-    .search-input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-    }
-
-    .track-button {
-      padding: 1rem 2rem;
-      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-      color: #000;
-      border: none;
-      border-radius: 0.75rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-
-    .track-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
-    }
-
-    .order-details-card {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid #FFD700;
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .order-details-card h3 {
-      color: #FFD700;
-      margin-bottom: 1.5rem;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .detail-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .detail-item {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .detail-label {
-      color: #aaa;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .detail-value {
-      color: #fff;
-      font-weight: 600;
-      font-size: 1.1rem;
-    }
-
-    .detail-value.highlight {
-      color: #10b981;
-      font-size: 1.5rem;
-    }
-
-    .status-timeline {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 215, 0, 0.3);
-      border-radius: 1rem;
-      padding: 2rem;
-    }
-
-    .timeline-title {
-      color: #FFD700;
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .status-step {
-      display: flex;
-      align-items: flex-start;
-      margin-bottom: 2rem;
-      position: relative;
-      padding-left: 4rem;
-    }
-
-    .status-step:last-child {
-      margin-bottom: 0;
-    }
-
-    .status-step::before {
-      content: '';
-      position: absolute;
-      left: 1.25rem;
-      top: 3rem;
-      width: 2px;
-      height: calc(100% + 2rem);
-      background: rgba(255, 215, 0, 0.2);
-    }
-
-    .status-step:last-child::before {
-      display: none;
-    }
-
-    .status-icon {
-      position: absolute;
-      left: 0;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.1);
-      border: 2px solid #555;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #555;
-      font-size: 1.3rem;
-    }
-
-    .status-step.active .status-icon {
-      background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-      border-color: #FFD700;
-      color: #000;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-      animation: pulse 2s infinite;
-    }
-
-    .status-step.completed .status-icon {
-      background: #10b981;
-      border-color: #10b981;
-      color: #fff;
-    }
-
-    @keyframes pulse {
-      0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
-      }
-    }
-
-    .status-content {
-      flex: 1;
-    }
-
-    .status-title {
-      font-weight: 600;
-      color: #fff;
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-    }
-
-    .status-step.active .status-title {
-      color: #FFD700;
-      font-size: 1.2rem;
-    }
-
-    .status-description {
-      font-size: 0.9rem;
-      color: #aaa;
-      line-height: 1.5;
-    }
-
-    .order-not-found {
-      text-align: center;
-      padding: 3rem;
-      color: #aaa;
-    }
-
-    .not-found-icon {
-      font-size: 4rem;
-      color: #FFD700;
-      margin-bottom: 1rem;
-      opacity: 0.5;
-    }
-
-    .back-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #FFD700;
-      text-decoration: none;
-      font-weight: 600;
-      margin-bottom: 2rem;
-      transition: all 0.3s ease;
-    }
-
-    .back-button:hover {
-      color: #fff;
-      transform: translateX(-4px);
-    }
-
-    @media (max-width: 768px) {
-      .tracking-card {
-        padding: 1.5rem;
-      }
-
-      .search-input-group {
-        flex-direction: column;
-      }
-
-      .track-button {
-        width: 100%;
-      }
-
-      .detail-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .status-step {
-        padding-left: 3rem;
-      }
-
-      .status-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 1rem;
-      }
-    }
-  </style>
+  <!-- All styles moved to user-order.css -->
 </head>
 <body>
 
@@ -374,6 +57,26 @@
       Back to Dashboard
     </a>
 
+    <!-- Notifications Section -->
+    <div class="notifications-card">
+      <div class="notifications-header">
+        <h2 class="notifications-title">
+          <i class="fas fa-bell"></i>
+          Notifications
+          <span id="unreadBadge" class="notification-badge" style="display: none;">0</span>
+        </h2>
+        <button id="markAllReadBtn" class="mark-all-read" style="display: none;">
+          <i class="fas fa-check-double"></i> Mark all as read
+        </button>
+      </div>
+      <div id="notificationsList" class="notifications-list">
+        <div class="no-notifications">
+          <i class="fas fa-bell-slash"></i>
+          <p>No notifications yet</p>
+        </div>
+      </div>
+    </div>
+
     <div class="tracking-card">
       <h1 class="page-title">
         <i class="fas fa-search"></i> Track Your Order
@@ -392,9 +95,10 @@
             class="search-input" 
             placeholder="e.g., ORD-1234567890-ABCDE"
           >
-          <button onclick="trackOrder()" class="track-button">
-            <i class="fas fa-search"></i> Track Order
-          </button>
+          <button id="trackBtn" class="track-button">
+              <i class="fas fa-search"></i> Track Order
+            </button>
+
         </div>
       </div>
 
@@ -436,52 +140,39 @@
 
         <!-- Status Timeline -->
         <div class="status-timeline">
-          <h3 class="timeline-title">
-            <i class="fas fa-clock"></i> Order Status Timeline
-          </h3>
-          
-          <div class="status-step" id="step-pending">
-            <div class="status-icon">
-              <i class="fas fa-clock"></i>
-            </div>
-            <div class="status-content">
-              <div class="status-title">Order Received</div>
-              <div class="status-description">Your order has been received and is pending processing. We'll start working on it soon!</div>
-            </div>
-          </div>
-
-          <div class="status-step" id="step-production">
-            <div class="status-icon">
-              <i class="fas fa-cogs"></i>
-            </div>
-            <div class="status-content">
-              <div class="status-title">In Production</div>
-              <div class="status-description">Your order is currently being prepared with care by our team.</div>
-            </div>
-          </div>
-
-          <div class="status-step" id="step-delivery">
-            <div class="status-icon">
-              <i class="fas fa-truck"></i>
-            </div>
-            <div class="status-content">
-              <div class="status-title">Out for Delivery</div>
-              <div class="status-description">Your order is on the way to your location. You'll receive it soon!</div>
-            </div>
-          </div>
-
-          <div class="status-step" id="step-delivered">
-            <div class="status-icon">
-              <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="status-content">
-              <div class="status-title">Delivered / Complete</div>
-              <div class="status-description">Your order has been successfully delivered. Thank you for choosing Lines Hub!</div>
-            </div>
-          </div>
-        </div>
-
+  <h3 class="timeline-title">
+    <i class="fas fa-clock"></i> Order Status Timeline
+  </h3>
+  <div class="horizontal-timeline">
+    <div class="timeline-step" id="step-pending">
+      <div class="timeline-icon">
+        <i class="fas fa-clock"></i>
       </div>
+      <div class="timeline-label">Order Received</div>
+    </div>
+    <div class="timeline-connector"></div>
+    <div class="timeline-step" id="step-production">
+      <div class="timeline-icon">
+        <i class="fas fa-cogs"></i>
+      </div>
+      <div class="timeline-label">In Production</div>
+    </div>
+    <div class="timeline-connector"></div>
+    <div class="timeline-step" id="step-delivery">
+      <div class="timeline-icon">
+        <i class="fas fa-truck"></i>
+      </div>
+      <div class="timeline-label">Out for Delivery</div>
+    </div>
+    <div class="timeline-connector"></div>
+    <div class="timeline-step" id="step-delivered">
+      <div class="timeline-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="timeline-label">Delivered / Complete</div>
+    </div>
+  </div>
+</div>
 
       <!-- Order Not Found Message -->
       <div id="orderNotFound" class="order-not-found" style="display: none;">
@@ -521,140 +212,269 @@
   </footer>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs, onSnapshot, orderBy, updateDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
-      authDomain: "lineshub-98e0f.firebaseapp.com",
-      projectId: "lineshub-98e0f",
-      storageBucket: "lineshub-98e0f.appspot.com",
-      messagingSenderId: "427905073524",
-      appId: "1:427905073524:web:95cb66ffeabf011087ec21"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+    authDomain: "lineshub-98e0f.firebaseapp.com",
+    projectId: "lineshub-98e0f",
+    storageBucket: "lineshub-98e0f.appspot.com",
+    messagingSenderId: "427905073524",
+    appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    // Check login status and update navigation
-    function updateNavigation() {
-      const userLoggedIn = sessionStorage.getItem('userLoggedIn');
-      const username = sessionStorage.getItem('username') || 'User';
-      
-      if (userLoggedIn === 'true') {
-        document.getElementById('userIndicator').style.display = 'flex';
-        document.getElementById('usernameDisplay').textContent = username;
-        document.getElementById('accountBtn').style.display = 'block';
-        document.getElementById('loginBtn').style.display = 'none';
-      } else {
-        document.getElementById('userIndicator').style.display = 'none';
-        document.getElementById('accountBtn').style.display = 'none';
-        document.getElementById('loginBtn').style.display = 'block';
-      }
+  // Check login status and update navigation
+  function updateNavigation() {
+    const userLoggedIn = sessionStorage.getItem('userLoggedIn');
+    const username = sessionStorage.getItem('username') || 'User';
+    
+    if (userLoggedIn === 'true') {
+      document.getElementById('userIndicator').style.display = 'flex';
+      document.getElementById('usernameDisplay').textContent = username;
+      document.getElementById('accountBtn').style.display = 'block';
+      document.getElementById('loginBtn').style.display = 'none';
+    } else {
+      document.getElementById('userIndicator').style.display = 'none';
+      document.getElementById('accountBtn').style.display = 'none';
+      document.getElementById('loginBtn').style.display = 'block';
     }
+  }
 
-    updateNavigation();
+  updateNavigation();
 
-    // Check for orderId in URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderIdFromUrl = urlParams.get('orderId');
-    if (orderIdFromUrl) {
-      document.getElementById('orderIdInput').value = orderIdFromUrl;
-      trackOrder();
-    }
+  // ========== NOTIFICATIONS SYSTEM ==========
+  function loadNotifications() {
+    const userEmail = sessionStorage.getItem('userEmail');
+    if (!userEmail) return;
 
-    window.trackOrder = async function() {
-      const orderId = document.getElementById('orderIdInput').value.trim();
+    const notificationsQuery = query(
+      collection(db, "notifications"),
+      where("userId", "==", userEmail),
+      orderBy("timestamp", "desc")
+    );
+
+    onSnapshot(notificationsQuery, (snapshot) => {
+      const notificationsList = document.getElementById('notificationsList');
+      const unreadBadge = document.getElementById('unreadBadge');
+      const markAllReadBtn = document.getElementById('markAllReadBtn');
       
-      if (!orderId) {
-        alert('Please enter an Order ID');
+      if (snapshot.empty) {
+        notificationsList.innerHTML = `
+          <div class="no-notifications">
+            <i class="fas fa-bell-slash"></i>
+            <p>No notifications yet</p>
+          </div>
+        `;
+        unreadBadge.style.display = 'none';
+        markAllReadBtn.style.display = 'none';
         return;
       }
 
-      try {
-        const ordersRef = collection(db, "orders");
-        const q = query(ordersRef, where("orderId", "==", orderId));
-        const querySnapshot = await getDocs(q);
+      let unreadCount = 0;
+      let html = '';
 
-        if (querySnapshot.empty) {
-          // Order not found
-          document.getElementById('orderDetailsSection').style.display = 'none';
-          document.getElementById('orderNotFound').style.display = 'block';
-          return;
-        }
-
-        // Order found
-        const orderData = querySnapshot.docs[0].data();
+      snapshot.forEach(docSnap => {
+        const notif = docSnap.data();
+        const notifId = docSnap.id;
+        const isUnread = !notif.read;
         
-        document.getElementById('orderNotFound').style.display = 'none';
-        document.getElementById('orderDetailsSection').style.display = 'block';
+        if (isUnread) unreadCount++;
 
-        // Populate order details
-        document.getElementById('displayOrderId').textContent = orderData.orderId;
-        document.getElementById('displayProduct').textContent = orderData.product;
-        document.getElementById('displayQuantity').textContent = orderData.quantity;
-        document.getElementById('displayTotal').textContent = '₱' + (orderData.total || 0).toFixed(2);
-        document.getElementById('displayDate').textContent = orderData.date || '-';
-        document.getElementById('displayPayment').textContent = orderData.paymentMethod?.toUpperCase() || '-';
+        const timeAgo = getTimeAgo(notif.timestamp);
+        const icon = getNotificationIcon(notif.type);
 
-        // Update status timeline
-        updateStatusTimeline(orderData.status);
-
-        // Scroll to results
-        document.getElementById('orderDetailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-      } catch (error) {
-        console.error("Error tracking order:", error);
-        alert("Error tracking order. Please try again.");
-      }
-    };
-
-    function updateStatusTimeline(status) {
-      // Reset all steps
-      const steps = ['step-pending', 'step-production', 'step-delivery', 'step-delivered'];
-      steps.forEach(step => {
-        const element = document.getElementById(step);
-        element.classList.remove('active', 'completed');
+        html += `
+          <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="markAsRead('${notifId}')">
+            <div class="notification-header-row">
+              <div class="notification-title">
+                <i class="${icon}"></i>
+                ${notif.title}
+              </div>
+              <div class="notification-time">${timeAgo}</div>
+            </div>
+            <div class="notification-message">${notif.message}</div>
+            ${notif.orderId ? `<div class="notification-order-id">Order: ${notif.orderId}</div>` : ''}
+          </div>
+        `;
       });
 
-      // Map status to steps
-      const statusMap = {
-        'Pending': ['step-pending'],
-        'On Production': ['step-pending', 'step-production'],
-        'On Delivery': ['step-pending', 'step-production', 'step-delivery'],
-        'Delivered': ['step-pending', 'step-production', 'step-delivery', 'step-delivered'],
-        'Complete': ['step-pending', 'step-production', 'step-delivery', 'step-delivered']
-      };
+      notificationsList.innerHTML = html;
 
-      const activeSteps = statusMap[status] || ['step-pending'];
-      
-      // Mark completed steps
-      for (let i = 0; i < activeSteps.length - 1; i++) {
-        document.getElementById(activeSteps[i]).classList.add('completed');
-      }
-      
-      // Mark current active step
-      const currentStep = activeSteps[activeSteps.length - 1];
-      document.getElementById(currentStep).classList.add('active');
-    }
-
-    // Allow Enter key to track
-    document.getElementById('orderIdInput').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        trackOrder();
+      if (unreadCount > 0) {
+        unreadBadge.textContent = unreadCount;
+        unreadBadge.style.display = 'inline-block';
+        markAllReadBtn.style.display = 'block';
+      } else {
+        unreadBadge.style.display = 'none';
+        markAllReadBtn.style.display = 'none';
       }
     });
+  }
 
-    // Handle search
-    window.handleSearch = function(event) {
-      event.preventDefault();
-      const query = document.getElementById('search-input').value.trim();
-      if (query) {
-        alert('Search functionality coming soon!\nSearching for: ' + query);
-      }
+  function getNotificationIcon(type) {
+    const icons = {
+      'order_submitted': 'fas fa-check-circle',
+      'order_updated': 'fas fa-sync-alt',
+      'order_completed': 'fas fa-check-double',
+      'price_updated': 'fas fa-dollar-sign'
     };
-  </script>
+    return icons[type] || 'fas fa-bell';
+  }
+
+  function getTimeAgo(timestamp) {
+    try {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+      return date.toLocaleDateString();
+    } catch (e) {
+      return '';
+    }
+  }
+
+  window.markAsRead = async function(notifId) {
+    try {
+      await updateDoc(doc(db, "notifications", notifId), {
+        read: true
+      });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+    }
+  };
+
+  window.markAllAsRead = async function() {
+    const userEmail = sessionStorage.getItem('userEmail');
+    if (!userEmail) return;
+
+    try {
+      const notificationsQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", userEmail),
+        where("read", "==", false)
+      );
+
+      const snapshot = await getDocs(notificationsQuery);
+      const batch = writeBatch(db);
+
+      snapshot.forEach(docSnap => {
+        batch.update(doc(db, "notifications", docSnap.id), { read: true });
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error("Error marking all as read:", error);
+    }
+  };
+
+  // Load notifications on page load
+  loadNotifications();
+
+  // Add event listener for mark all read button
+  document.getElementById('markAllReadBtn').addEventListener('click', markAllAsRead);
+
+  // Define trackOrder BEFORE using it
+  window.trackOrder = async function trackOrder() {
+    const orderId = document.getElementById('orderIdInput').value.trim();
+    if (!orderId) {
+      alert('Please enter an Order ID');
+      return;
+    }
+
+    try {
+      const ordersRef = collection(db, "orders");
+      const q = query(ordersRef, where("orderId", "==", orderId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        document.getElementById('orderDetailsSection').style.display = 'none';
+        document.getElementById('orderNotFound').style.display = 'block';
+        return;
+      }
+
+      const orderData = querySnapshot.docs[0].data();
+      document.getElementById('orderNotFound').style.display = 'none';
+      document.getElementById('orderDetailsSection').style.display = 'block';
+
+      document.getElementById('displayOrderId').textContent = orderData.orderId;
+      document.getElementById('displayProduct').textContent = orderData.product;
+      document.getElementById('displayQuantity').textContent = orderData.quantity;
+      document.getElementById('displayTotal').textContent = '₱' + (orderData.total || 0).toFixed(2);
+      document.getElementById('displayDate').textContent = orderData.date || '-';
+      document.getElementById('displayPayment').textContent = orderData.paymentMethod?.toUpperCase() || '-';
+
+      updateStatusTimeline(orderData.status);
+      document.getElementById('orderDetailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+      console.error("Error tracking order:", error);
+      alert("Error tracking order. Please try again.");
+    }
+  };
+
+  // Now check URL params and call trackOrder if needed
+  const urlParams = new URLSearchParams(window.location.search);
+  const orderIdFromUrl = urlParams.get('orderId');
+  if (orderIdFromUrl) {
+    document.getElementById('orderIdInput').value = orderIdFromUrl;
+    trackOrder();  // This will now work since trackOrder is defined above
+  }
+
+  function updateStatusTimeline(status) {
+    // Reset all steps
+    const steps = ['step-pending', 'step-production', 'step-delivery', 'step-delivered'];
+    steps.forEach(step => {
+      const element = document.getElementById(step);
+      element.classList.remove('active', 'completed');
+    });
+
+    // Map status to steps
+    const statusMap = {
+      'Pending': ['step-pending'],
+      'On Production': ['step-pending', 'step-production'],
+      'On Delivery': ['step-pending', 'step-production', 'step-delivery'],
+      'Delivered': ['step-pending', 'step-production', 'step-delivery', 'step-delivered'],
+      'Complete': ['step-pending', 'step-production', 'step-delivery', 'step-delivered']
+    };
+
+    const activeSteps = statusMap[status] || ['step-pending'];
+    
+    // Mark completed steps
+    for (let i = 0; i < activeSteps.length - 1; i++) {
+      document.getElementById(activeSteps[i]).classList.add('completed');
+    }
+    
+    // Mark current active step
+    const currentStep = activeSteps[activeSteps.length - 1];
+    document.getElementById(currentStep).classList.add('active');
+  }
+
+  // Allow Enter key to track
+  document.getElementById('orderIdInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      trackOrder();
+    }
+  });
+
+  document.getElementById("trackBtn").addEventListener("click", trackOrder);
+
+  // Handle search
+  window.handleSearch = function(event) {
+    event.preventDefault();
+    const query = document.getElementById('search-input').value.trim();
+    if (query) {
+      alert('Search functionality coming soon!\nSearching for: ' + query);
+    }
+  };
+</script>
+
 
 </body>
 </html>

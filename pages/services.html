@@ -10,152 +10,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
  
- <style>
-    .user-indicator {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #FFD700;
-      font-weight: 600;
-      margin-right: 1rem;
-    }
-
-    .user-indicator i {
-      font-size: 1.2rem;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-    }
-
-    .account-btn {
-      background-color: #4f46e5;
-      color: #fff;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .account-btn:hover {
-      background-color: #4338ca;
-      transform: translateY(-2px);
-    }
-
-    .account-btn i {
-      font-size: 1rem;
-    }
-
-    /* 3D Designer Modal Styles */
-    .designer-modal-overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.95);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .designer-modal-overlay.active {
-      display: flex;
-    }
-
-    .designer-modal-content {
-      width: 95%;
-      height: 95%;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    }
-
-    .designer-modal-header {
-      background: #191919;
-      padding: 1rem 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 2px solid #FFD700;
-    }
-
-    .designer-modal-header h2 {
-      color: #FFD700;
-      margin: 0;
-      font-size: 1.5rem;
-    }
-
-    .designer-close-btn {
-      background: #dc2626;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s ease;
-    }
-
-    .designer-close-btn:hover {
-      background: #b91c1c;
-    }
-
-    .designer-iframe {
-      width: 100%;
-      height: calc(100% - 70px);
-      border: none;
-    }
-
-    /* Choice Modal Styles */
-    .designer-choice-buttons {
-      display: flex;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .designer-choice-btn {
-      flex: 1;
-      padding: 1.5rem;
-      border: 2px solid #FFD700;
-      background: rgba(255, 215, 0, 0.1);
-      color: #fff;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      transition: all 0.3s ease;
-      text-align: center;
-    }
-
-    .designer-choice-btn:hover {
-      background: rgba(255, 215, 0, 0.3);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
-    }
-
-    .designer-choice-btn i {
-      font-size: 3rem;
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #FFD700;
-    }
-
-    .designer-choice-btn small {
-      display: block;
-      margin-top: 0.5rem;
-      opacity: 0.8;
-      font-size: 0.9rem;
-    }
-  </style>
+ <!-- All styles moved to services.css -->
 </head>
 <body>
   <div id="main-content">
@@ -172,17 +27,16 @@
           <li class="services-dropdown">
             <a href="#">SERVICES ▸</a>
             <ul class="dropdown-menu">
-              <li><a href="#" onclick="openModal('document')">Document Printing</a></li>
-              <li><a href="#" onclick="openModal('photo')">Photo Printing</a></li>
-              <li><a href="#" onclick="openShirtDesignerChoice()">Shirt Printing</a></li>
-              <li><a href="#" onclick="openModal('tarpaulin')">Tarpaulin Printing</a></li>
-              <li><a href="#">Signages</a></li>
-              <li><a href="#" onclick="openModal('stickers')">Stickers</a></li>
-              <li><a href="#">Gift Boxes</a></li>
-              <li><a href="#">Lanyards</a></li>
-              <li><a href="#">Invitations</a></li>
-              <li><a href="#" onclick="openModal('customized')">Customized</a></li>
-              <li><a href="#">More...</a></li>
+              <li><a href="#" onclick="openModal('document')"><i class="fas fa-file-alt"></i> Document Printing</a></li>
+              <li><a href="#" onclick="openModal('photo')"><i class="fas fa-image"></i> Photo Printing</a></li>
+              <li><a href="#" onclick="openShirtDesignerChoice()"><i class="fas fa-tshirt"></i> Shirt Printing</a></li>
+              <li><a href="#" onclick="openModal('tarpaulin')"><i class="fas fa-rectangle-ad"></i> Tarpaulin Printing</a></li>
+              <li><a href="#"><i class="fas fa-sign"></i> Signages</a></li>
+              <li><a href="#" onclick="openModal('stickers')"><i class="fas fa-sticky-note"></i> Stickers</a></li>
+              <li><a href="#"><i class="fas fa-gift"></i> Gift Boxes</a></li>
+              <li><a href="#"><i class="fas fa-id-badge"></i> Lanyards</a></li>
+              <li><a href="#"><i class="fas fa-envelope"></i> Invitations</a></li>
+              <li><a href="#" onclick="openModal('customized')"><i class="fas fa-magic"></i> Customized</a></li>
             </ul>
           </li>
           <!-- ORDERS link - only shown when logged in -->
@@ -193,10 +47,11 @@
             <form class="search-form" onsubmit="handleSearch(event)">
               <div class="search-input-wrapper">
                 <i class="fa fa-search search-icon"></i>
-                <input type="text" id="search-input" placeholder="Search FREENT..." />
+                <input type="text" id="search-input" placeholder="Search services..." oninput="showSearchSuggestions(event)" />
               </div>
-              <button type="submit" class="search-btn">Search</button>
+              
             </form>
+            <div id="searchSuggestions" class="search-suggestions"></div>
           </li>
         </ul>
       </nav>
@@ -475,6 +330,160 @@
 
     // Initialize navigation on page load
     updateNavigation();
+
+    // Scroll to services section
+    function scrollToServices() {
+      const servicesSection = document.getElementById('services-cards');
+      if (servicesSection) {
+        servicesSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+    window.scrollToServices = scrollToServices;
+
+    // Import and initialize services module functions
+    // Wait for the module to load before making functions available
+    let servicesModuleLoaded = false;
+    
+    // Temporary placeholder functions that wait for module to load
+    window.openModal = function(service) {
+      if (servicesModuleLoaded && window._openModal) {
+        window._openModal(service);
+      } else {
+        console.log('Waiting for services module to load...');
+        setTimeout(() => window.openModal(service), 100);
+      }
+    };
+    
+    window.closeModal = function() {
+      if (servicesModuleLoaded && window._closeModal) {
+        window._closeModal();
+      } else {
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+          modalOverlay.classList.remove('active');
+          document.body.style.overflow = 'auto';
+        }
+      }
+    };
+    
+    window.closeModalOnOverlay = function(event) {
+      if (event.target.id === 'modalOverlay') {
+        window.closeModal();
+      }
+    };
+    
+    window.selectPayment = function(method, el) {
+      if (servicesModuleLoaded && window._selectPayment) {
+        window._selectPayment(method, el);
+      } else {
+        window.selectedPayment = method;
+        const pm = document.getElementById('paymentMethod');
+        if (pm) pm.value = method;
+
+        document.querySelectorAll('.payment-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        if (el && el.classList) el.classList.add('selected');
+      }
+    };
+    
+    window.handleSubmit = function(event) {
+      event.preventDefault();
+      if (servicesModuleLoaded && window._handleSubmit) {
+        window._handleSubmit(event);
+      }
+    };
+    
+    // Search suggestions data
+    const searchData = [
+      { name: 'Document Printing', icon: 'fas fa-file-alt', action: () => openModal('document'), category: 'Printing' },
+      { name: 'Photo Printing', icon: 'fas fa-image', action: () => openModal('photo'), category: 'Printing' },
+      { name: 'Shirt Printing', icon: 'fas fa-tshirt', action: () => openShirtDesignerChoice(), category: 'Printing' },
+      { name: 'T-Shirt Designer', icon: 'fas fa-tshirt', action: () => openShirtDesignerChoice(), category: 'Design' },
+      { name: 'Tarpaulin Printing', icon: 'fas fa-rectangle-ad', action: () => openModal('tarpaulin'), category: 'Printing' },
+      { name: 'Stickers', icon: 'fas fa-sticky-note', action: () => openModal('stickers'), category: 'Printing' },
+      { name: 'Customized Items', icon: 'fas fa-magic', action: () => openModal('customized'), category: 'Custom' },
+      { name: 'Signages', icon: 'fas fa-sign', action: null, category: 'Coming Soon' },
+      { name: 'Gift Boxes', icon: 'fas fa-gift', action: null, category: 'Coming Soon' },
+      { name: 'Lanyards', icon: 'fas fa-id-badge', action: null, category: 'Coming Soon' },
+      { name: 'Invitations', icon: 'fas fa-envelope', action: null, category: 'Coming Soon' }
+    ];
+
+    window.showSearchSuggestions = function(event) {
+      const query = event.target.value.toLowerCase().trim();
+      const suggestionsContainer = document.getElementById('searchSuggestions');
+      
+      if (!query) {
+        suggestionsContainer.classList.remove('active');
+        return;
+      }
+
+      // Filter suggestions
+      const matches = searchData.filter(item => 
+        item.name.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+
+      if (matches.length === 0) {
+        suggestionsContainer.innerHTML = '<div class="suggestion-item" style="cursor: default;"><i class="fas fa-search"></i><span class="suggestion-text">No results found</span></div>';
+        suggestionsContainer.classList.add('active');
+        return;
+      }
+
+      // Display suggestions
+      suggestionsContainer.innerHTML = matches.map(item => `
+        <div class="suggestion-item" onclick="selectSuggestion('${item.name}')">
+          <i class="${item.icon}"></i>
+          <span class="suggestion-text">${item.name}</span>
+          <span class="suggestion-category">${item.category}</span>
+        </div>
+      `).join('');
+      
+      suggestionsContainer.classList.add('active');
+    };
+
+    window.selectSuggestion = function(serviceName) {
+      const service = searchData.find(s => s.name === serviceName);
+      if (service && service.action) {
+        service.action();
+      } else {
+        alert(`${serviceName} - Coming soon!`);
+      }
+      
+      // Clear search and hide suggestions
+      document.getElementById('search-input').value = '';
+      document.getElementById('searchSuggestions').classList.remove('active');
+    };
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+      const searchWrapper = document.querySelector('.search-wrapper');
+      if (searchWrapper && !searchWrapper.contains(event.target)) {
+        document.getElementById('searchSuggestions').classList.remove('active');
+      }
+    });
+
+    window.handleSearch = function(event) {
+      event.preventDefault();
+      const searchInput = document.getElementById('search-input').value.trim();
+      if (searchInput) {
+        // Try to find exact match
+        const match = searchData.find(s => 
+          s.name.toLowerCase() === searchInput.toLowerCase()
+        );
+        if (match && match.action) {
+          match.action();
+        } else {
+          alert(`No exact match found for "${searchInput}"`);
+        }
+      }
+    };
+    
+    // Listen for module loaded event
+    window.addEventListener('servicesModuleReady', () => {
+      servicesModuleLoaded = true;
+      console.log('Services module loaded and ready');
+    });
 
     // 3D Designer Integration Functions
     function openShirtDesignerChoice() {
