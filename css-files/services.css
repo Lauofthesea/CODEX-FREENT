@@ -1037,3 +1037,28 @@ select, input[type="number"] {
   opacity: 0.8;
   font-size: 0.9rem;
 }
+
+
+/* Payment option disabled state */
+.payment-option.disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  position: relative;
+}
+
+.payment-option.disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.payment-option.disabled:hover {
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}

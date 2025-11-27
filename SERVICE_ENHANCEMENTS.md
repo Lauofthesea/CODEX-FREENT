@@ -22,11 +22,11 @@ Total = (Base Price + Color Surcharge) × Pages × Copies + Delivery Fee
 
 **Example:**
 - Paper: A4 (₱2/page)
-- Color: Colored (+₱3/page)
+- Color: Colored (+₱5/page)
 - Pages: 10
 - Copies: 2
 - Delivery: Yes (+₱50)
-- **Total: ₱150** = (2 + 3) × 10 × 2 + 50
+- **Total: ₱150** = (2 + 5) × 10 × 2 + 50
 
 ---
 

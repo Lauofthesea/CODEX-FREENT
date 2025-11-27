@@ -3,36 +3,36 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Orders collection - allow read/write for authenticated users
+    // Orders collection - open access for now (since not using Firebase Auth)
     match /orders/{orderId} {
       allow read: if true;  // Anyone can read orders (for tracking)
       allow create: if true;  // Anyone can create orders
-      allow update: if request.auth != null;  // Only authenticated users (admins) can update
-      allow delete: if request.auth != null;  // Only authenticated users (admins) can delete
+      allow update: if true;  // Allow updates (admin uses sessionStorage auth)
+      allow delete: if true;  // Allow deletes (admin uses sessionStorage auth)
     }
     
-    // Notifications collection
+    // Notifications collection - open access
     match /notifications/{notificationId} {
-      allow read: if request.auth != null || resource.data.userId == request.auth.token.email;
+      allow read: if true;  // Anyone can read their notifications
       allow create: if true;  // System can create notifications
-      allow update: if request.auth != null || resource.data.userId == request.auth.token.email;
-      allow delete: if request.auth != null;
+      allow update: if true;  // Users can mark as read
+      allow delete: if true;  // Users can delete notifications
     }
     
-    // Conversations collection (for messaging)
+    // Conversations collection (for messaging) - open access
     match /conversations/{conversationId} {
-      allow read, write: if request.auth != null;  // Only authenticated users
+      allow read, write: if true;  // Allow admin access
       
       // Messages subcollection
       match /messages/{messageId} {
-        allow read, write: if request.auth != null;
+        allow read, write: if true;  // Allow admin access
       }
     }
     
     // Users collection (if you add user profiles later)
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if true;
     }
     
     // Default deny all other collections

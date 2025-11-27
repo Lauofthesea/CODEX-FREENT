@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -14,7 +13,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const storage = getStorage(app);
 
 let selectedFile = null;
 let selectedPayment = null;
@@ -29,28 +27,58 @@ function getCustomerName() {
   return sessionStorage.getItem('username') || 'Guest User';
 }
 
-// ========== FILE UPLOAD TO FIREBASE STORAGE ==========
+// ========== FILE UPLOAD TO CLOUDINARY ==========
+const CLOUDINARY_CLOUD_NAME = 'djyyvuh3d';
+const CLOUDINARY_UPLOAD_PRESET = 'lines_printing_orders';
+
 async function uploadFilesToStorage(files, orderId) {
   const uploadedFiles = [];
   
   for (let i = 0; i < files.length; i++) {
     const file = files[i];
-    const timestamp = Date.now();
-    const fileName = `${orderId}_${timestamp}_${file.name}`;
-    const storageRef = ref(storage, `orders/${orderId}/${fileName}`);
     
     try {
-      const snapshot = await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(snapshot.ref);
+      // Create form data for Cloudinary upload
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      formData.append('folder', `orders/${orderId}`);
+      formData.append('public_id', `${orderId}_${Date.now()}_${file.name.split('.')[0]}`);
+      
+      // Upload to Cloudinary
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
       
       uploadedFiles.push({
         name: file.name,
-        url: downloadURL,
+        url: data.secure_url,
         size: file.size,
-        type: file.type
+        type: file.type,
+        cloudinaryId: data.public_id
       });
+      
+      console.log(`✅ Uploaded ${file.name} to Cloudinary`);
     } catch (error) {
-      console.error(`Error uploading ${file.name}:`, error);
+      console.error(`❌ Error uploading ${file.name}:`, error);
+      // Add file info even if upload fails
+      uploadedFiles.push({
+        name: file.name,
+        url: null,
+        size: file.size,
+        type: file.type,
+        error: error.message
+      });
     }
   }
   
@@ -66,7 +94,7 @@ const prices = {
     a5: 3,
     letter: 5,
     legal: 7,
-    colorSurcharge: 3, // Additional cost per page for colored printing
+    colorSurcharge: 5, // Additional cost per page for colored printing
     deliveryFee: 50
   },
   shirt: {
@@ -195,7 +223,7 @@ function showDocumentForm() {
 
     <div class="form-group">
       <label for="paperSize">Paper Size</label>
-      <select id="paperSize" onchange="calculatePrice()">
+      <select id="paperSize" onchange="calculatePrice()" oninput="calculatePrice()">
         <option value="a4">A4 (210 × 297 mm) - ₱2/page</option>
         <option value="a3">A3 (297 × 420 mm) - ₱15/page</option>
         <option value="a5">A5 (148 × 210 mm) - ₱3/page</option>
@@ -206,7 +234,7 @@ function showDocumentForm() {
 
     <div class="form-group">
       <label for="printColor">Print Color</label>
-      <select id="printColor" onchange="calculatePrice()">
+      <select id="printColor" onchange="calculatePrice()" oninput="calculatePrice()">
         <option value="bw">Black & White</option>
         <option value="color">Colored (+₱3/page)</option>
       </select>
@@ -214,12 +242,12 @@ function showDocumentForm() {
 
     <div class="form-group">
       <label for="copies">Number of Copies</label>
-      <input type="number" id="copies" min="1" max="1000" value="1" onchange="calculatePrice()" />
+      <input type="number" id="copies" min="1" max="1000" value="1" onchange="calculatePrice()" oninput="calculatePrice()" />
     </div>
 
     <div class="form-group">
       <label for="claimMethod">Claim Method</label>
-      <select id="claimMethod" onchange="calculatePrice()">
+      <select id="claimMethod" onchange="calculatePrice()" oninput="calculatePrice()">
         <option value="">Select Method</option>
         <option value="Pickup">Pickup</option>
         <option value="Delivery">Delivery (+₱50)</option>
@@ -663,7 +691,7 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="photoSize">Photo Size</label>
-        <select id="photoSize" onchange="calculatePrice()">
+        <select id="photoSize" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="small">Small - ₱25</option>
           <option value="medium">Medium - ₱50</option>
           <option value="large">Large - ₱100</option>
@@ -672,12 +700,12 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="photoCopies">Copies</label>
-        <input type="number" id="photoCopies" min="1" value="1" onchange="calculatePrice()" />
+        <input type="number" id="photoCopies" min="1" value="1" onchange="calculatePrice()" oninput="calculatePrice()" />
       </div>
 
       <div class="form-group">
         <label for="photoClaimMethod">Claim Method</label>
-        <select id="photoClaimMethod" onchange="calculatePrice()">
+        <select id="photoClaimMethod" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="">Select Method</option>
           <option value="Pickup">Pickup</option>
           <option value="Delivery">Delivery (+₱50)</option>
@@ -699,7 +727,7 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="tarpaulinSize">Tarpaulin Size</label>
-        <select id="tarpaulinSize" onchange="calculatePrice()">
+        <select id="tarpaulinSize" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="small">Small - ₱500</option>
           <option value="medium">Medium - ₱1000</option>
           <option value="large">Large - ₱2000</option>
@@ -708,12 +736,12 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="tarpaulinQty">Quantity</label>
-        <input type="number" id="tarpaulinQty" min="1" value="1" onchange="calculatePrice()" />
+        <input type="number" id="tarpaulinQty" min="1" value="1" onchange="calculatePrice()" oninput="calculatePrice()" />
       </div>
 
       <div class="form-group">
         <label for="tarpaulinClaimMethod">Claim Method</label>
-        <select id="tarpaulinClaimMethod" onchange="calculatePrice()">
+        <select id="tarpaulinClaimMethod" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="">Select Method</option>
           <option value="Pickup">Pickup</option>
           <option value="Delivery">Delivery (+₱100)</option>
@@ -741,12 +769,12 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="stickerQty">Quantity</label>
-        <input type="number" id="stickerQty" min="1" value="10" onchange="calculatePrice()" />
+        <input type="number" id="stickerQty" min="1" value="10" onchange="calculatePrice()" oninput="calculatePrice()" />
       </div>
 
       <div class="form-group">
         <label for="stickerClaimMethod">Claim Method</label>
-        <select id="stickerClaimMethod" onchange="calculatePrice()">
+        <select id="stickerClaimMethod" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="">Select Method</option>
           <option value="Pickup">Pickup</option>
           <option value="Delivery">Delivery (+₱50)</option>
@@ -774,12 +802,12 @@ function showGenericForm(service) {
 
       <div class="form-group">
         <label for="customQty">Quantity</label>
-        <input type="number" id="customQty" min="1" value="1" onchange="calculatePrice()" />
+        <input type="number" id="customQty" min="1" value="1" onchange="calculatePrice()" oninput="calculatePrice()" />
       </div>
 
       <div class="form-group">
         <label for="customClaimMethod">Claim Method</label>
-        <select id="customClaimMethod" onchange="calculatePrice()">
+        <select id="customClaimMethod" onchange="calculatePrice()" oninput="calculatePrice()">
           <option value="">Select Method</option>
           <option value="Pickup">Pickup</option>
           <option value="Delivery">Delivery (+₱50)</option>
@@ -925,6 +953,57 @@ function calculatePrice() {
   }
 
   document.getElementById('totalPrice').textContent = `₱${total.toFixed(2)}`;
+  
+  // Update payment method availability based on total
+  updatePaymentMethods(total);
+}
+
+// Update payment method availability based on order total
+function updatePaymentMethods(total) {
+  const cardOption = document.getElementById('payment-card');
+  const bankOption = document.getElementById('payment-bank');
+  const minAmount = 999;
+  
+  if (cardOption && bankOption) {
+    if (total < minAmount) {
+      // Disable card and bank transfer for orders under ₱999
+      cardOption.classList.add('disabled');
+      cardOption.style.opacity = '0.5';
+      cardOption.style.cursor = 'not-allowed';
+      cardOption.onclick = function(e) {
+        e.stopPropagation();
+        showErrorModal('Minimum Amount Required', `Card payment requires a minimum order of ₱${minAmount}. Your current total is ₱${total.toFixed(2)}.`);
+      };
+      
+      bankOption.classList.add('disabled');
+      bankOption.style.opacity = '0.5';
+      bankOption.style.cursor = 'not-allowed';
+      bankOption.onclick = function(e) {
+        e.stopPropagation();
+        showErrorModal('Minimum Amount Required', `Bank transfer requires a minimum order of ₱${minAmount}. Your current total is ₱${total.toFixed(2)}.`);
+      };
+      
+      // If card or bank was selected, clear selection
+      if (selectedPayment === 'card' || selectedPayment === 'bank') {
+        selectedPayment = null;
+        document.querySelectorAll('.payment-option').forEach(option => {
+          option.classList.remove('selected');
+        });
+        updateSubmitButton();
+      }
+    } else {
+      // Enable card and bank transfer for orders ₱999 and above
+      cardOption.classList.remove('disabled');
+      cardOption.style.opacity = '1';
+      cardOption.style.cursor = 'pointer';
+      cardOption.onclick = function() { selectPayment('card', this); };
+      
+      bankOption.classList.remove('disabled');
+      bankOption.style.opacity = '1';
+      bankOption.style.cursor = 'pointer';
+      bankOption.onclick = function() { selectPayment('bank', this); };
+    }
+  }
 }
 
 function updateSubmitButton() {
@@ -1179,10 +1258,28 @@ async function submitDocumentOrder() {
     }
     
     const colorText = printColor === 'color' ? 'Colored' : 'Black & White';
-    const fileName = Array.isArray(selectedFile) ? selectedFile[0].name : selectedFile.name;
+    const filesArray = Array.isArray(selectedFile) ? selectedFile : [selectedFile];
+    const fileName = filesArray[0].name;
+    
+    // Generate order ID first
+    const orderId = generateOrderId();
+    
+    // Upload files to Cloudinary
+    let uploadedFiles = [];
+    try {
+      uploadedFiles = await uploadFilesToStorage(filesArray, orderId);
+    } catch (error) {
+      console.warn("File upload failed, storing file info only:", error);
+      uploadedFiles = filesArray.map(file => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        url: null
+      }));
+    }
     
     const orderData = {
-      orderId: generateOrderId(),
+      orderId: orderId,
       customer: getCustomerName(),
       contact: '-',
       email: getUserEmail(),
@@ -1199,6 +1296,7 @@ async function submitDocumentOrder() {
       claimMethod: claimMethod,
       printColor: printColor,
       pages: pages,
+      files: uploadedFiles,
       height: '-',
       width: '-'
     };
@@ -1379,6 +1477,22 @@ async function submitGenericOrder(service) {
       orderData.total = total;
       orderData.claimMethod = claimMethod;
       orderData.notes = `File: ${fileName}\nClaim: ${claimMethod}`;
+    }
+    
+    // Upload files if any
+    if (selectedFile && window.uploadedFiles && window.uploadedFiles.length > 0) {
+      try {
+        const uploadedFiles = await uploadFilesToStorage(window.uploadedFiles, orderData.orderId);
+        orderData.files = uploadedFiles;
+      } catch (error) {
+        console.warn("File upload failed, storing file info only:", error);
+        orderData.files = window.uploadedFiles.map(file => ({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: null
+        }));
+      }
     }
     
     await addDoc(collection(db, "orders"), orderData);
@@ -1564,6 +1678,7 @@ window.handleSearch = handleSearch;
 window.showSearchSuggestions = showSearchSuggestions;
 window.selectSuggestion = selectSuggestion;
 window.calculatePrice = calculatePrice;
+window.updatePaymentMethods = updatePaymentMethods;
 window.updateSubmitButton = updateSubmitButton;
 window.handleGenericFileUpload = handleGenericFileUpload;
 window.handleDocumentFileUpload = handleDocumentFileUpload;

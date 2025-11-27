@@ -226,21 +226,23 @@
         <div class="form-group">
           <label>Payment Method</label>
           <div class="payment-options">
-            <div class="payment-option" onclick="selectPayment('cash', this)">
+            <div class="payment-option" id="payment-cash" onclick="selectPayment('cash', this)">
               <i class="fas fa-money-bill-wave"></i>
               <p>Cash</p>
             </div>
-            <div class="payment-option" onclick="selectPayment('gcash', this)">
+            <div class="payment-option" id="payment-gcash" onclick="selectPayment('gcash', this)">
               <i class="fas fa-mobile-alt"></i>
               <p>GCash</p>
             </div>
-            <div class="payment-option" onclick="selectPayment('card', this)">
+            <div class="payment-option" id="payment-card" onclick="selectPayment('card', this)">
               <i class="fas fa-credit-card"></i>
               <p>Card</p>
+              <small class="payment-min-notice" style="display: none; color: #ff6b6b; font-size: 0.75rem; margin-top: 0.25rem;">Min ₱999</small>
             </div>
-            <div class="payment-option" onclick="selectPayment('bank', this)">
+            <div class="payment-option" id="payment-bank" onclick="selectPayment('bank', this)">
               <i class="fas fa-university"></i>
               <p>Bank Transfer</p>
+              <small class="payment-min-notice" style="display: none; color: #ff6b6b; font-size: 0.75rem; margin-top: 0.25rem;">Min ₱999</small>
             </div>
           </div>
           <input type="hidden" id="paymentMethod" required />

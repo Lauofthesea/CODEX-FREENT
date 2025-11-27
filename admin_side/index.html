@@ -616,6 +616,36 @@ async function showOrderDetails(id) {
     </div>
     ` : ''}
     
+    <!-- Uploaded Files Section -->
+    ${order.files && order.files.length > 0 ? `
+    <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+      <h3 class="text-lg font-semibold text-yellow-400 mb-3 flex items-center gap-2">
+        <i class="fas fa-file-image"></i> Uploaded Files
+      </h3>
+      <div class="space-y-2">
+        ${order.files.map((file, index) => `
+          <div class="flex items-center justify-between bg-gray-700 p-3 rounded border border-gray-600">
+            <div class="flex items-center gap-3">
+              <i class="fas fa-file text-blue-400 text-xl"></i>
+              <div>
+                <div class="font-medium text-sm text-white">${file.name}</div>
+                <div class="text-xs text-gray-400">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+              </div>
+            </div>
+            ${file.url ? `
+              <a href="${file.url}" target="_blank" download="${file.name}"
+                class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm">
+                <i class="fas fa-download"></i> Download
+              </a>
+            ` : `
+              <span class="text-xs text-gray-400">No URL available</span>
+            `}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+    ` : ''}
+    
     <!-- Customer Order History -->
     ${customerOrdersHTML}
 
