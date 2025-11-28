@@ -60,6 +60,8 @@ function listenForNotifications(userEmail) {
       notifications.push({ id: doc.id, ...doc.data() });
     });
     
+    console.log(`Received ${notifications.length} notifications for ${userEmail}`);
+    
     // Sort by timestamp in JavaScript instead of Firestore
     notifications.sort((a, b) => {
       const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;

@@ -895,7 +895,7 @@ async function updateStatus(id) {
           'Complete': 'Your order is complete. Thank you for your business!'
         };
         
-        await addDoc(collection(db, "notifications"), {
+        const notificationData = {
           userEmail: orderData.email,
           orderId: orderData.orderId,
           title: 'Order Status Updated',
@@ -903,7 +903,11 @@ async function updateStatus(id) {
           type: 'status-update',
           read: false,
           timestamp: serverTimestamp()
-        });
+        };
+        
+        console.log('Creating notification:', notificationData);
+        await addDoc(collection(db, "notifications"), notificationData);
+        console.log('Notification created successfully!');
         
         showSuccessModal('Status Updated', `Order status has been successfully updated to <strong>${status}</strong>!<br><br>Customer has been notified.`, function() {
           closeOrderModal();
