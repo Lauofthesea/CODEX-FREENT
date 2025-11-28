@@ -231,3 +231,134 @@
     justify-content: center;
   }
 }
+
+
+/* ========== MOBILE RESPONSIVE ========== */
+
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    max-width: 95%;
+    margin: 1rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  .form-input, .form-select, textarea {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .payment-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+
+  .payment-option {
+    padding: 0.75rem;
+  }
+
+  .payment-option i {
+    font-size: 1.25rem;
+  }
+
+  .payment-option p {
+    font-size: 0.8rem;
+  }
+
+  .price-display {
+    padding: 0.75rem;
+  }
+
+  .price-display .label {
+    font-size: 0.9rem;
+  }
+
+  .price-display .amount {
+    font-size: 1.5rem;
+  }
+
+  .submit-btn {
+    padding: 0.75rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .modal-header {
+    padding: 0.75rem;
+  }
+
+  .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .close-btn {
+    font-size: 1.5rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .form-input, .form-select, textarea {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .payment-options {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .payment-option {
+    padding: 0.6rem;
+  }
+
+  .payment-option i {
+    font-size: 1.1rem;
+  }
+
+  .payment-option p {
+    font-size: 0.75rem;
+  }
+
+  .price-display {
+    padding: 0.6rem;
+  }
+
+  .price-display .label {
+    font-size: 0.85rem;
+  }
+
+  .price-display .amount {
+    font-size: 1.3rem;
+  }
+
+  .submit-btn {
+    padding: 0.65rem;
+    font-size: 0.9rem;
+  }
+}
