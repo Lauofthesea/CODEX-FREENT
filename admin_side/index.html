@@ -795,6 +795,10 @@ async function sendMessage(){
   const convDocRef = doc(db, "conversations", currentConvId);
   const msgsColRef = collection(convDocRef, "messages");
 
+  // Get conversation details for notification
+  const convSnap = await getDoc(convDocRef);
+  const convData = convSnap.data();
+
   // add message doc
   await addDoc(msgsColRef, {
     sender: "admin",          // change if you integrate auth
@@ -806,6 +810,19 @@ async function sendMessage(){
     lastMessage: txt,
     lastUpdated: serverTimestamp()
   });
+
+  // Create notification for user if they have an email
+  if (convData.clientEmail) {
+    await addDoc(collection(db, "notifications"), {
+      userEmail: convData.clientEmail,
+      orderId: convData.orderId || 'N/A',
+      title: 'New Message from Admin',
+      message: txt.length > 100 ? txt.substring(0, 100) + '...' : txt,
+      type: 'message',
+      read: false,
+      timestamp: serverTimestamp()
+    });
+  }
 
   messageInput.value = "";
 }
@@ -879,13 +896,13 @@ async function updateStatus(id) {
         };
         
         await addDoc(collection(db, "notifications"), {
-          userId: orderData.email,
+          userEmail: orderData.email,
           orderId: orderData.orderId,
           title: 'Order Status Updated',
           message: `Order ${orderData.orderId}: ${notificationMessages[status] || `Status updated to ${status}`}`,
-          type: 'order_updated',
+          type: 'status-update',
           read: false,
-          timestamp: new Date().toISOString()
+          timestamp: serverTimestamp()
         });
         
         showSuccessModal('Status Updated', `Order status has been successfully updated to <strong>${status}</strong>!<br><br>Customer has been notified.`, function() {

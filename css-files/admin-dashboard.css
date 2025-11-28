@@ -484,7 +484,21 @@ img {
 }
 
 /* Responsive */
+html {
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  html {
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 1024px) {
+  html {
+    font-size: 11.5px;
+  }
+
   aside {
     width: 200px;
   }
@@ -494,6 +508,10 @@ img {
 }
 
 @media (max-width: 768px) {
+  html {
+    font-size: 11px;
+  }
+
   aside {
     width: 100%;
     height: auto;
@@ -501,6 +519,41 @@ img {
   }
   .ml-64 {
     margin-left: 0;
+  }
+
+  header {
+    margin: 0;
+    border-radius: 0;
+  }
+
+  .bg-gradient-to-r .text-3xl {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 10px;
+  }
+
+  header {
+    padding: 1rem !important;
+  }
+
+  .bg-gradient-to-r {
+    padding: 1.25rem !important;
+  }
+
+  .bg-gradient-to-r .text-3xl {
+    font-size: 1.75rem;
+  }
+
+  table {
+    font-size: 0.9rem;
+  }
+
+  button {
+    padding: 0.75rem 1rem !important;
   }
 }
 

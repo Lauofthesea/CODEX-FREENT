@@ -38,6 +38,32 @@
         </ul>
       </nav>
       <div class="header-actions">
+        <!-- Notification Bell -->
+        <div id="notificationBell" class="notification-bell" style="display: none;">
+          <button class="notification-btn" onclick="toggleNotificationDropdown()">
+            <i class="fas fa-bell"></i>
+            <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="notificationDropdown" class="notification-dropdown">
+            <div class="notification-dropdown-header">
+              <h4><i class="fas fa-bell"></i> Notifications</h4>
+              <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">
+                <i class="fas fa-check-double"></i> Mark all read
+              </button>
+            </div>
+            <div id="notificationDropdownList" class="notification-dropdown-list">
+              <div class="notification-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+              </div>
+            </div>
+            <div class="notification-dropdown-footer">
+              <a href="user.html" class="view-all-link">
+                <i class="fas fa-list"></i> View All Notifications
+              </a>
+            </div>
+          </div>
+        </div>
+        
         <div id="userIndicator" class="user-indicator" style="display: none;">
           <i class="fas fa-user-circle"></i>
           <span id="usernameDisplay">User</span>
@@ -150,6 +176,7 @@
         <i class="fas fa-clock"></i>
       </div>
       <div class="timeline-label">Order Received</div>
+      <div class="timeline-timestamp" id="timestamp-pending"></div>
     </div>
     <div class="timeline-connector"></div>
     <div class="timeline-step" id="step-production">
@@ -157,6 +184,7 @@
         <i class="fas fa-cogs"></i>
       </div>
       <div class="timeline-label">In Production</div>
+      <div class="timeline-timestamp" id="timestamp-production"></div>
     </div>
     <div class="timeline-connector"></div>
     <div class="timeline-step" id="step-delivery">
@@ -164,6 +192,7 @@
         <i class="fas fa-truck"></i>
       </div>
       <div class="timeline-label">Out for Delivery</div>
+      <div class="timeline-timestamp" id="timestamp-delivery"></div>
     </div>
     <div class="timeline-connector"></div>
     <div class="timeline-step" id="step-delivered">
@@ -171,6 +200,7 @@
         <i class="fas fa-check-circle"></i>
       </div>
       <div class="timeline-label">Delivered / Complete</div>
+      <div class="timeline-timestamp" id="timestamp-delivered"></div>
     </div>
   </div>
 </div>
@@ -254,8 +284,7 @@
 
     const notificationsQuery = query(
       collection(db, "notifications"),
-      where("userId", "==", userEmail),
-      orderBy("timestamp", "desc")
+      where("userEmail", "==", userEmail)
     );
 
     onSnapshot(notificationsQuery, (snapshot) => {
@@ -267,7 +296,8 @@
         notificationsList.innerHTML = `
           <div class="no-notifications">
             <i class="fas fa-bell-slash"></i>
-            <p>No notifications yet</p>
+            <h3>No Notifications</h3>
+            <p>You're all caught up! We'll notify you when there are updates to your orders.</p>
           </div>
         `;
         unreadBadge.style.display = 'none';
@@ -275,12 +305,26 @@
         return;
       }
 
+      // Get all notifications and sort by timestamp in JavaScript
+      const notifications = [];
+      snapshot.forEach(docSnap => {
+        notifications.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      // Sort by timestamp (newest first)
+      notifications.sort((a, b) => {
+        const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+        const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+        return timeB - timeA;
+      });
+
       let unreadCount = 0;
       let html = '';
 
-      snapshot.forEach(docSnap => {
-        const notif = docSnap.data();
-        const notifId = docSnap.id;
+      notifications.forEach(notif => {
         const isUnread = !notif.read;
         
         if (isUnread) unreadCount++;
@@ -288,8 +332,15 @@
         const timeAgo = getTimeAgo(notif.timestamp);
         const icon = getNotificationIcon(notif.type);
 
+        // Remove "Order XXX:" from message if it's already there
+        let displayMessage = notif.message;
+        const orderPrefix = `Order ${notif.orderId}:`;
+        if (displayMessage.startsWith(orderPrefix)) {
+          displayMessage = displayMessage.substring(orderPrefix.length).trim();
+        }
+
         html += `
-          <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="markAsRead('${notifId}')">
+          <div class="notification-item ${isUnread ? 'unread' : ''}" onclick="markAsRead('${notif.id}')">
             <div class="notification-header-row">
               <div class="notification-title">
                 <i class="${icon}"></i>
@@ -297,8 +348,8 @@
               </div>
               <div class="notification-time">${timeAgo}</div>
             </div>
-            <div class="notification-message">${notif.message}</div>
-            ${notif.orderId ? `<div class="notification-order-id">Order: ${notif.orderId}</div>` : ''}
+            <div class="notification-message">${displayMessage}</div>
+            ${notif.orderId && notif.orderId !== 'N/A' ? `<div class="notification-order-id">Order: ${notif.orderId}</div>` : ''}
           </div>
         `;
       });
@@ -312,6 +363,18 @@
       } else {
         unreadBadge.style.display = 'none';
         markAllReadBtn.style.display = 'none';
+      }
+    }, (error) => {
+      console.error('Error loading notifications:', error);
+      const notificationsList = document.getElementById('notificationsList');
+      if (notificationsList) {
+        notificationsList.innerHTML = `
+          <div class="no-notifications">
+            <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+            <h3>Error Loading Notifications</h3>
+            <p>Please refresh the page to try again.</p>
+          </div>
+        `;
       }
     });
   }
@@ -328,7 +391,14 @@
 
   function getTimeAgo(timestamp) {
     try {
-      const date = new Date(timestamp);
+      // Handle Firestore Timestamp
+      const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+      
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Recently';
+      }
+      
       const now = new Date();
       const diff = Math.floor((now - date) / 1000);
 
@@ -336,9 +406,16 @@
       if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
       if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
       if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-      return date.toLocaleDateString();
+      
+      // Show full date and time for older notifications
+      return date.toLocaleString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
     } catch (e) {
-      return '';
+      return 'Recently';
     }
   }
 
@@ -412,7 +489,7 @@
       document.getElementById('displayDate').textContent = orderData.date || '-';
       document.getElementById('displayPayment').textContent = orderData.paymentMethod?.toUpperCase() || '-';
 
-      updateStatusTimeline(orderData.status);
+      updateStatusTimeline(orderData.status, orderData);
       document.getElementById('orderDetailsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
     } catch (error) {
       console.error("Error tracking order:", error);
@@ -428,13 +505,49 @@
     trackOrder();  // This will now work since trackOrder is defined above
   }
 
-  function updateStatusTimeline(status) {
+  function updateStatusTimeline(status, orderData) {
     // Reset all steps
     const steps = ['step-pending', 'step-production', 'step-delivery', 'step-delivered'];
     steps.forEach(step => {
       const element = document.getElementById(step);
       element.classList.remove('active', 'completed');
     });
+
+    // Clear all timestamps
+    document.getElementById('timestamp-pending').textContent = '';
+    document.getElementById('timestamp-production').textContent = '';
+    document.getElementById('timestamp-delivery').textContent = '';
+    document.getElementById('timestamp-delivered').textContent = '';
+
+    // Show order creation date for pending step
+    if (orderData.date) {
+      document.getElementById('timestamp-pending').textContent = orderData.date;
+    }
+
+    // Show last updated time for current status
+    if (orderData.lastUpdated) {
+      const lastUpdatedDate = new Date(orderData.lastUpdated);
+      const formattedDate = lastUpdatedDate.toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Map status to timestamp element
+      const timestampMap = {
+        'Pending': 'timestamp-pending',
+        'On Production': 'timestamp-production',
+        'On Delivery': 'timestamp-delivery',
+        'Delivered': 'timestamp-delivered',
+        'Complete': 'timestamp-delivered'
+      };
+
+      const timestampId = timestampMap[status];
+      if (timestampId) {
+        document.getElementById(timestampId).textContent = formattedDate;
+      }
+    }
 
     // Map status to steps
     const statusMap = {
@@ -544,3 +657,5 @@
 <script src="./js-files/modals.js"></script>
 </body>
 </html>
+<
+script type="module" src="./js-files/notifications.js"></script>

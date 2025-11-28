@@ -255,7 +255,21 @@
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
 }
 
+html {
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  html {
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 768px) {
+  html {
+    font-size: 11px;
+  }
+
   .dashboard-welcome {
     padding: 2rem 1rem;
   }
@@ -277,6 +291,33 @@
 
   .dashboard-stats {
     grid-template-columns: 1fr;
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 10px;
+  }
+
+  .dashboard-welcome {
+    padding: 1.5rem 0.75rem;
+    margin: 1rem;
+  }
+
+  .welcome-text h1 {
+    font-size: 1.75rem;
+  }
+
+  .stat-card {
+    padding: 1.25rem;
+  }
+
+  .quick-actions {
+    padding: 1.5rem;
   }
 }
 

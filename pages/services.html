@@ -5,11 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Services - FREENT</title>
   <link rel="icon" type="image/jpg" href="../assets/lineslogo.jpg" />
+  <link rel="stylesheet" href="../css-files/index.css" />
   <link rel="stylesheet" href="../css-files/services.css" /> 
   <link rel="stylesheet" href="../css-files/shirt-designer.css" />
   <link rel="stylesheet" href="../css-files/modals.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
  
  <!-- All styles moved to services.css -->
 </head>
@@ -57,6 +61,32 @@
         </ul>
       </nav>
       <div class="header-actions">
+        <!-- Notification Bell -->
+        <div id="notificationBell" class="notification-bell" style="display: none;">
+          <button class="notification-btn" onclick="toggleNotificationDropdown()">
+            <i class="fas fa-bell"></i>
+            <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="notificationDropdown" class="notification-dropdown">
+            <div class="notification-dropdown-header">
+              <h4><i class="fas fa-bell"></i> Notifications</h4>
+              <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">
+                <i class="fas fa-check-double"></i> Mark all read
+              </button>
+            </div>
+            <div id="notificationDropdownList" class="notification-dropdown-list">
+              <div class="notification-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+              </div>
+            </div>
+            <div class="notification-dropdown-footer">
+              <a href="../user.html" class="view-all-link">
+                <i class="fas fa-list"></i> View All Notifications
+              </a>
+            </div>
+          </div>
+        </div>
+        
         <!-- User indicator - shown when logged in -->
         <div id="userIndicator" class="user-indicator" style="display: none;">
           <i class="fas fa-user-circle"></i>
@@ -212,7 +242,7 @@
 
   <!-- REGULAR SERVICES MODAL -->
   <div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
-    <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal" id="orderModal" onclick="event.stopPropagation()">
       <div class="modal-header">
         <h2><i class="fas fa-file-alt"></i> <span id="modalTitle">Service Order</span></h2>
         <button class="close-btn" onclick="closeModal()">&times;</button>
@@ -258,9 +288,33 @@
         <button type="submit" class="submit-btn" id="submitBtn" disabled>Place Order</button>
       </form>
     </div>
+    
+    <!-- PDF VIEWER PANEL -->
+    <div class="pdf-viewer-panel" id="pdfViewerPanel" onclick="event.stopPropagation()">
+      <div class="pdf-viewer-header">
+        <h3><i class="fas fa-file-pdf"></i> Document Preview</h3>
+        <button class="close-viewer-btn" onclick="closePdfViewer()">&times;</button>
+      </div>
+      <div class="pdf-viewer-content">
+        <div class="pdf-page-info">
+          <span id="currentPageNum">1</span> / <span id="totalPagesNum">1</span>
+        </div>
+        <div class="pdf-canvas-container">
+          <canvas id="pdfCanvas"></canvas>
+        </div>
+        <div class="pdf-viewer-controls">
+          <button class="pdf-nav-btn" id="prevPageBtn" onclick="previousPage()" disabled>
+            <i class="fas fa-chevron-left"></i> Previous
+          </button>
+          <button class="pdf-nav-btn" id="nextPageBtn" onclick="nextPage()" disabled>
+            Next <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <footer class="site-footer">
+  <footer class="site-footer"></footer>
     <div class="footer-content">
       <div class="footer-brand">
         <img src="../assets/lineslogo.jpg" alt="Lines Printing Services Logo" />
@@ -322,6 +376,191 @@
 
     // Initialize navigation on page load
     updateNavigation();
+    
+    // Show notification bell if logged in
+    const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+    if (isLoggedIn === 'true') {
+      const bell = document.getElementById('notificationBell');
+      if (bell) {
+        bell.style.display = 'block';
+      }
+    }
+
+    // Load notifications directly for services page
+    async function loadNotificationsForServices() {
+      const userEmail = sessionStorage.getItem('userEmail');
+      const isLoggedIn = sessionStorage.getItem('userLoggedIn');
+      
+      if (!isLoggedIn || !userEmail) return;
+      
+      try {
+        const { getFirestore, collection, query, where, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js");
+        
+        // Initialize Firebase if not already done
+        let db;
+        if (getApps().length === 0) {
+          const firebaseConfig = {
+            apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+            authDomain: "lineshub-98e0f.firebaseapp.com",
+            projectId: "lineshub-98e0f",
+            storageBucket: "lineshub-98e0f.appspot.com",
+            messagingSenderId: "427905073524",
+            appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+          };
+          const app = initializeApp(firebaseConfig);
+          db = getFirestore(app);
+        } else {
+          db = getFirestore();
+        }
+        
+        // Query notifications
+        const notificationsRef = collection(db, 'notifications');
+        const q = query(notificationsRef, where('userEmail', '==', userEmail));
+        
+        onSnapshot(q, (snapshot) => {
+          const notifications = [];
+          snapshot.forEach((doc) => {
+            notifications.push({ id: doc.id, ...doc.data() });
+          });
+          
+          // Sort by timestamp
+          notifications.sort((a, b) => {
+            const timeA = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+            const timeB = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+            return timeB - timeA;
+          });
+          
+          updateNotificationDropdown(notifications);
+        });
+      } catch (error) {
+        console.error('Error loading notifications:', error);
+      }
+    }
+    
+    function updateNotificationDropdown(notifications) {
+      const badge = document.getElementById('notificationBadge');
+      const dropdownList = document.getElementById('notificationDropdownList');
+      
+      const unreadCount = notifications.filter(n => !n.read).length;
+      
+      if (badge) {
+        if (unreadCount > 0) {
+          badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+          badge.style.display = 'block';
+        } else {
+          badge.style.display = 'none';
+        }
+      }
+      
+      if (dropdownList) {
+        if (notifications.length === 0) {
+          dropdownList.innerHTML = `
+            <div class="notification-empty">
+              <i class="fas fa-bell-slash"></i>
+              <p>No notifications yet</p>
+            </div>
+          `;
+        } else {
+          dropdownList.innerHTML = notifications.slice(0, 5).map(notif => {
+            const timeAgo = formatNotificationTime(notif.timestamp);
+            const icon = getNotificationIcon(notif.type);
+            return `
+              <div class="notification-dropdown-item ${notif.read ? '' : 'unread'}" onclick="handleNotificationClick('${notif.id}', '${notif.orderId}')">
+                <div class="notification-icon ${notif.type}">
+                  <i class="fas ${icon}"></i>
+                </div>
+                <div class="notification-content">
+                  <div class="notification-title">${notif.title}</div>
+                  <div class="notification-message">${notif.message}</div>
+                  <div class="notification-time">${timeAgo}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+    
+    function getNotificationIcon(type) {
+      switch (type) {
+        case 'status-update':
+          return 'fa-sync-alt';
+        case 'message':
+          return 'fa-comment';
+        case 'order-complete':
+          return 'fa-check-circle';
+        default:
+          return 'fa-bell';
+      }
+    }
+    
+    function formatNotificationTime(timestamp) {
+      if (!timestamp) return 'Just now';
+      const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+      if (isNaN(date.getTime())) return 'Recently';
+      
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+      
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+      return date.toLocaleDateString();
+    }
+    
+    // Define notification functions
+    window.toggleNotificationDropdown = function() {
+      const dropdown = document.getElementById('notificationDropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('active');
+      }
+    };
+
+    window.markAllNotificationsRead = async function() {
+      const userEmail = sessionStorage.getItem('userEmail');
+      if (!userEmail) return;
+      
+      try {
+        const { getFirestore, collection, query, where, getDocs, updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const db = getFirestore();
+        
+        const notificationsRef = collection(db, 'notifications');
+        const q = query(notificationsRef, where('userEmail', '==', userEmail), where('read', '==', false));
+        const snapshot = await getDocs(q);
+        
+        const updates = [];
+        snapshot.forEach((docSnap) => {
+          updates.push(updateDoc(doc(db, 'notifications', docSnap.id), { read: true }));
+        });
+        
+        await Promise.all(updates);
+        
+        const dropdown = document.getElementById('notificationDropdown');
+        if (dropdown) {
+          dropdown.classList.remove('active');
+        }
+      } catch (error) {
+        console.error('Error marking all as read:', error);
+      }
+    };
+    
+    window.handleNotificationClick = async function(notificationId, orderId) {
+      try {
+        const { getFirestore, updateDoc, doc } = await import("https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js");
+        const db = getFirestore();
+        await updateDoc(doc(db, 'notifications', notificationId), { read: true });
+      } catch (error) {
+        console.error('Error marking as read:', error);
+      }
+      window.location.href = `../user.html?orderId=${orderId}`;
+    };
+    
+    // Initialize notifications
+    if (sessionStorage.getItem('userLoggedIn') === 'true') {
+      loadNotificationsForServices();
+    }
 
     // Scroll to services section
     function scrollToServices() {
@@ -626,3 +865,5 @@
   </script>
 </body>
 </html>
+<s
+cript type="module" src="../js-files/notifications.js"></script>

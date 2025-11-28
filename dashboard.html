@@ -34,7 +34,33 @@
           </li>
         </ul>
       </nav>
-      <div style="display: flex; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <!-- Notification Bell -->
+        <div id="notificationBell" class="notification-bell">
+          <button class="notification-btn" onclick="toggleNotificationDropdown()">
+            <i class="fas fa-bell"></i>
+            <span id="notificationBadge" class="notification-badge" style="display: none;">0</span>
+          </button>
+          <div id="notificationDropdown" class="notification-dropdown">
+            <div class="notification-dropdown-header">
+              <h4><i class="fas fa-bell"></i> Notifications</h4>
+              <button class="mark-all-read-btn" onclick="markAllNotificationsRead()">
+                <i class="fas fa-check-double"></i> Mark all read
+              </button>
+            </div>
+            <div id="notificationDropdownList" class="notification-dropdown-list">
+              <div class="notification-loading">
+                <i class="fas fa-spinner fa-spin"></i> Loading...
+              </div>
+            </div>
+            <div class="notification-dropdown-footer">
+              <a href="user.html" class="view-all-link">
+                <i class="fas fa-list"></i> View All Notifications
+              </a>
+            </div>
+          </div>
+        </div>
+        
         <div class="user-indicator">
           <i class="fas fa-user-circle"></i>
           <span id="username">User</span>
@@ -502,3 +528,5 @@
   <script src="./js-files/dexscript.js"></script>
 </body>
 </html>
+<sc
+ript type="module" src="./js-files/notifications.js"></script>
