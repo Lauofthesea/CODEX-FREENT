@@ -28,7 +28,7 @@
 
       <nav class="nav-wrapper">
         <ul class="main-nav">
-          <li><a href="../index.html">HOME</a></li> 
+          <li><a href="/">HOME</a></li> 
           <li class="services-dropdown">
             <a href="#">SERVICES ▸</a>
             <ul class="dropdown-menu">
@@ -46,7 +46,7 @@
           </li>
           <!-- ORDERS link - only shown when logged in -->
           <li id="ordersNavItem" style="display: none;">
-            <a href="../user.html">ORDERS</a>
+            <a href="/user">ORDERS</a>
           </li>
           <li class="search-wrapper">
             <form class="search-form" onsubmit="handleSearch(event)">
@@ -80,7 +80,7 @@
               </div>
             </div>
             <div class="notification-dropdown-footer">
-              <a href="../user.html" class="view-all-link">
+              <a href="/user" class="view-all-link">
                 <i class="fas fa-list"></i> View All Notifications
               </a>
             </div>
@@ -93,11 +93,11 @@
           <span id="usernameDisplay">User</span>
         </div>
         <!-- Login button - shown when not logged in -->
-        <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./login.html'" style="display: block;">
+        <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./login'" style="display: block;">
           Login
         </button>
         <!-- Account button - shown when logged in -->
-        <button id="accountBtn" class="account-btn" onclick="window.location.href='../dashboard.html'" style="display: none;">
+        <button id="accountBtn" class="account-btn" onclick="window.location.href='/dashboard'" style="display: none;">
           <i class="fas fa-user-circle"></i>
           Account
         </button>
@@ -322,8 +322,8 @@
       </div>
 
       <div class="footer-links">
-        <a href="../index.html">Home</a>
-        <a href="../pages/services.html">Services</a>
+        <a href="/">Home</a>
+        <a href="/pages/services">Services</a>
         <a href="#" id="footerAccountLink">Placeholder</a>
         <a href="#">Placeholder</a>
       </div>
@@ -359,7 +359,7 @@
         // Update footer link
         const footerLink = document.getElementById('footerAccountLink');
         footerLink.textContent = 'My Account';
-        footerLink.href = '../dashboard.html';
+        footerLink.href = '/dashboard';
       } else {
         // User is not logged in - show login button
         document.getElementById('userIndicator').style.display = 'none';
@@ -370,7 +370,7 @@
         // Update footer link
         const footerLink = document.getElementById('footerAccountLink');
         footerLink.textContent = 'Login';
-        footerLink.href = './login.html';
+        footerLink.href = './login';
       }
     }
 
@@ -554,7 +554,7 @@
       } catch (error) {
         console.error('Error marking as read:', error);
       }
-      window.location.href = `../user.html?orderId=${orderId}`;
+      window.location.href = `/user?orderId=${orderId}`;
     };
     
     // Initialize notifications

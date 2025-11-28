@@ -19,25 +19,25 @@
       </div>
       <nav class="nav-wrapper">
         <ul class="main-nav">
-          <li><a href="index.html">HOME</a></li>
+          <li><a href="/">HOME</a></li>
           <li class="services-dropdown">
-            <a href="./pages/services.html">SERVICES ▸</a>
+            <a href="./pages/services">SERVICES ▸</a>
             <ul class="dropdown-menu">
-              <li><a href="./pages/services.html">Document Printing</a></li>
-              <li><a href="./pages/services.html">Photo Printing</a></li>
-              <li><a href="./pages/services.html">Shirt Printing</a></li>
-              <li><a href="./pages/services.html">Tarpaulin Printing</a></li>
-              <li><a href="./pages/services.html">Signages</a></li>
-              <li><a href="./pages/services.html">Stickers</a></li>
-              <li><a href="./pages/services.html">Gift Boxes</a></li>
-              <li><a href="./pages/services.html">Lanyards</a></li>
-              <li><a href="./pages/services.html">Invitations</a></li>
-              <li><a href="./pages/services.html">Customized</a></li>
+              <li><a href="./pages/services">Document Printing</a></li>
+              <li><a href="./pages/services">Photo Printing</a></li>
+              <li><a href="./pages/services">Shirt Printing</a></li>
+              <li><a href="./pages/services">Tarpaulin Printing</a></li>
+              <li><a href="./pages/services">Signages</a></li>
+              <li><a href="./pages/services">Stickers</a></li>
+              <li><a href="./pages/services">Gift Boxes</a></li>
+              <li><a href="./pages/services">Lanyards</a></li>
+              <li><a href="./pages/services">Invitations</a></li>
+              <li><a href="./pages/services">Customized</a></li>
               <li><a href="#">More...</a></li>
             </ul>
           </li>
             <li id="ordersNavItem" style="display: none;">
-            <a href="user.html">ORDERS</a>
+            <a href="/user">ORDERS</a>
           </li>
           <li class="search-wrapper">
             <form class="search-form" onsubmit="handleSearch(event)">
@@ -70,7 +70,7 @@
               </div>
             </div>
             <div class="notification-dropdown-footer">
-              <a href="user.html" class="view-all-link">
+              <a href="/user" class="view-all-link">
                 <i class="fas fa-list"></i> View All Notifications
               </a>
             </div>
@@ -81,8 +81,8 @@
           <i class="fas fa-user-circle"></i>
           <span id="usernameDisplay">User</span>
         </div>
-        <button id="signupBtn" class="cta login-btn" onclick="window.location.href='./pages/signup.html'" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 0.5rem;">Sign Up</button>
-         <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./pages/login.html'">Login</button>
+        <button id="signupBtn" class="cta login-btn" onclick="window.location.href='./pages/signup'" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); margin-right: 0.5rem;">Sign Up</button>
+         <button id="loginBtn" class="cta login-btn" onclick="window.location.href='./pages/login'">Login</button>
         <!-- Logout button - shown when logged in -->
         <button id="logoutBtn" class="cta login-btn" onclick="handleLogout()" style="display: none;">Logout</button>
       </div>
@@ -154,7 +154,7 @@
     </div>
 
     <div class="view-services-wrapper">
-      <button class="view-services" onclick="window.location.href='./pages/services.html'">
+      <button class="view-services" onclick="window.location.href='./pages/services'">
         View Services &raquo;
       </button>
     </div>
@@ -182,7 +182,7 @@
 
       <div class="footer-links">
         <a href="#">About</a>
-        <a href="./pages/services.html">Services</a>
+        <a href="./pages/services">Services</a>
         <a href="#" id="footerOrdersLink">Portfolio</a>
         <a href="#">Contact</a>
       </div>
@@ -217,7 +217,7 @@
         // Update footer link to Orders
         const footerLink = document.getElementById('footerOrdersLink');
         footerLink.textContent = 'Track Orders';
-        footerLink.href = 'user.html';
+        footerLink.href = '/user';
       } else {
         // User is not logged in - show login & signup buttons
         document.getElementById('userIndicator').style.display = 'none';
@@ -250,19 +250,19 @@
 
     // Search data
     const searchData = [
-      { name: 'Document Printing', category: 'Service', icon: 'fas fa-file-alt', url: './pages/services.html#document' },
-      { name: 'Photo Printing', category: 'Service', icon: 'fas fa-image', url: './pages/services.html#photo' },
-      { name: 'Shirt Printing', category: 'Service', icon: 'fas fa-tshirt', url: './pages/services.html#shirt' },
-      { name: 'Tarpaulin Printing', category: 'Service', icon: 'fas fa-rectangle-ad', url: './pages/services.html#tarpaulin' },
-      { name: 'Signages', category: 'Service', icon: 'fas fa-sign', url: './pages/services.html#signages' },
-      { name: 'Stickers', category: 'Service', icon: 'fas fa-sticky-note', url: './pages/services.html#stickers' },
-      { name: 'Gift Boxes', category: 'Service', icon: 'fas fa-gift', url: './pages/services.html#gifts' },
-      { name: 'Lanyards', category: 'Service', icon: 'fas fa-id-badge', url: './pages/services.html#lanyards' },
-      { name: 'Invitations', category: 'Service', icon: 'fas fa-envelope', url: './pages/services.html#invitations' },
-      { name: 'Customized Items', category: 'Service', icon: 'fas fa-magic', url: './pages/services.html#customized' },
-      { name: 'Track Orders', category: 'Page', icon: 'fas fa-box', url: './user.html' },
-      { name: 'Dashboard', category: 'Page', icon: 'fas fa-tachometer-alt', url: './dashboard.html' },
-      { name: 'Services', category: 'Page', icon: 'fas fa-concierge-bell', url: './pages/services.html' }
+      { name: 'Document Printing', category: 'Service', icon: 'fas fa-file-alt', url: './pages/services#document' },
+      { name: 'Photo Printing', category: 'Service', icon: 'fas fa-image', url: './pages/services#photo' },
+      { name: 'Shirt Printing', category: 'Service', icon: 'fas fa-tshirt', url: './pages/services#shirt' },
+      { name: 'Tarpaulin Printing', category: 'Service', icon: 'fas fa-rectangle-ad', url: './pages/services#tarpaulin' },
+      { name: 'Signages', category: 'Service', icon: 'fas fa-sign', url: './pages/services#signages' },
+      { name: 'Stickers', category: 'Service', icon: 'fas fa-sticky-note', url: './pages/services#stickers' },
+      { name: 'Gift Boxes', category: 'Service', icon: 'fas fa-gift', url: './pages/services#gifts' },
+      { name: 'Lanyards', category: 'Service', icon: 'fas fa-id-badge', url: './pages/services#lanyards' },
+      { name: 'Invitations', category: 'Service', icon: 'fas fa-envelope', url: './pages/services#invitations' },
+      { name: 'Customized Items', category: 'Service', icon: 'fas fa-magic', url: './pages/services#customized' },
+      { name: 'Track Orders', category: 'Page', icon: 'fas fa-box', url: '/user' },
+      { name: 'Dashboard', category: 'Page', icon: 'fas fa-tachometer-alt', url: '/dashboard' },
+      { name: 'Services', category: 'Page', icon: 'fas fa-concierge-bell', url: './pages/services' }
     ];
 
     // Show search suggestions
@@ -307,7 +307,7 @@
       event.preventDefault();
       const query = document.getElementById('search-input').value.trim();
       if (query) {
-        window.location.href = `./pages/services.html?search=${encodeURIComponent(query)}`;
+        window.location.href = `./pages/services?search=${encodeURIComponent(query)}`;
       }
     }
 

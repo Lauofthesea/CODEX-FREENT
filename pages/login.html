@@ -55,11 +55,11 @@
     </form>
 
     <div class="login-link">
-      Don't have an account? <a href="signup.html">Create one now</a>
+      Don't have an account? <a href="signup">Create one now</a>
     </div>
 
     <div class="back-link">
-      <a href="../index.html">
+      <a href="/">
         <i class="fas fa-arrow-left"></i> Back to Home
       </a>
     </div>
@@ -111,7 +111,7 @@
           sessionStorage.setItem('userRole', ADMIN_CREDENTIALS.role);
           sessionStorage.setItem('userEmail', ADMIN_CREDENTIALS.email);
           
-          window.location.href = '../admin_side/index.html';
+          window.location.href = '/admin_side/';
           return;
         }
 
@@ -146,9 +146,9 @@
             
             // Redirect based on role
             if (userData.role === 'admin') {
-              window.location.href = '../admin_side/index.html';
+              window.location.href = '/admin_side/';
             } else {
-              window.location.href = '../dashboard.html';
+              window.location.href = '/dashboard';
             }
           }
         });
@@ -172,9 +172,9 @@
     if (sessionStorage.getItem('userLoggedIn') === 'true') {
       const role = sessionStorage.getItem('userRole');
       if (role === 'admin') {
-        window.location.href = '../admin_side/index.html';
+        window.location.href = '/admin_side/';
       } else {
-        window.location.href = '../dashboard.html';
+        window.location.href = '/dashboard';
       }
     }
   </script>
