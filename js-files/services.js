@@ -374,7 +374,7 @@ function showShirtUploadForm() {
         <span style="color: #FFD700; font-weight: 600; font-size: 1.1rem;">Design Instructions</span>
         <span style="color: #aaa; font-size: 0.85rem; font-weight: normal; margin-left: 0.25rem;">(Optional)</span>
       </label>
-      <textarea id="designInstructions" rows="4" placeholder="Insert any specific design instructions or requests here.." 
+      <textarea id="designInstructions" rows="4" placeholder="Add your design instructions here..."
         style="width: 100%; resize: vertical; background: rgba(0, 0, 0, 0.3); color: #fff; border: 1px solid rgba(255, 215, 0, 0.4); border-radius: 8px; padding: 1rem; font-family: inherit; font-size: 0.95rem; line-height: 1.6;"></textarea>
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; padding: 0.75rem; background: rgba(255, 215, 0, 0.1); border-radius: 6px;">
         <i class="fas fa-lightbulb" style="color: #FFD700;"></i>

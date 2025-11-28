@@ -113,8 +113,24 @@
     </div>
   </div>
 
-  <script>
-    function handleSignup(event) {
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+      authDomain: "lineshub-98e0f.firebaseapp.com",
+      projectId: "lineshub-98e0f",
+      storageBucket: "lineshub-98e0f.appspot.com",
+      messagingSenderId: "427905073524",
+      appId: "1:427905073524:web:95cb66ffeabf011087ec21"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.handleSignup = async function(event) {
       event.preventDefault();
       
       const fullname = document.getElementById('fullname').value.trim();
@@ -167,58 +183,64 @@
         return;
       }
 
-      // Check if email or username already exists
-      const existingUsers = JSON.parse(localStorage.getItem('freentUsers') || '[]');
-      if (existingUsers.some(user => user.email === email)) {
-        errorMessage.textContent = 'Email already registered';
-        errorMessage.classList.add('show');
-        return;
-      }
-
-      if (existingUsers.some(user => user.username === username)) {
-        errorMessage.textContent = 'Username already taken';
-        errorMessage.classList.add('show');
-        return;
-      }
-
       // Disable button during signup
       signupBtn.disabled = true;
       signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
       
-      // Simulate server processing
-      setTimeout(() => {
-        try {
-          // Save user to localStorage
-          const newUser = {
-            id: Date.now(),
-            fullname,
-            username,
-            email,
-            password, // In production, NEVER store plain passwords!
-            createdAt: new Date().toISOString(),
-            role: 'user'
-          };
-
-          existingUsers.push(newUser);
-          localStorage.setItem('freentUsers', JSON.stringify(existingUsers));
-
-          // Show success message
-          successMessage.textContent = '✓ Account created successfully! Redirecting to login...';
-          successMessage.classList.add('show');
-
-          // Redirect to login after 1.5 seconds
-          setTimeout(() => {
-            window.location.href = 'login.html';
-          }, 1500);
-        } catch (error) {
-          errorMessage.textContent = 'Error creating account. Please try again.';
+      try {
+        // Check if email already exists
+        const emailQuery = query(collection(db, 'users'), where('email', '==', email));
+        const emailSnapshot = await getDocs(emailQuery);
+        
+        if (!emailSnapshot.empty) {
+          errorMessage.textContent = 'Email already registered';
           errorMessage.classList.add('show');
-          
           signupBtn.disabled = false;
           signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+          return;
         }
-      }, 800);
-    }
+
+        // Check if username already exists
+        const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+        const usernameSnapshot = await getDocs(usernameQuery);
+        
+        if (!usernameSnapshot.empty) {
+          errorMessage.textContent = 'Username already taken';
+          errorMessage.classList.add('show');
+          signupBtn.disabled = false;
+          signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+          return;
+        }
+
+        // Create new user in Firestore
+        const newUser = {
+          fullname,
+          username,
+          email,
+          password, // Note: In production, use Firebase Auth instead of storing passwords
+          createdAt: serverTimestamp(),
+          role: 'user'
+        };
+
+        await addDoc(collection(db, 'users'), newUser);
+
+        // Show success message
+        successMessage.textContent = '✓ Account created successfully! Redirecting to login...';
+        successMessage.classList.add('show');
+
+        // Redirect to login after 1.5 seconds
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 1500);
+      } catch (error) {
+        console.error('Signup error:', error);
+        errorMessage.textContent = 'Error creating account. Please try again.';
+        errorMessage.classList.add('show');
+        
+        signupBtn.disabled = false;
+        signupBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+      }
+    };
 
     // Check if already logged in
     if (sessionStorage.getItem('userLoggedIn') === 'true') {

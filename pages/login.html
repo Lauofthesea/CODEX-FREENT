@@ -65,26 +65,33 @@
     </div>
   </div>
 
-  <script>
-     // STEP 2: Update login credentials with user accounts
-    const USER_CREDENTIALS = {
-      // Regular user account
-      user: {
-        password: 'user123',
-        role: 'user',
-        name: 'User',
-        email: 'user@lineshub.com'
-      },
-      // Admin account (redirects to admin dashboard)
-      admin: {
-        password: 'admin123',
-        role: 'admin',
-        name: 'Admin',
-        email: 'admin@lineshub.com'
-      }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAao4TBFvMR099d5sEfvX1I65d0LCAJUZw",
+      authDomain: "lineshub-98e0f.firebaseapp.com",
+      projectId: "lineshub-98e0f",
+      storageBucket: "lineshub-98e0f.appspot.com",
+      messagingSenderId: "427905073524",
+      appId: "1:427905073524:web:95cb66ffeabf011087ec21"
     };
 
-    function handleLogin(event) {
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Default admin credentials (hardcoded for admin access)
+    const ADMIN_CREDENTIALS = {
+      username: 'admin',
+      password: 'admin123',
+      role: 'admin',
+      name: 'Admin',
+      email: 'admin@lineshub.com'
+    };
+
+    window.handleLogin = async function(event) {
       event.preventDefault();
       
       const username = document.getElementById('username').value.trim().toLowerCase();
@@ -96,60 +103,70 @@
       loginBtn.disabled = true;
       loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Logging in...';
       
-      // Check credentials
-      setTimeout(() => {
-        // First check default credentials
-        const userAccount = USER_CREDENTIALS[username];
-        
-        if (userAccount && userAccount.password === password) {
-          // Set session data including email for order filtering
+      try {
+        // Check if admin login
+        if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
           sessionStorage.setItem('userLoggedIn', 'true');
-          sessionStorage.setItem('username', userAccount.name);
-          sessionStorage.setItem('userRole', userAccount.role);
-          sessionStorage.setItem('userEmail', userAccount.email);
+          sessionStorage.setItem('username', ADMIN_CREDENTIALS.name);
+          sessionStorage.setItem('userRole', ADMIN_CREDENTIALS.role);
+          sessionStorage.setItem('userEmail', ADMIN_CREDENTIALS.email);
           
-          // STEP 2: Redirect based on role
-          if (userAccount.role === 'admin') {
-            // Redirect to admin dashboard
-            window.location.href = '../admin_side/index.html';
-          } else {
-            // Redirect to user dashboard
-            window.location.href = '../dashboard.html';
+          window.location.href = '../admin_side/index.html';
+          return;
+        }
+
+        // Check Firestore for regular users
+        const usersQuery = query(
+          collection(db, 'users'), 
+          where('username', '==', username)
+        );
+        const querySnapshot = await getDocs(usersQuery);
+        
+        if (querySnapshot.empty) {
+          errorMessage.textContent = 'Invalid username or password';
+          errorMessage.classList.add('show');
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+          return;
+        }
+
+        // Check password
+        let userFound = false;
+        querySnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.password === password) {
+            userFound = true;
+            
+            // Set session data
+            sessionStorage.setItem('userLoggedIn', 'true');
+            sessionStorage.setItem('username', userData.fullname);
+            sessionStorage.setItem('userRole', userData.role || 'user');
+            sessionStorage.setItem('userEmail', userData.email);
+            sessionStorage.setItem('userId', doc.id);
+            
+            // Redirect based on role
+            if (userData.role === 'admin') {
+              window.location.href = '../admin_side/index.html';
+            } else {
+              window.location.href = '../dashboard.html';
+            }
           }
-          return;
-        }
+        });
 
-        // Check registered users in localStorage
-        const registeredUsers = JSON.parse(localStorage.getItem('freentUsers') || '[]');
-        const registeredUser = registeredUsers.find(user => user.username === username && user.password === password);
-        
-        if (registeredUser) {
-          // Set session data
-          sessionStorage.setItem('userLoggedIn', 'true');
-          sessionStorage.setItem('username', registeredUser.fullname);
-          sessionStorage.setItem('userRole', registeredUser.role || 'user');
-          sessionStorage.setItem('userEmail', registeredUser.email);
-          sessionStorage.setItem('userId', registeredUser.id);
-          
-          // Redirect to user dashboard
-          window.location.href = '../dashboard.html';
-          return;
+        if (!userFound) {
+          errorMessage.textContent = 'Invalid username or password';
+          errorMessage.classList.add('show');
+          loginBtn.disabled = false;
+          loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
         }
-
-        // Show error message
-        errorMessage.textContent = 'Invalid username or password';
+      } catch (error) {
+        console.error('Login error:', error);
+        errorMessage.textContent = 'Error logging in. Please try again.';
         errorMessage.classList.add('show');
-        
-        // Re-enable button
         loginBtn.disabled = false;
         loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
-        
-        // Remove error after 3 seconds
-        setTimeout(() => {
-          errorMessage.classList.remove('show');
-        }, 3000);
-      }, 800);
-    }
+      }
+    };
 
     // Check if already logged in
     if (sessionStorage.getItem('userLoggedIn') === 'true') {
