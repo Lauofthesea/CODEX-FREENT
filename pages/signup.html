@@ -103,11 +103,11 @@
     </div>
 
     <div class="login-link">
-      Already have an account? <a href="login.html">Login here</a>
+      Already have an account? <a href="login">Login here</a>
     </div>
 
     <div class="back-link">
-      <a href="../index.html">
+      <a href="/">
         <i class="fas fa-arrow-left"></i> Back to Home
       </a>
     </div>
@@ -230,7 +230,7 @@
 
         // Redirect to login after 1.5 seconds
         setTimeout(() => {
-          window.location.href = 'login.html';
+          window.location.href = 'login';
         }, 1500);
       } catch (error) {
         console.error('Signup error:', error);
@@ -244,7 +244,7 @@
 
     // Check if already logged in
     if (sessionStorage.getItem('userLoggedIn') === 'true') {
-      window.location.href = '../index.html';
+      window.location.href = '/';
     }
   </script>
 

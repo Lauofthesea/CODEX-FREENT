@@ -1,0 +1,26 @@
+# FREENT - Clean URLs Configuration
+# Remove .html extensions from URLs
+# Upload this file to your Hostinger public_html folder
+
+RewriteEngine On
+
+# Remove .html extension - allows both /page and /page.html to work
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Redirect .html URLs to clean URLs (301 permanent redirect)
+RewriteCond %{THE_REQUEST} ^GET\ /[^?\s]+\.html
+RewriteRule ^(.*)\.html$ /$1 [R=301,L]
+
+# Handle pages folder
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}/pages/$1.html -f
+RewriteRule ^pages/(.*)$ pages/$1.html [L]
+
+# REVERT INSTRUCTIONS:
+# To revert to .html URLs:
+# 1. Delete or rename this .htaccess file
+# 2. Your old links with .html will work again
+# 3. Or run: git checkout main -- .htaccess (to restore old version)
